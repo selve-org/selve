@@ -10,6 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.20.2",
     "@prisma/client": "6.9.0",
     "@sentry/nextjs": "^9.25.0",
     "import-in-the-middle": "^1.14.0",
