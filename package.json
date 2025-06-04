@@ -10,11 +10,13 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/nextjs": "^6.20.2",
     "@prisma/client": "6.9.0",
     "@sentry/nextjs": "^9.25.0",
     "import-in-the-middle": "^1.14.0",
     "next": "15.3.3",
+    "posthog-js": "^1.249.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "require-in-the-middle": "^7.5.2"
