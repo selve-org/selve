@@ -16,6 +16,7 @@
     "@sentry/nextjs": "^9.25.0",
     "import-in-the-middle": "^1.14.0",
     "next": "15.3.3",
+    "next-themes": "^0.4.6",
     "posthog-js": "^1.249.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
