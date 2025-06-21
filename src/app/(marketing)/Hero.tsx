@@ -1,14 +1,19 @@
 // src/app/(marketing)/Hero.tsx
-
 "use client";
 
 import { motion } from "framer-motion";
-import { fadeInUp, staggerContainer } from "../../lib/framer/variants";
+import {
+  fadeInUp,
+  wordFadeLeft,
+  staggerContainer,
+} from "../../lib/framer/variants";
 import Link from "next/link";
+
+const headingWords = ["Discover", "your", "TRUE", "self"];
 
 export const Hero = () => {
   return (
-    <section className="relative pt-32 pb-16 md:pt-48 md:pb-32 text-center overflow-hidden">
+    <section className="relative min-h-screen pt-10 pb-24 md:pt-30 md:pb-48 text-center overflow-hidden flex flex-col justify-center">
       {/* Background */}
       <div className="absolute inset-0 -z-20">
         <div className="absolute inset-0 bg-background" />
@@ -23,20 +28,28 @@ export const Hero = () => {
         initial="hidden"
         animate="show"
       >
-        <motion.h1
-          variants={fadeInUp}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-tight"
-        >
-          Discover your{" "}
-          <span className="inline-block text-transparent bg-clip-text bg-gradient-to-tr from-red-500 via-orange-400 to-yellow-300 drop-shadow-sm skew-y-1">
-            TRUE
-          </span>{" "}
-          self <span className="block md:block">like never before.</span>
-        </motion.h1>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-tight flex justify-center flex-wrap gap-x-2">
+          {headingWords.map((word, idx) => (
+            <motion.span
+              key={idx}
+              variants={wordFadeLeft}
+              className={
+                word === "TRUE"
+                  ? "text-transparent bg-clip-text bg-gradient-to-tr from-red-500 via-orange-400 to-yellow-300 drop-shadow-sm skew-y-1 inline-block"
+                  : "inline-block"
+              }
+            >
+              {word}
+            </motion.span>
+          ))}
+          <motion.span variants={fadeInUp} className="block w-full mx-4">
+            like never before.
+          </motion.span>
+        </h1>
 
         <motion.p
           variants={fadeInUp}
-          className="mt-6 max-w-2xl mx-auto text-base lg:text-lg text-muted-foreground"
+          className="mt-6 max-w-2xl mx-auto text-base md:text-2xl text-muted-foreground"
         >
           SELVE helps you understand who you are, why you act the way you do,
           and how to become your best self — through intelligent psychological
