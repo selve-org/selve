@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SelveLogo } from "@/components/icons/SelveLogo";
 import { MenuIcon } from "@/components/icons/Menu";
+import { AnimatedLogo } from "@/components/branding/AnimatedLogo";
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -22,8 +22,7 @@ export const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 text-primary font-semibold text-lg">
-            <SelveLogo className="w-6 h-6" />
-            <span>Selve</span>
+            <AnimatedLogo />
           </Link>
 
           {/* Desktop Nav */}

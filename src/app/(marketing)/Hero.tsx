@@ -43,7 +43,7 @@ export const Hero = () => {
             </motion.span>
           ))}
           <motion.span variants={fadeInUp} className="block w-full mx-4">
-            like never before.
+            like never before
           </motion.span>
         </h1>
 
