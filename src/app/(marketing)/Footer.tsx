@@ -1,5 +1,6 @@
+// src/app/(marketing)/Footer.tsx
 import Link from "next/link";
-import { SelveLogo } from "@/components/icons/SelveLogo";
+import { SelveLogo } from "@/components/logo/SelveLogo";
 
 const footerLinks = {
   Product: ["Overview", "Features", "Pricing", "Changelog"],

@@ -1,3 +1,4 @@
+// src/app/(marketing)/navigation/DesktopNav.tsx
 "use client";
 
 import { useState, useRef } from "react";

@@ -1,3 +1,4 @@
+// src/app/global-error.tsx
 "use client";
 
 import * as Sentry from "@sentry/nextjs";

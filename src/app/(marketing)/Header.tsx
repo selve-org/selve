@@ -1,8 +1,9 @@
+// src/app/(marketing)/Header.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { AnimatedLogo } from "@/components/branding/AnimatedLogo"; // You have this controlled
+import { AnimatedLogo } from "@/components/logo/AnimatedSelveLogo";
 import { DesktopNav } from "./navigation/DesktopNav";
 import { navLinks } from "./navigation/navLinks";
 import { AnimatedHamburgerIcon } from "@/components/icons/HamburgerButton";

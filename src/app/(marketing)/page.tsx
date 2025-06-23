@@ -1,3 +1,4 @@
+// src/app/(marketing)/page.tsx
 import { Header } from "./Header";
 import { Hero } from "@/app/(marketing)/Hero";
 import { Footer } from "./Footer";

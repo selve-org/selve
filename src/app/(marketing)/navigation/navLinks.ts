@@ -1,5 +1,4 @@
 // src/app/(marketing)/navigation/navLinks.ts
-
 export type SimpleNavLink = {
   type: "link";
   label: string;

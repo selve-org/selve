@@ -1,3 +1,4 @@
+// src/db/prisma.ts
 import { PrismaClient } from "@/generated/prisma";
 
 // TypeScript definition for the global object

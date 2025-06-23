@@ -1,3 +1,4 @@
+// src/app/sentry-example-page/page.tsx
 "use client";
 
 import Head from "next/head";

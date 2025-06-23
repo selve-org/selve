@@ -1,3 +1,4 @@
+// src/components/logo/AnimatedSelveLogo.tsx
 "use client";
 
 import { useScroll, useTransform, useSpring, motion } from "framer-motion";
