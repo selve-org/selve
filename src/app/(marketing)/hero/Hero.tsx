@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { ParallaxHeroBackground } from "./ParallaxHeroBackground";
 
-const headingWords = ["Discover", "your", "TRUE", "self"];
+const headingWords = ["Discover", '', "your ", "TRUE", "self"];
 
 export const Hero = () => {
   return (
