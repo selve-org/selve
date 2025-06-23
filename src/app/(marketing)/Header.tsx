@@ -2,75 +2,77 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MenuIcon } from "@/components/icons/Menu";
-import { AnimatedLogo } from "@/components/branding/AnimatedLogo";
-
-const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Testimonials", href: "#testimonials" },
-  { label: "FAQ", href: "#faq" },
-  { label: "Contact", href: "#contact" },
-];
+import { AnimatedLogo } from "@/components/branding/AnimatedLogo"; // You have this controlled
+import { DesktopNav } from "./navigation/DesktopNav";
+import { navLinks } from "./navigation/navLinks";
+import { AnimatedHamburgerIcon } from "@/components/icons/HamburgerButton";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md pb-1 border-b border-neutral-200 dark:border-neutral-800">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 text-primary font-semibold text-lg">
-            <AnimatedLogo />
-          </Link>
+        <div className="grid grid-cols-3 items-center h-16">
+          <div className="flex justify-start">
+            <Link href="/" className="flex items-center">
+              <AnimatedLogo />
+            </Link>
+          </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {navLinks.map(link => (
-              <Link key={link.label} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <DesktopNav />
 
-          {/* Auth */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link href="/sign-in" className="text-sm text-muted-foreground hover:text-foreground">Log in</Link>
-            <Link
-              href="/sign-up"
-              className="px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
-            >
+          <div className="hidden md:flex items-center justify-end space-x-2">
+            <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+              Log in
+            </Link>
+            <Link href="/sign-up" className="px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors">
               Sign up
             </Link>
           </div>
 
-          {/* Mobile menu */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-foreground focus:outline-none"
-          >
-            <MenuIcon className="w-6 h-6" />
-          </button>
+          <div className="md:hidden col-start-3 flex justify-end">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-foreground focus:outline-none p-2"
+              aria-label="Toggle menu"
+            >
+              <AnimatedHamburgerIcon isOpen={isMenuOpen} />
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Nav */}
         {isMenuOpen && (
           <div className="md:hidden mt-2 bg-background/90 backdrop-blur-md p-4 rounded-md space-y-3">
-            {navLinks.map(link => (
-              <Link key={link.label} href={link.href} className="block text-sm text-muted-foreground hover:text-foreground">
-                {link.label}
-              </Link>
+            {navLinks.map(link =>
+                link.type === "dropdown" ? (
+                <div key={link.label}>
+                    <p className="font-semibold text-sm mb-1">{link.label}</p>
+                    <ul className="pl-2 space-y-1">
+                        {link.items.map(item => (
+                            <li key={item.label}>
+                                <Link href={item.href} className="block text-sm text-muted-foreground hover:text-foreground">
+                                    {item.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                <Link key={link.label} href={link.href} className="block font-semibold text-sm text-muted-foreground hover:text-foreground">
+                    {link.label}
+                </Link>
             ))}
-            <hr className="border-border" />
-            <Link href="/sign-in" className="block text-sm text-muted-foreground hover:text-foreground">Log in</Link>
-            <Link
-              href="/sign-up"
-              className="block w-full text-center px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
-            >
-              Sign up
-            </Link>
-          </div>
+            <hr className="border-neutral-200 dark:border-neutral-800"/>
+            <div className="flex items-center space-x-2 pt-2">
+                <Link href="/sign-in" className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                    Log in
+                </Link>
+                <Link href="/sign-up" className="flex-1 text-center px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors">
+                    Sign up
+                </Link>
+            </div>
+           </div>
         )}
       </div>
     </header>
