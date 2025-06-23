@@ -1,6 +1,6 @@
 // src/app/(marketing)/page.tsx
-import { Header } from "./Header";
-import { Hero } from "@/app/(marketing)/Hero";
+import { Header } from "./header/Header";
+import { Hero } from "@/app/(marketing)/hero/Hero";
 import { Footer } from "./Footer";
 
 export default function LandingPage() {
