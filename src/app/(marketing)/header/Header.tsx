@@ -13,7 +13,7 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md pb-1 border-b border-neutral-200 dark:border-neutral-800">
-      <div className="container mx-auto px-4">
+      <div className="mx-auto px-4">
         <div className="grid grid-cols-3 items-center h-16">
           <div className="flex justify-start">
             <Link href="/" className="flex items-center">
@@ -23,7 +23,7 @@ export const Header = () => {
 
           <DesktopNav />
 
-          <div className="hidden md:flex items-center justify-end space-x-2">
+          <div className="hidden lg:flex items-center justify-end space-x-2">
             <Link
               href="/sign-in"
               className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -38,7 +38,7 @@ export const Header = () => {
             </Link>
           </div>
 
-          <div className="md:hidden col-start-3 flex justify-end">
+          <div className="lg:hidden col-start-3 flex justify-end">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-foreground focus:outline-none p-2"
@@ -50,7 +50,7 @@ export const Header = () => {
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden mt-2 bg-background/90 backdrop-blur-md p-4 rounded-md space-y-3">
+          <div className="lg:hidden mt-2 bg-background/90 backdrop-blur-md p-4 rounded-md space-y-3">
             {navLinks.map((link) =>
               link.type === "dropdown" ? (
                 <div key={link.label}>

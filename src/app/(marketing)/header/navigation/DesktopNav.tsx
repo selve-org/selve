@@ -72,7 +72,7 @@ export const DesktopNav = () => {
     <nav
       ref={navRef}
       onMouseLeave={handleMouseLeave}
-      className="hidden md:flex items-center justify-center relative"
+      className="hidden lg:flex items-center justify-center relative"
     >
       {navLinks.map((link) => (
         <div
