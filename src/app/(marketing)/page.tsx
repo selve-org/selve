@@ -17,7 +17,7 @@ const PlaceholderSection = ({ title, height = 'h-screen' }: { title: string, hei
 
 export default function LandingPage() {
   return (
-    <div className="bg-background text-foreground font-sans">
+    <div className="bg-black/10 text-foreground font-sans">
       <Header />
       <main>
         <Hero />
