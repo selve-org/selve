@@ -18,6 +18,7 @@ export const Hero = () => {
       className="
         relative
         min-h-screen
+        z-1
         pt-10 pb-24 md:pt-30 md:pb-48
         text-center
         overflow-visible

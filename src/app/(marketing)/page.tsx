@@ -1,7 +1,7 @@
 import { Header } from "./header/Header";
 import { Hero } from "@/app/(marketing)/hero/Hero";
 import { Footer } from "./Footer";
-import { MainContent } from "./MainContent"; // Import the wrapper again
+import { MainContent } from "./MainContent";
 
 // Placeholder for future sections
 const PlaceholderSection = ({ title, height = 'h-screen' }: { title: string, height?: string }) => (
@@ -29,35 +29,7 @@ export default function LandingPage() {
           <PlaceholderSection title="Feature Section 2" />
           <PlaceholderSection title="Feature Section 2" />
           <PlaceholderSection title="Feature Section 2" />
-          <PlaceholderSection title="Feature Section 2" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-          <PlaceholderSection title="Testimonials" height="h-[50vh]" />
+          
           <PlaceholderSection title="Testimonials" height="h-[50vh]" />
           <PlaceholderSection title="Testimonials" height="h-[50vh]" />
           <Footer />
