@@ -29,7 +29,7 @@ export const Hero = () => {
       <div className="absolute inset-0 -z-20">
         <div className="absolute inset-0 bg-background" />
         <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 to-transparent dark:from-purple-500/40" />
-        <div className="absolute inset-0 bg-black/10 dark:bg-black/60" />
+        <div className="absolute inset-0 bg-background dark:bg-black/60" />
       </div>
 
       {/* Parallax background container */}
