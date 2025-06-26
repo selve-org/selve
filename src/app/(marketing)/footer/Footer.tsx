@@ -1,29 +1,21 @@
-// src/app/(marketing)/Footer.tsx
+// src/app/(marketing)/footer/Footer.tsx
 import Link from "next/link";
 import { SelveLogo } from "@/components/logo/SelveLogo";
-
-const footerLinks = {
-  Product: ["Features", "Pricing", "Enterprise", "Copilot", "Security", "Team", "Roadmap"],
-  Platform: ["Developer API", "Partners", "Education", "GitHub CLI", "GitHub Desktop", "GitHub Mobile"],
-  Support: ["Docs", "Community Forum", "Premium Support", "Skills", "Status", "Contact GitHub"],
-  Company: ["About", "Careers", "Blog", "The ReadME Project", "Newsroom", "Inclusion", "Social Impact"],
-};
+import { footerLinks } from "./footerLinks";
+import { FooterLink } from "./footerLink";
 
 export const Footer = () => {
   return (
-    // The main footer container.
-    // `min-h-screen` makes it take up the full viewport height.
-    // `flex flex-col` allows us to push the bottom bar to the end.
     <footer className="bg-background text-muted-foreground flex flex-col min-h-screen">
-      
-      {/* This container holds the main content and grows to fill available space */}
       <div className="flex-grow mt-30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-            
             {/* Column 1: Logo and Newsletter */}
             <div className="col-span-2 md:col-span-3 lg:col-span-1">
-              <Link href="/" className="flex items-center space-x-2 text-gray-900">
+              <Link
+                href="/"
+                className="flex items-center space-x-2 text-gray-900"
+              >
                 <SelveLogo />
               </Link>
               <p className="text-sm mt-4 max-w-xs text-gray-500">
@@ -33,7 +25,8 @@ export const Footer = () => {
                 Subscribe to our insights newsletter
               </h4>
               <p className="text-sm leading-relaxed mb-4">
-                Actionable tips, mental models, and self-awareness strategies—twice a month.
+                Actionable tips, mental models, and self-awareness
+                strategies—twice a month.
               </p>
               <div className="flex flex-col sm:flex-row w-full max-w-sm">
                 <Link
@@ -45,19 +38,17 @@ export const Footer = () => {
               </div>
             </div>
 
-            {/* Spacer for layout adjustment on medium screens */}
+            {/* Spacer */}
             <div className="hidden md:block lg:hidden col-span-1"></div>
 
-            {/* Columns 2-5: Link Sections */}
+            {/* Columns 2-5: Footer Links */}
             {Object.entries(footerLinks).map(([section, links]) => (
               <div key={section}>
                 <h4 className="font-medium text-foreground mb-4">{section}</h4>
-                <ul className="space-y-3 text-sm">
+                <ul className="space-y-1 text-sm">
                   {links.map((link) => (
-                    <li key={link}>
-                      <Link href="#" className="hover:text-foreground transition-colors duration-200">
-                        {link}
-                      </Link>
+                    <li key={link.label}>
+                      <FooterLink href={link.href} label={link.label} />
                     </li>
                   ))}
                 </ul>
