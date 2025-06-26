@@ -50,7 +50,7 @@ export const Header = () => {
         </div>
 
         {isMenuOpen && (
-          <div className="lg:hidden mt-2 bg-background/90 backdrop-blur-md p-4 rounded-md space-y-3">
+          <div className="lg:hidden mt-2 bg-background/90 backdrop-blur-md p-4 rounded-md space-y-3 min-h-[calc(100vh-4rem)]">
             {navLinks.map((link) =>
               link.type === "dropdown" ? (
                 <div key={link.label}>
