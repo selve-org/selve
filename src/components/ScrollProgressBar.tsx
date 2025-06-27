@@ -13,7 +13,7 @@ export const ScrollProgressBar = ({ scrollYProgress }: ScrollProgressBarProps) =
 
   return (
     <div
-      className="pointer-events-none fixed top-0 left-0 w-[1px] h-[100vh] md:left-1/2 md:-translate-x-1/2 z-[10]"
+      className="pointer-events-none fixed top-0 left-0 w-[1px] h-[100vh] md:left-1/2 md:-translate-x-1/2 z-0"
       aria-hidden="true"
     >
       <motion.div
