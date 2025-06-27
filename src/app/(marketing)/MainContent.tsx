@@ -5,16 +5,30 @@ import { useRef } from "react";
 import { useScroll } from "framer-motion";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 
-interface MainContentProps {
-  children: React.ReactNode;
-}
+// Placeholder for future sections
+const PlaceholderSection = ({
+  title,
+  height = "h-screen",
+}: {
+  title: string;
+  height?: string;
+}) => (
+  <div
+    className={`container mx-auto px-4 py-20 flex items-center justify-center ${height}`}
+  >
+    <div className="text-center">
+      <h2 className="text-4xl font-bold mb-4">{title}</h2>
+      <p className="text-muted-foreground max-w-2xl mx-auto">
+        This is a placeholder section. As you scroll past it, the progress bar
+        will grow. You can add any content here.
+      </p>
+    </div>
+  </div>
+);
 
-export const MainContent = ({ children }: MainContentProps) => {
+export const MainContent = () => {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // The offset is set to start tracking when the top of this container
-  // meets the top of the viewport, and end when the bottom meets the bottom.
-  // This correctly measures progress only within this component's bounds.
   const { scrollYProgress } = useScroll({
     target: contentRef,
     offset: ["start start", "end end"],
@@ -23,9 +37,13 @@ export const MainContent = ({ children }: MainContentProps) => {
   return (
     <div ref={contentRef} className="relative">
       <ScrollProgressBar scrollYProgress={scrollYProgress} />
-      {/* The actual page sections are rendered here */}
       <div className="relative z-10">
-        {children}
+        <PlaceholderSection title="Feature Section 1" />
+        <PlaceholderSection title="Feature Section 2" />
+        <PlaceholderSection title="Feature Section 3" />
+        <PlaceholderSection title="Feature Section 4" />
+        <PlaceholderSection title="Testimonials" height="h-[50vh]" />
+        <PlaceholderSection title="Testimonials" height="h-[50vh]" />
       </div>
     </div>
   );
