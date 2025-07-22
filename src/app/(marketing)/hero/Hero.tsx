@@ -25,11 +25,11 @@ export const Hero = () => {
         flex flex-col justify-center
       "
     >
-      {/* Background gradients and overlays */}
+      {/* Background gradients and overlays (this is to block
+          the scrolling line from appearing over the hero)*/}
       <div className="absolute inset-0 -z-20">
         <div className="absolute inset-0 bg-background" />
-        <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 to-transparent dark:from-purple-500/40" />
-        <div className="absolute inset-0 bg-background dark:bg-black/60" />
+        {/* <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 to-transparent dark:from-purple-500/40" /> */}
       </div>
 
       {/* Parallax background container */}
