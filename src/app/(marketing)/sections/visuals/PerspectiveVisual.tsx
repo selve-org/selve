@@ -106,6 +106,8 @@ export const PerspectiveVisual = memo(() => {
           fill
           sizes="(max-width: 640px) 28px, (max-width: 1024px) 36px, 48px"
           className="rounded-full object-cover shadow-md"
+          draggable={false}
+          onContextMenu={(e) => e.preventDefault()}
         />
       </div>
     );
@@ -128,6 +130,8 @@ export const PerspectiveVisual = memo(() => {
               width={CENTRAL_SIZE}
               height={CENTRAL_SIZE}
               priority
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
             />
           </div>
 
