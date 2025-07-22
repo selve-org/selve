@@ -4,27 +4,28 @@
 import { useRef } from "react";
 import { useScroll } from "framer-motion";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
+import {
+  FeatureSection,
+  TestimonialsSection,
+  CtaSection,
+} from "./sections"; // Assuming index.ts barrel file
 
-// Placeholder for future sections
-const PlaceholderSection = ({
-  title,
-  height = "h-screen",
-}: {
-  title: string;
-  height?: string;
-}) => (
-  <div
-    className={`container mx-auto px-4 py-20 flex items-center justify-center ${height}`}
-  >
-    <div className="text-center">
-      <h2 className="text-4xl font-bold mb-4">{title}</h2>
-      <p className="text-muted-foreground max-w-2xl mx-auto">
-        This is a placeholder section. As you scroll past it, the progress bar
-        will grow. You can add any content here.
-      </p>
-    </div>
+import { NodeVisual } from "./sections/visuals/NodeVisual";
+import { PerspectiveVisual } from "./sections/visuals/PerspectiveVisual";
+
+// Placeholder visual components - you can replace these with your actual graphics/SVGs
+
+const CoachingVisual = () => (
+  <div className="w-full h-64 bg-neutral-800/50 rounded-lg border border-neutral-700 flex items-center justify-center">
+    <p className="text-neutral-500 text-sm">Visual: AI Coaching UI</p>
   </div>
 );
+const BlueprintVisual = () => (
+  <div className="w-full h-64 bg-neutral-800/50 rounded-lg border border-neutral-700 flex items-center justify-center">
+    <p className="text-neutral-500 text-sm">Visual: Evolving Profile Blueprint</p>
+  </div>
+);
+
 
 export const MainContent = () => {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -37,13 +38,34 @@ export const MainContent = () => {
   return (
     <div ref={contentRef} className="relative">
       <ScrollProgressBar scrollYProgress={scrollYProgress} />
-      <div className="relative z-10">
-        <PlaceholderSection title="Feature Section 1" />
-        <PlaceholderSection title="Feature Section 2" />
-        <PlaceholderSection title="Feature Section 3" />
-        <PlaceholderSection title="Feature Section 4" />
-        <PlaceholderSection title="Testimonials" height="h-[50vh]" />
-        <PlaceholderSection title="Testimonials" height="h-[50vh]" />
+      <div className="relative z-10 flex flex-col gap-y-32 md:gap-y-48">
+        <FeatureSection
+          title="More than MBTI. Smarter than quizzes."
+          description={`SELVE blends modern behavioral psychology with real-time interaction design. It's not just a test—it's a system trained to understand you. \n\n We draw from the Big Five, DISC, MBTI, and faith-based insight models to form a type system tailored to the modern world.`}
+          visual={<NodeVisual />}
+          layout="text-left"
+        />
+
+        <FeatureSection
+          title="Get outside perspective."
+          description="Invite trusted friends to profile you. Their honest answers shape your results, revealing blind spots and validating your self-perception. SELVE triangulates both internal reflection and external feedback to give the clearest picture of who you are."
+          visual={<PerspectiveVisual />}
+          layout="text-right"
+        />
+        <FeatureSection
+          title="Coaching that speaks your language."
+          description="Knowing yourself is step one. SELVE gives you advice, strategies, and goals that match your style—whether you're growth-minded or peace-seeking, visionary or pragmatic. AI-powered coaching is coming soon."
+          visual={<CoachingVisual />}
+          layout="text-left"
+        />
+        <FeatureSection
+          title="Your Living Blueprint."
+          description="Your SELVE profile is not static. It evolves as you complete challenges, receive feedback, and grow. Our system continuously refines your blueprint, providing an ever-accurate, dynamic guide to your personal and professional life."
+          visual={<BlueprintVisual />}
+          layout="text-right"
+        />
+        <TestimonialsSection />
+        <CtaSection />
       </div>
     </div>
   );
