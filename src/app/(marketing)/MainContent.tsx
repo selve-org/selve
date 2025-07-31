@@ -12,14 +12,10 @@ import {
 
 import { NodeVisual } from "./sections/visuals/NodeVisual";
 import { PerspectiveVisual } from "./sections/visuals/PerspectiveVisual";
+import { CoachingVisual } from "./sections/visuals/CoachingVisual";
 
 // Placeholder visual components - you can replace these with your actual graphics/SVGs
 
-const CoachingVisual = () => (
-  <div className="w-full h-64 bg-neutral-800/50 rounded-lg border border-neutral-700 flex items-center justify-center">
-    <p className="text-neutral-500 text-sm">Visual: AI Coaching UI</p>
-  </div>
-);
 const BlueprintVisual = () => (
   <div className="w-full h-64 bg-neutral-800/50 rounded-lg border border-neutral-700 flex items-center justify-center">
     <p className="text-neutral-500 text-sm">Visual: Evolving Profile Blueprint</p>
@@ -54,7 +50,7 @@ export const MainContent = () => {
         />
         <FeatureSection
           title="Coaching that speaks your language."
-          description="Knowing yourself is step one. SELVE gives you advice, strategies, and goals that match your style—whether you're growth-minded or peace-seeking, visionary or pragmatic. AI-powered coaching is coming soon."
+          description="Knowing yourself is step one. SELVE gives you advice, strategies, and goals that match your style—whether you're growth-minded or peace-seeking, visionary or pragmatic. AI-powered coaching is coming soon!"
           visual={<CoachingVisual />}
           layout="text-left"
         />
