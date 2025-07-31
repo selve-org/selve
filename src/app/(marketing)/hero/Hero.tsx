@@ -23,6 +23,7 @@ export const Hero = () => {
         text-center
         overflow-visible
         flex flex-col justify-center
+        overflow-x-hidden
       "
     >
       {/* Background gradients and overlays (this is to block
