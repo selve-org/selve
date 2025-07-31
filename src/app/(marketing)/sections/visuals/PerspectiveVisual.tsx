@@ -1,4 +1,4 @@
-// src/app/(marketing)/sections/PerspectiveVisual.tsx
+// src/app/(marketing)/sections/visuals/PerspectiveVisual.tsx
 "use client";
 
 import { useEffect, useState, memo, CSSProperties, useRef } from "react";

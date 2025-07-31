@@ -1,4 +1,4 @@
-// src/app/(marketing)/sections/NodeVisual.tsx
+// src/app/(marketing)/sections//visuals/NodeVisual.tsx
 
 "use client";
 
