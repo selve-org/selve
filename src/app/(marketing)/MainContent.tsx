@@ -10,6 +10,7 @@ import {
   CtaSection,
 } from "./sections"; // Assuming index.ts barrel file
 
+import ProfileInsightsPanel from "./sections/profile-insights-panel/ProfileInsightsPanel";
 import { NodeVisual } from "./sections/visuals/NodeVisual";
 import { PerspectiveVisual } from "./sections/visuals/PerspectiveVisual";
 import { CoachingVisual } from "./sections/visuals/CoachingVisual";
@@ -62,6 +63,7 @@ export const MainContent = () => {
         />
         <TestimonialsSection />
         <CtaSection />
+        <ProfileInsightsPanel />
       </div>
     </div>
   );
