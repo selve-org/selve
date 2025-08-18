@@ -1,5 +1,5 @@
-// components/ProfileInsightsPanel.tsx
-import React, { useState } from "react";
+// src/app/(marketing)/sections/profile-insights-panel/ProfileInsightsPanel.tsx
+import React, { useState, useRef } from "react";
 
 const ProfileInsightsPanel = () => {
   const [hoverStates, setHoverStates] = useState({
@@ -8,17 +8,53 @@ const ProfileInsightsPanel = () => {
     front: false,
   });
 
+  const lastHoveredRef = useRef<"back" | "middle" | "front" | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleHover = (
     card: "back" | "middle" | "front",
     isHovering: boolean
   ) => {
-    setHoverStates((prev) => ({ ...prev, [card]: isHovering }));
+    if (isHovering) {
+      // Clear any existing timeout
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+
+      // Set new hover state and remember this card
+      lastHoveredRef.current = card;
+      setHoverStates({
+        back: false,
+        middle: false,
+        front: false,
+        [card]: true,
+      });
+    } else {
+      // Only trigger hover off if this was the last hovered card
+      if (lastHoveredRef.current === card) {
+        // Clear any existing timeout
+        if (hoverTimeoutRef.current) {
+          clearTimeout(hoverTimeoutRef.current);
+        }
+
+        // Set timeout to clear hover state
+        hoverTimeoutRef.current = setTimeout(() => {
+          setHoverStates({
+            back: false,
+            middle: false,
+            front: false,
+          });
+          lastHoveredRef.current = null;
+        }, 150);
+      }
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white p-[60px_40px] max-md:p-[40px_20px] font-['-apple-system',_BlinkMacSystemFont,_'Segoe_UI',_Roboto,_sans-serif]">
+    <div className="min-h-screen text-white p-[60px_40px] max-md:p-[40px_20px] font-['-apple-system',_BlinkMacSystemFont,_'Segoe_UI',_Roboto,_sans-serif]">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 gap-[60px] md:grid-cols-2 md:gap-[80px]">
-        {/* Left Section (unchanged from previous version) */}
+        {/* Left Section */}
         <div className="p-0">
           <h2 className="text-[32px] font-semibold mb-4 text-white leading-[1.2]">
             Understand yourself end-to-end
@@ -28,7 +64,7 @@ const ProfileInsightsPanel = () => {
             external feedback—all unified in a powerful personal profile.
           </p>
 
-          {/* Project Card */}
+          {/* Project Card with updated layout */}
           <div className="relative bg-[#111111] border border-[#2a2a2a] rounded-lg overflow-hidden">
             <div
               className="absolute top-0 left-0 w-[200px] h-[200px] pointer-events-none z-[1]"
@@ -54,47 +90,53 @@ const ProfileInsightsPanel = () => {
             </div>
 
             <div className="p-0">
-              <div className="border-b border-[#1a1a1a] p-5">
-                <div className="text-[13px] text-[#6b7280] font-medium mb-3">
-                  Status
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-[6px] h-[6px] rounded-full bg-[#f59e0b]"></span>
-                    <span className="text-[14px] text-[#e5e7eb]">
-                      Processing
-                    </span>
+              {/* Combined Status and Sources section */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 border-b border-[#1a1a1a]">
+                {/* Status Section */}
+                <div className="border-r border-[#1a1a1a] p-5">
+                  <div className="text-[13px] text-[#6b7280] font-medium mb-3">
+                    Status
                   </div>
-                  <div className="bg-[#374151] text-[#9ca3af] px-2 py-1 rounded text-[12px] font-medium">
-                    🎯 Self-Discovery
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-[6px] h-[6px] rounded-full bg-[#f59e0b]"></span>
+                      <span className="text-[14px] text-[#e5e7eb]">
+                        Processing
+                      </span>
+                    </div>
+                    <div className="bg-[#374151] text-[#9ca3af] px-2 py-1 rounded text-[12px] font-medium w-max">
+                      🎯 Self-Discovery
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sources Section */}
+                <div className="p-5">
+                  <div className="text-[13px] text-[#6b7280] font-medium mb-3">
+                    Sources
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-4 h-4 flex items-center justify-center text-[12px]">
+                        🧠
+                      </span>
+                      <span className="text-[14px] text-[#e5e7eb]">
+                        Core Assessment
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-4 h-4 flex items-center justify-center text-[12px]">
+                        👥
+                      </span>
+                      <span className="text-[14px] text-[#e5e7eb]">
+                        External Reflections
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="border-b border-[#1a1a1a] p-5">
-                <div className="text-[13px] text-[#6b7280] font-medium mb-3">
-                  Sources
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 flex items-center justify-center text-[12px]">
-                      🧠
-                    </span>
-                    <span className="text-[14px] text-[#e5e7eb]">
-                      Core Assessment
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 flex items-center justify-center text-[12px]">
-                      👥
-                    </span>
-                    <span className="text-[14px] text-[#e5e7eb]">
-                      External Reflections
-                    </span>
-                  </div>
-                </div>
-              </div>
-
+              {/* Milestones Section */}
               <div className="p-5">
                 <div className="text-[13px] text-[#6b7280] font-medium mb-3">
                   Milestones
@@ -138,6 +180,7 @@ const ProfileInsightsPanel = () => {
             </div>
           </div>
         </div>
+
         {/* Right Section - Enhanced 3D Cards */}
         <div className="p-0">
           <h2 className="text-[32px] font-semibold mb-4 text-white leading-[1.2]">
@@ -148,19 +191,55 @@ const ProfileInsightsPanel = () => {
             real-time insights.
           </p>
           <div
-            className="relative h-[280px] mt-10"
+            className="relative h-[280px] mt-20 lg:mr-25 md:-mr-7 mr-20 ml-75"
             style={{
               perspective: "1200px",
               perspectiveOrigin: "left center",
             }}
           >
+            {/* Hover Zones - Dynamic positions that follow the cards */}
+            <div
+              className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-32"
+              style={{
+                bottom: hoverStates.back ? "70px" : "65px", // Follows the card's position
+                right: hoverStates.back ? "20px" : "35px", // Follows the card's position
+                zIndex: 10,
+                pointerEvents:
+                  hoverStates.middle || hoverStates.front ? "none" : "auto",
+              }}
+              onMouseEnter={() => handleHover("back", true)}
+              onMouseLeave={() => handleHover("back", false)}
+            />
+            <div
+              className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-32"
+              style={{
+                bottom: hoverStates.middle ? "35px" : "25px", // Follows the card's position
+                right: hoverStates.middle ? "0px" : "15px", // Follows the card's position
+                zIndex: 10,
+                pointerEvents: hoverStates.front ? "none" : "auto",
+              }}
+              onMouseEnter={() => handleHover("middle", true)}
+              onMouseLeave={() => handleHover("middle", false)}
+            />
+            <div
+              className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-32"
+              style={{
+                bottom: hoverStates.front ? "-5px" : "-5px", // Same since front card doesn't change bottom
+                right: hoverStates.front ? "-20px" : "-5px", // Follows the card's position
+                zIndex: 10,
+              }}
+              onMouseEnter={() => handleHover("front", true)}
+              onMouseLeave={() => handleHover("front", false)}
+            />
+
             {/* Back Card */}
             <div
-              className="absolute w-80 max-md:w-[280px] h-30 rounded-md p-4 transition-all duration-300"
+              className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-30 rounded-md p-4 transition-all duration-300"
               style={{
                 bottom: hoverStates.back ? "75px" : "70px",
                 right: hoverStates.back ? "25px" : "40px",
-                zIndex: hoverStates.back ? 1 : 1,
+                zIndex: 1,
+                pointerEvents: "none", // Disable direct hover since we use hover zones
                 transform: `skewY(-5deg) ${
                   hoverStates.back
                     ? "translateY(-1px) translateZ(-15px) rotateY(-5deg) rotateX(1deg)"
@@ -182,8 +261,6 @@ const ProfileInsightsPanel = () => {
                 transformStyle: "preserve-3d",
                 transformOrigin: "left center",
               }}
-              onMouseEnter={() => handleHover("back", true)}
-              onMouseLeave={() => handleHover("back", false)}
             >
               <div
                 className="absolute top-0 right-0 bottom-0 left-1/2 pointer-events-none rounded-r-md transition-opacity duration-300"
@@ -220,11 +297,12 @@ const ProfileInsightsPanel = () => {
             </div>
             {/* Middle Card */}
             <div
-              className="absolute w-80 max-md:w-[280px] h-30 rounded-md p-4 transition-all duration-300"
+              className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-30 rounded-md p-4 transition-all duration-300"
               style={{
                 bottom: hoverStates.middle ? "40px" : "30px",
                 right: hoverStates.middle ? "5px" : "20px",
-                zIndex: hoverStates.middle ? 2 : 2,
+                zIndex: 2,
+                pointerEvents: "none", // Disable direct hover since we use hover zones
                 transform: `skewY(-5deg) ${
                   hoverStates.middle
                     ? "translateY(-10px) translateZ(-5px) rotateY(-3deg) rotateX(1deg)"
@@ -234,7 +312,7 @@ const ProfileInsightsPanel = () => {
                   ? "grayscale(0%) blur(0px) brightness(1.2)"
                   : "grayscale(80%) blur(1px)",
                 opacity: hoverStates.middle ? 1 : 0.5,
-                border: hoverStates.middle ? '1px solid #f59e0b' : 'none',
+                border: hoverStates.middle ? "1px solid #f59e0b" : "none",
 
                 background: hoverStates.middle
                   ? "linear-gradient(145deg, #2a241f 0%, #1f1e15 100%)"
@@ -245,8 +323,6 @@ const ProfileInsightsPanel = () => {
                 transformStyle: "preserve-3d",
                 transformOrigin: "left center",
               }}
-              onMouseEnter={() => handleHover("middle", true)}
-              onMouseLeave={() => handleHover("middle", false)}
             >
               <div
                 className="absolute top-0 right-0 bottom-0 left-1/2 pointer-events-none rounded-r-md transition-opacity duration-300"
@@ -283,30 +359,28 @@ const ProfileInsightsPanel = () => {
             </div>
             {/* Front Card */}
             <div
-              className="absolute w-80 max-md:w-[280px] h-30 rounded-md p-4 transition-all duration-300"
+              className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-30 rounded-md p-4 transition-all duration-300"
               style={{
-  bottom: hoverStates.front ? "0px" : "0px",
-  right: hoverStates.front ? "-15px" : "0px",
-  zIndex: 3,
-  transform: `skewY(-5deg) ${
-    hoverStates.front
-      ? "translateY(-10px) translateZ(5px) rotateY(0deg) rotateX(0deg)"
-      : "translateY(10px) translateZ(0px) rotateY(0deg) rotateX(0deg)"
-  }`,
-  filter: hoverStates.front ? "brightness(1.1)" : "none",
-  boxShadow: hoverStates.front
-    ? "0 15px 40px rgba(34, 197, 94, 0.3)"
-    : "none",
-  border: hoverStates.front ? "1px solid #22c55e" : "none",
-  background: hoverStates.front
-    ? "linear-gradient(145deg, #1f2a1f 0%, #151a15 100%)"
-    : "#1a1a1a",
-  transformStyle: "preserve-3d",
-  transformOrigin: "left center",
-}}
-
-              onMouseEnter={() => handleHover("front", true)}
-              onMouseLeave={() => handleHover("front", false)}
+                bottom: hoverStates.front ? "0px" : "0px",
+                right: hoverStates.front ? "-15px" : "0px",
+                zIndex: 3,
+                pointerEvents: "none", // Disable direct hover since we use hover zones
+                transform: `skewY(-5deg) ${
+                  hoverStates.front
+                    ? "translateY(-10px) translateZ(5px) rotateY(0deg) rotateX(0deg)"
+                    : "translateY(10px) translateZ(0px) rotateY(0deg) rotateX(0deg)"
+                }`,
+                filter: hoverStates.front ? "brightness(1.1)" : "none",
+                boxShadow: hoverStates.front
+                  ? "0 15px 40px rgba(34, 197, 94, 0.3)"
+                  : "none",
+                border: hoverStates.front ? "1px solid #22c55e" : "none",
+                background: hoverStates.front
+                  ? "linear-gradient(145deg, #1f2a1f 0%, #151a15 100%)"
+                  : "#1a1a1a",
+                transformStyle: "preserve-3d",
+                transformOrigin: "left center",
+              }}
             >
               <div
                 className="absolute top-0 right-0 bottom-0 left-1/2 pointer-events-none rounded-r-md"
@@ -328,12 +402,9 @@ const ProfileInsightsPanel = () => {
               <div className="text-[12px] text-[#6b7280] relative z-10">
                 <div className="text-[#9ca3af] mb-0.5">Sep 8</div>
               </div>
-            </div>{" "}
-            {/* End of Front Card */}
-          </div>{" "}
-          {/* End of Card Container */}
-        </div>{" "}
-        {/* End of Right Section */}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
