@@ -56,15 +56,15 @@ const ProfileInsightsPanel = () => {
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 gap-[60px] md:grid-cols-2 md:gap-[80px]">
         {/* Left Section */}
         <div className="p-0">
-          <h2 className="text-[32px] font-semibold mb-4 text-white leading-[1.2]">
+          <h2 className="text-[32px] font-semibold mb-4 dark:text-white text-slate-900 leading-[1.2]">
             Understand yourself end-to-end
           </h2>
-          <p className="text-[16px] text-[#9ca3af] leading-[1.5] mb-[60px]">
+          <p className="text-[16px] dark:text-[#9ca3af] text-slate-600 leading-[1.5] mb-[60px]">
             Gain clarity through structured assessments, insights, and trusted
             external feedback—all unified in a powerful personal profile.
           </p>
 
-          {/* Project Card with updated layout */}
+          {/* Project Card */}
           <div className="relative bg-[#111111] border border-[#2a2a2a] rounded-lg overflow-hidden">
             <div
               className="absolute top-0 left-0 w-[200px] h-[200px] pointer-events-none z-[1]"
@@ -183,10 +183,10 @@ const ProfileInsightsPanel = () => {
 
         {/* Right Section - Enhanced 3D Cards */}
         <div className="p-0">
-          <h2 className="text-[32px] font-semibold mb-4 text-white leading-[1.2]">
+          <h2 className="text-[32px] font-semibold mb-4 dark:text-white text-slate-900 leading-[1.2]">
             Profile Updates
           </h2>
-          <p className="text-[16px] text-[#9ca3af] leading-[1.5] mb-[60px]">
+          <p className="text-[16px] dark:text-[#9ca3af] text-slate-600 leading-[1.5] mb-[60px]">
             Track your self-discovery progress and profile alignment with
             real-time insights.
           </p>
