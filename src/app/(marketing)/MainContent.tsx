@@ -4,25 +4,15 @@
 import { useRef } from "react";
 import { useScroll } from "framer-motion";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
-import {
-  FeatureSection,
-  TestimonialsSection,
-  CtaSection,
-} from "./sections"; // Assuming index.ts barrel file
+import { FeatureSection, TestimonialsSection, CtaSection } from "./sections"; // Assuming index.ts barrel file
 
 import ProfileInsightsPanel from "./sections/profile-insights-panel/ProfileInsightsPanel";
 import { NodeVisual } from "./sections/visuals/NodeVisual";
 import { PerspectiveVisual } from "./sections/visuals/PerspectiveVisual";
 import { CoachingVisual } from "./sections/visuals/CoachingVisual";
+import BlueprintVisual from "./sections/visuals/BlueprintVisual";
 
 // Placeholder visual components - you can replace these with your actual graphics/SVGs
-
-const BlueprintVisual = () => (
-  <div className="w-full h-64 bg-neutral-800/50 rounded-lg border border-neutral-700 flex items-center justify-center">
-    <p className="text-neutral-500 text-sm">Visual: Evolving Profile Blueprint</p>
-  </div>
-);
-
 
 export const MainContent = () => {
   const contentRef = useRef<HTMLDivElement>(null);

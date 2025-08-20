@@ -32,7 +32,7 @@ export const CoachingVisual = () => {
 
   return (
     <div
-      className="relative w-full h-60 sm:h-72 md:h-80 flex justify-end items-center pr-0 transform"
+      className="relative w-full h-60 sm:h-72 md:h-80 flex justify-end items-center pr-0 transform mb-30"
       style={{ translate: "16px 0" }}
     >
       {images.map((src, index) => {
