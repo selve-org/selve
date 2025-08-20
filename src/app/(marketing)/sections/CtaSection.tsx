@@ -20,10 +20,45 @@ export const CtaSection = () => {
         <p className="text-muted-foreground text-xl mb-8">
           Start your journey of self-discovery today. It's free to get started.
         </p>
-        <button className="bg-primary text-primary-foreground font-bold py-3 px-8 rounded-lg text-lg hover:bg-primary/90 transition-colors">
-          Begin Your Journey
-        </button>
+
+        <div
+          className="group relative inline-flex items-center justify-center rounded-lg overflow-hidden"
+          style={{ minHeight: "44px", minWidth: "220px" }}
+        >
+          {/* Spinning bright purple border */}
+          <div
+            className="absolute top-0 left-0 right-0 bottom-0 m-auto rounded-inherit z-0"
+            style={{
+              width: "300px",
+              height: "300px",
+              background:
+                "conic-gradient(transparent, #a855f7, transparent 30%)",
+              animation: "spin 6s linear infinite",
+            }}
+          />
+
+          {/* Button background */}
+          <div className="absolute top-px left-px right-px bottom-px rounded-[6px] bg-[#1a1a1a] z-1" />
+
+          {/* Hover overlay grow effect */}
+          <div className="absolute top-0 left-0 right-0 bottom-0 rounded-[6px] bg-[rgba(255,255,255,0.1)] opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-105 z-1 pointer-events-none" />
+
+          <button className="relative z-2 border-none outline-none cursor-pointer bg-transparent text-white py-3 px-5 text-base rounded-[6px]">
+            Begin your journey
+          </button>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </motion.section>
   );
 };
