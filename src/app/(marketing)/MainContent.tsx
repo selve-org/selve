@@ -61,9 +61,9 @@ export const MainContent = () => {
           visual={<BlueprintVisual />}
           layout="text-right"
         />
+        <ProfileInsightsPanel />
         <TestimonialsSection />
         <CtaSection />
-        <ProfileInsightsPanel />
       </div>
     </div>
   );
