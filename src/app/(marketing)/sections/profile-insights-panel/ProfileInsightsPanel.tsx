@@ -187,8 +187,8 @@ const ProfileInsightsPanel = () => {
             Profile Updates
           </h2>
           <p className="text-[16px] dark:text-[#9ca3af] text-slate-600 leading-[1.5] mb-[60px]">
-            Track your self-discovery progress and profile alignment with
-            real-time insights.
+            Track your self-discovery progress, monitor changes over time, and ensure your 
+            personal profile stays aligned with real-time insights and evolving goals.
           </p>
           <div
             className="relative h-[280px] mt-20 lg:mr-25 md:-mr-7 mr-20 ml-75"
