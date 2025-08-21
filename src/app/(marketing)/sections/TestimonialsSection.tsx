@@ -29,12 +29,14 @@ export const TestimonialsSection = () => {
       viewport={{ once: true, amount: 0.3 }}
     >
       <motion.div variants={fadeInUp} className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold">
-          Trusted by curious minds
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          See what our first users are saying.
-        </p>
+        <div className="bg-[var(--background)] p-6">
+          <h2 className="text-3xl md:text-4xl font-bold">
+            Trusted by curious minds
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            See what our first users are saying.
+          </p>
+        </div>
       </motion.div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {testimonials.map((testimonial, index) => (
