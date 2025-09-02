@@ -10,7 +10,13 @@ import {
 } from "@clerk/nextjs";
 import { PostHogProvider } from "./providers";
 import { IdentifyUser } from "@/components/IdentifyUser";
-import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Inter,
+  Poppins,
+  Crimson_Text,
+} from "next/font/google";
 import "./globals.css";
 import { SyncClerkToDB } from "@/components/SyncClerkToDB";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -34,6 +40,12 @@ const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const crimsonText = Crimson_Text({
+  variable: "--font-crimson-text",
+  subsets: ["latin"],
+  weight: ["400", "600"],
 });
 
 export const metadata: Metadata = {
@@ -73,7 +85,7 @@ export default function RootLayout({
       <ClerkProvider>
         <html lang="en" suppressHydrationWarning>
           <body
-            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} antialiased`}
+            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${crimsonText.variable} antialiased`}
           >
             <ThemeProvider>
               <header className="flex justify-end items-center p-4 gap-4 h-16">
