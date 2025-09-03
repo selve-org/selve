@@ -1,12 +1,15 @@
-// src/app/(marketing)/header/Header.tsx
+// src/components/header/Header.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { AnimatedLogo } from "@/components/logo/AnimatedSelveLogo";
 import { DesktopNav } from "./navigation/DesktopNav";
 import { navLinks } from "./navigation/navLinks";
 import { AnimatedHamburgerIcon } from "@/components/icons/HamburgerButton";
+import { IdentifyUser } from "@/components/IdentifyUser";
+import { SyncClerkToDB } from "@/components/SyncClerkToDB";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,18 +27,25 @@ export const Header = () => {
           <DesktopNav />
 
           <div className="hidden lg:flex items-center justify-end space-x-2">
-            <Link
-              href="/sign-in"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/sign-up"
-              className="px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
-            >
-              Sign up
-            </Link>
+            <SignedOut>
+              <Link
+                href="/sign-in"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/sign-up"
+                className="px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+              >
+                Sign up
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+              <IdentifyUser />
+              <SyncClerkToDB />
+            </SignedIn>
           </div>
 
           <div className="lg:hidden col-start-3 flex justify-end">
@@ -80,18 +90,27 @@ export const Header = () => {
             )}
             <hr className="border-neutral-200 dark:border-neutral-800" />
             <div className="flex items-center space-x-2 pt-2">
-              <Link
-                href="/sign-in"
-                className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/sign-up"
-                className="flex-1 text-center px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
-              >
-                Sign up
-              </Link>
+              <SignedOut>
+                <Link
+                  href="/sign-in"
+                  className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="flex-1 text-center px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors"
+                >
+                  Sign up
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <div className="flex-1 flex justify-center">
+                  <UserButton />
+                </div>
+                <IdentifyUser />
+                <SyncClerkToDB />
+              </SignedIn>
             </div>
           </div>
         )}

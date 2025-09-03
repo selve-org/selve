@@ -1,15 +1,7 @@
 // src/app/layout.tsx
 import { type Metadata } from "next";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import { PostHogProvider } from "./providers";
-import { IdentifyUser } from "@/components/IdentifyUser";
 import {
   Geist,
   Geist_Mono,
@@ -18,8 +10,8 @@ import {
   Crimson_Text,
 } from "next/font/google";
 import "./globals.css";
-import { SyncClerkToDB } from "@/components/SyncClerkToDB";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Header } from "@/components/header/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -88,17 +80,7 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${crimsonText.variable} antialiased`}
           >
             <ThemeProvider>
-              <header className="flex justify-end items-center p-4 gap-4 h-16">
-                <SignedOut>
-                  <SignInButton />
-                  <SignUpButton />
-                </SignedOut>
-                <SignedIn>
-                  <UserButton />
-                  <IdentifyUser />
-                  <SyncClerkToDB />
-                </SignedIn>
-              </header>
+              <Header />
               {children}
             </ThemeProvider>
           </body>

@@ -27,7 +27,7 @@ export default function AssessmentPage() {
               '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
           }}
         >
-          What's really
+          What&apos;s really
           <br />
           driving you?
         </h1>

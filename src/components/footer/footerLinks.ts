@@ -1,4 +1,4 @@
-// src/app/(marketing)/footer/footerLinks.ts
+// src/components/footer/footerLinks.ts
 export const footerLinks = {
   Product: [
     { label: "Features", href: "/features" },

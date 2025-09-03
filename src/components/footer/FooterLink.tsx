@@ -1,4 +1,4 @@
-// src/app/(marketing)/footer/FooterLink.tsx
+// src/components/footer/FooterLink.tsx
 import Link from "next/link";
 
 export const FooterLink = ({

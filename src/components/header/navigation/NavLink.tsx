@@ -1,4 +1,4 @@
-// src/app/(marketing)/header/navigation/NavLink.tsx
+// src/components/header/navigation/NavLink.tsx
 import Link from "next/link";
 
 export const NavLink = ({

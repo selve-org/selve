@@ -1,4 +1,4 @@
-// src/app/(marketing)/footer/Footer.tsx
+// src/components/footer/Footer.tsx
 "use client";
 
 import React, { useEffect, useRef } from "react";
