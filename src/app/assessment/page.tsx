@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react";
 export default function AssessmentPage() {
   return (
     <div
-      className="min-h-screen bg-[#0c0c0c] text-white flex flex-col justify-start items-start p-4 md:justify-center md:items-center md:p-8"
+      className="min-h-screen bg-white dark:bg-[#0c0c0c] text-slate-900 dark:text-white flex flex-col justify-start items-start p-4 md:justify-center md:items-center md:p-8"
       style={{
         fontFamily:
           '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
@@ -15,13 +15,13 @@ export default function AssessmentPage() {
     >
       <div className="text-left max-w-none md:text-center md:max-w-[800px]">
         {/* Subtitle */}
-        <div className="font-sans text-[12px] font-normal text-[#888888] tracking-[0.8px] mt-8 mb-4 uppercase md:text-[14px] md:mb-6">
+        <div className="font-sans text-[12px] font-normal text-slate-500 dark:text-[#888888] tracking-[0.8px] mt-8 mb-4 uppercase md:text-[14px] md:mb-6">
           The SELVE assessment
         </div>
 
         {/* Title */}
         <h1
-          className="text-[clamp(3rem,10vw,6rem)] font-normal leading-[1.0] mb-12 text-white tracking-[-0.02em] md:text-[clamp(4rem,12vw,8rem)] md:mb-16"
+          className="text-[clamp(3rem,10vw,6rem)] font-normal leading-[1.0] mb-12 text-slate-900 dark:text-white tracking-[-0.02em] md:text-[clamp(4rem,12vw,8rem)] md:mb-16"
           style={{
             fontFamily:
               '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
@@ -33,7 +33,7 @@ export default function AssessmentPage() {
         </h1>
 
         {/* Description */}
-        <div className="text-[16px] font-light text-[#b3b3b3] leading-[1.6] max-w-[500px] mx-0 md:text-[18px] md:mx-auto">
+        <div className="text-[16px] font-light text-slate-600 dark:text-[#b3b3b3] leading-[1.6] max-w-[500px] mx-0 md:text-[18px] md:mx-auto">
           <p className="mb-0">
             What if every choice carries echoes of things you never realized
             shaped you? Every mind hides secrets—some guide you toward light,
@@ -59,7 +59,8 @@ function GradientShineCTA({ label = "Start" }: { label?: string }) {
     <motion.button
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.98 }}
-      className="group relative inline-block overflow-hidden rounded-2xl px-8 py-4 text-base font-medium shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 bg-gradient-to-br from-indigo-500 via-purple-500 to-rose-500"
+      className="group relative cursor-pointer inline-block overflow-hidden rounded-2xl px-8 py-4 text-base font-bold shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 bg-gradient-to-br from-indigo-500 via-purple-500 to-rose-500 text-white"
+      style={{ fontFamily: 'var(--font-inter)' }}
     >
       <span className="relative z-10 flex items-center justify-between gap-3">
         <span>{label}</span>

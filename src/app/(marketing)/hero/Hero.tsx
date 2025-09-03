@@ -75,7 +75,7 @@ export const Hero = () => {
         <motion.div variants={fadeInUp} className="mt-8 flex justify-center">
           <Link
             href="/assessment"
-            className="inline-flex items-center justify-center px-8 py-4 font-medium text-black dark:text-white bg-white dark:bg-purple-600 border border-gray-300 dark:border-transparent rounded-full hover:bg-gray-100 dark:hover:bg-purple-700 transition-colors shadow-md"
+            className="inline-flex items-center justify-center px-8 py-4 font-medium text-white bg-purple-600 border border-gray-300 border-transparent rounded-full hover:bg-purple-700 transition-colors shadow-md"
           >
             Get Started →
           </Link>
