@@ -35,7 +35,10 @@ export const DesktopNav = () => {
           <ul className="space-y-1">
             {firstColumn.map((item) => (
               <li key={item.label}>
-                <Link href={item.href} className="block text-sm text-muted-foreground hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 px-3 py-1.5 rounded-md transition-all">
+                <Link
+                  href={item.href}
+                  className="block text-sm text-muted-foreground hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 px-3 py-1.5 rounded-md transition-all"
+                >
                   {item.label}
                 </Link>
               </li>
@@ -44,7 +47,10 @@ export const DesktopNav = () => {
           <ul className="space-y-1 border-l border-neutral-200 dark:border-neutral-800 pl-8">
             {secondColumn.map((item) => (
               <li key={item.label}>
-                <Link href={item.href} className="block text-sm text-muted-foreground hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 px-3 py-1.5 rounded-md transition-all">
+                <Link
+                  href={item.href}
+                  className="block text-sm text-muted-foreground hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 px-3 py-1.5 rounded-md transition-all"
+                >
                   {item.label}
                 </Link>
               </li>
@@ -59,7 +65,10 @@ export const DesktopNav = () => {
       <ul className="space-y-1 w-max">
         {items.map((item) => (
           <li key={item.label}>
-            <Link href={item.href} className="block text-sm text-muted-foreground hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 px-3 py-1.5 rounded-md transition-all">
+            <Link
+              href={item.href}
+              className="block text-sm text-muted-foreground hover:text-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 px-3 py-1.5 rounded-md transition-all"
+            >
               {item.label}
             </Link>
           </li>
@@ -81,7 +90,10 @@ export const DesktopNav = () => {
           className="px-1 py-2"
         >
           {link.type === "link" ? (
-            <Link href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap">
+            <Link
+              href={link.href}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap"
+            >
               {link.label}
             </Link>
           ) : (
@@ -102,12 +114,18 @@ export const DesktopNav = () => {
             transition={{ duration: 0.2, ease: "easeOut" }}
             onMouseEnter={() => handleMouseEnter(activeDropdown)}
             className="absolute top-full mt-2 p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-xl w-max"
-            style={{ left: (navRef.current.children[navLinks.findIndex(l => l.label === activeDropdown.label)] as HTMLElement)?.offsetLeft }}
+            style={{
+              left: (
+                navRef.current.children[
+                  navLinks.findIndex((l) => l.label === activeDropdown.label)
+                ] as HTMLElement
+              )?.offsetLeft,
+            }}
           >
             <motion.div
               layoutId="dropdown-arrow"
               className="absolute -top-[7px] w-3 h-3 bg-white dark:bg-neutral-900 border-l border-t border-neutral-200 dark:border-neutral-800 rotate-45 z-[-1]"
-              style={{ left: '30px' }}
+              style={{ left: "30px" }}
             />
             {renderDropdownItems(activeDropdown.items)}
           </motion.div>

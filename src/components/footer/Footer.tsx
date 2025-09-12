@@ -39,7 +39,10 @@ export const Footer = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
             {/* Column 1: Logo and Newsletter */}
             <div className="col-span-2 md:col-span-3 lg:col-span-1">
-              <Link href="/" className="flex items-center space-x-2 text-gray-900">
+              <Link
+                href="/"
+                className="flex items-center space-x-2 text-gray-900"
+              >
                 <SelveLogo />
               </Link>
               <p className="text-sm mt-4 max-w-xs text-gray-500">
@@ -49,7 +52,8 @@ export const Footer = () => {
                 Subscribe to our insights newsletter
               </h4>
               <p className="text-sm leading-relaxed mb-4">
-                Actionable tips, mental models, and self-awareness strategies—twice a month.
+                Actionable tips, mental models, and self-awareness
+                strategies—twice a month.
               </p>
               <div className="flex flex-col sm:flex-row w-full max-w-sm">
                 <Link

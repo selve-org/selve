@@ -3,7 +3,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton,
+  SignUpButton,
+} from "@clerk/nextjs";
 import { AnimatedLogo } from "@/components/logo/AnimatedSelveLogo";
 import { DesktopNav } from "./navigation/DesktopNav";
 import { navLinks } from "./navigation/navLinks";
