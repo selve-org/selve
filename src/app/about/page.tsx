@@ -10,25 +10,25 @@ import AnimatedIcon from "@/components/icons/AnimatedIcon";
 export default function AboutPage() {
   const features = [
     {
-      icon: <AnimatedIcon Icon={ShieldCheck} />,
+      icon: <AnimatedIcon Icon={ShieldCheck} color="#3B82F6" />, // Bright blue
       title: "No Setup",
       description: "Just tell HeybossAI what you need — we do the rest.",
       styleProps: { base: 220, spread: 200 },
     },
     {
-      icon: <AnimatedIcon Icon={Zap} />,
+      icon: <AnimatedIcon Icon={Zap} color="#10B981" />, // Bright green
       title: "Instant Build",
       description: "Your database is ready in seconds, no config needed.",
       styleProps: { base: 280, spread: 300 },
     },
     {
-      icon: <AnimatedIcon Icon={Globe} />,
+      icon: <AnimatedIcon Icon={Globe} color="#F59E0B" />, // Bright amber
       title: "Auto-Connected",
       description: "Pages and forms connect to your data automatically.",
       styleProps: { base: 120, spread: 200 },
     },
     {
-      icon: <AnimatedIcon Icon={TrendingUp} />,
+      icon: <AnimatedIcon Icon={TrendingUp} color="#EF4444" />, // Bright red
       title: "Scales Fast",
       description: "Grows with your business — no maintenance required.",
       styleProps: { base: 30, spread: 200 },
@@ -37,17 +37,17 @@ export default function AboutPage() {
 
   return (
     <>
-      <main className="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8">
+      <main className="bg-background text-foreground font-sans min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
               About{" "}
               <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
                 SELVE
               </span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               We're building the future of AI-powered development. Our mission
               is to make creating applications as simple as having a
               conversation.

@@ -120,8 +120,8 @@ const CanvasButton: React.FC = () => {
         gradient.addColorStop(1, `hsl(${hue + 20}, 100%, 55%)`); // Darker purple-pink
         ctx.fillStyle = gradient;
       } else {
-        // Draw static white background when not hovering
-        ctx.fillStyle = "#FFFFFF";
+        // Draw vibrant light blue background when not hovering (for light mode appeal)
+        ctx.fillStyle = "#DBEAFE"; // Slightly lighter blue for better contrast
       }
 
       drawRoundedRect(
@@ -139,11 +139,11 @@ const CanvasButton: React.FC = () => {
       ctx.shadowBlur = 0;
 
       // 4. Draw the Text
-      ctx.fillStyle = state.current.isHovering ? config.colors.text : "#000000"; // White text on gradient, black text on white background
+      ctx.fillStyle = state.current.isHovering ? config.colors.text : "#0F172A"; // Very dark slate for maximum contrast
       ctx.font = config.font;
       ctx.shadowColor = state.current.isHovering
         ? "rgba(0, 0, 0, 0.5)"
-        : "rgba(255, 255, 255, 0.3)"; // Adjust shadow for contrast
+        : "rgba(0, 0, 0, 0.1)"; // Subtle shadow for light background
       ctx.shadowBlur = 4;
       ctx.shadowOffsetX = 1;
       ctx.shadowOffsetY = 1;

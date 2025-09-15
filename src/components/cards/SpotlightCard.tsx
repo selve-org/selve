@@ -71,8 +71,8 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
     "--spread": styleProps.spread,
     "--radius": 16,
     "--border": 1,
-    "--backdrop": "hsl(0 0% 100% / 0.05)",
-    "--backup-border": "hsl(0 0% 100% / 0.1)",
+    "--backdrop": "hsl(0 0% 0% / 0.02)",
+    "--backup-border": "hsl(0 0% 0% / 0.1)",
     "--size": 200,
     "--outer": 1,
     "--border-size": "calc(var(--border, 2) * 1px)",
@@ -80,7 +80,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
     "--hue": "calc(var(--base) + (var(--xp, 0) * var(--spread, 0)))",
     backgroundImage:
       "radial-gradient(var(--spotlight-size) var(--spotlight-size) at calc(var(--x, 0) * 1px) calc(var(--y, 0) * 1px), hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.1)), transparent)",
-    backgroundColor: "var(--backdrop, transparent)",
+    backgroundColor: "var(--card-bg, transparent)",
     backgroundSize:
       "calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))",
     backgroundPosition: "50% 50%",
@@ -94,17 +94,22 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
     <div className="h-full">
       <div
         ref={cardRef}
-        className={`${styles.glow} relative rounded-2xl backdrop-blur-lg p-8 h-full`}
+        className={`${styles.glow} relative rounded-2xl backdrop-blur-lg p-8 h-full dark:bg-transparent`}
         style={cardStyle}
       >
         <div className={styles.glow}></div>
         <div className="relative z-10 h-full">
           <div className="text-center flex flex-col items-center justify-center h-full">
-            <div className="flex items-center justify-center h-16 w-16 mx-auto bg-white/10 rounded-full">
+            <div
+              className="flex items-center justify-center h-16 w-16 mx-auto rounded-full"
+              style={{ backgroundColor: "var(--icon-bg, hsl(0 0% 0% / 0.05))" }}
+            >
               {icon}
             </div>
-            <h3 className="mt-6 text-xl font-semibold text-white">{title}</h3>
-            <p className="mt-2 text-base text-gray-400 max-w-xs mx-auto">
+            <h3 className="mt-6 text-xl font-semibold text-foreground">
+              {title}
+            </h3>
+            <p className="mt-2 text-base text-muted-foreground max-w-xs mx-auto">
               {description}
             </p>
           </div>

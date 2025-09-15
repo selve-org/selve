@@ -58,3 +58,11 @@
   inset: -10px;
   border-width: 10px;
 }
+
+/* Light mode only vibrant card backgrounds */
+@media (prefers-color-scheme: light) {
+  .glow {
+    --card-bg: hsl(var(--hue, 210), 70%, 95%);
+    --icon-bg: hsl(var(--hue, 210), 80%, 90%);
+  }
+}
