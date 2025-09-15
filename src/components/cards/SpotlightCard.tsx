@@ -1,0 +1,117 @@
+"use client";
+
+import React, { useRef, useEffect } from "react";
+import styles from "../../app/about/about.module.css";
+
+interface SpotlightCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  styleProps: {
+    base: number;
+    spread: number;
+  };
+}
+
+// --- SpotlightCard Component ---
+const SpotlightCard: React.FC<SpotlightCardProps> = ({
+  icon,
+  title,
+  description,
+  styleProps,
+}) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const updateGlow = (e: any) => {
+      card.style.setProperty("--glow-opacity", "1");
+      const rect = card.getBoundingClientRect();
+      let clientX, clientY;
+
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      card.style.setProperty("--x", clientX);
+      card.style.setProperty("--y", clientY);
+
+      const xInCard = clientX - rect.left;
+      const xp = xInCard / rect.width;
+      card.style.setProperty("--xp", xp.toString());
+    };
+
+    const turnOffGlow = () => {
+      card.style.setProperty("--glow-opacity", "0");
+    };
+
+    card.addEventListener("mousemove", updateGlow);
+    card.addEventListener("mouseleave", turnOffGlow);
+    card.addEventListener("touchmove", updateGlow, { passive: false });
+    card.addEventListener("touchend", turnOffGlow);
+    card.addEventListener("touchcancel", turnOffGlow);
+
+    return () => {
+      card.removeEventListener("mousemove", updateGlow);
+      card.removeEventListener("mouseleave", turnOffGlow);
+      card.removeEventListener("touchmove", updateGlow);
+      card.removeEventListener("touchend", turnOffGlow);
+      card.removeEventListener("touchcancel", turnOffGlow);
+    };
+  }, []);
+
+  const cardStyle = {
+    "--base": styleProps.base,
+    "--spread": styleProps.spread,
+    "--radius": 16,
+    "--border": 1,
+    "--backdrop": "hsl(0 0% 100% / 0.05)",
+    "--backup-border": "hsl(0 0% 100% / 0.1)",
+    "--size": 200,
+    "--outer": 1,
+    "--border-size": "calc(var(--border, 2) * 1px)",
+    "--spotlight-size": "calc(var(--size, 150) * 1px)",
+    "--hue": "calc(var(--base) + (var(--xp, 0) * var(--spread, 0)))",
+    backgroundImage:
+      "radial-gradient(var(--spotlight-size) var(--spotlight-size) at calc(var(--x, 0) * 1px) calc(var(--y, 0) * 1px), hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.1)), transparent)",
+    backgroundColor: "var(--backdrop, transparent)",
+    backgroundSize:
+      "calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))",
+    backgroundPosition: "50% 50%",
+    backgroundAttachment: "fixed",
+    border: "var(--border-size) solid var(--backup-border)",
+    position: "relative" as const,
+    touchAction: "none" as const,
+  };
+
+  return (
+    <div className="h-full">
+      <div
+        ref={cardRef}
+        className={`${styles.glow} relative rounded-2xl backdrop-blur-lg p-8 h-full`}
+        style={cardStyle}
+      >
+        <div className={styles.glow}></div>
+        <div className="relative z-10 h-full">
+          <div className="text-center flex flex-col items-center justify-center h-full">
+            <div className="flex items-center justify-center h-16 w-16 mx-auto bg-white/10 rounded-full">
+              {icon}
+            </div>
+            <h3 className="mt-6 text-xl font-semibold text-white">{title}</h3>
+            <p className="mt-2 text-base text-gray-400 max-w-xs mx-auto">
+              {description}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SpotlightCard;
