@@ -12,6 +12,8 @@ import {
 import "../globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Header } from "@/components/header/Header";
+import { Footer } from "@/components/footer/Footer";
+import { FooterVisibilityProvider } from "@/context/FooterVisibilityContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -80,8 +82,15 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${crimsonText.variable} antialiased`}
           >
             <ThemeProvider>
-              <Header />
-              {children}
+              <FooterVisibilityProvider>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-grow pt-16">
+                    {children}
+                  </main>
+                  <Footer />
+                </div>
+              </FooterVisibilityProvider>
             </ThemeProvider>
           </body>
         </html>
