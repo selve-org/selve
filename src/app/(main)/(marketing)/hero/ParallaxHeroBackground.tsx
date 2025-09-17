@@ -1,4 +1,4 @@
-// src/app/(marketing)/hero/ParallaxHeroBackground.tsx
+// src/app/(main)/(marketing)/hero/ParallaxHeroBackground.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";

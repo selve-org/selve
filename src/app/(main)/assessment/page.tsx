@@ -1,3 +1,4 @@
+// src/app/(main)/assessment/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -44,7 +45,7 @@ export default function AssessmentPage() {
 
         {/* CTA */}
         <div className="mt-12 md:mt-16">
-          <Link href="/assessment/questions/1">
+          <Link href="/assessment/wizard">
             <GradientShineCTA label="Start Assessment" />
           </Link>
         </div>

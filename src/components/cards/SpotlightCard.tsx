@@ -1,7 +1,8 @@
+// src/components/cards/SpotlightCard.tsx
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import styles from "../../app/about/about.module.css";
+import styles from "@/app/(main)/about/about.module.css";
 
 interface SpotlightCardProps {
   icon: React.ReactNode;

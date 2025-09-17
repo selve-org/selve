@@ -1,4 +1,4 @@
-// src/app/(marketing)/hero/Hero.tsx
+// src/app/(main)/(marketing)/hero/Hero.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -6,7 +6,7 @@ import {
   fadeInUp,
   wordFadeLeft,
   staggerContainer,
-} from "../../../lib/framer/variants";
+} from "../../../../lib/framer/variants";
 import Link from "next/link";
 import { ParallaxHeroBackground } from "./ParallaxHeroBackground";
 
