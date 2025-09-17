@@ -1,8 +1,9 @@
+// src/app/(main)/about/layout.tsx
 import React from "react";
 import { Footer } from "@/components/footer/Footer";
 import { FooterVisibilityProvider } from "@/context/FooterVisibilityContext";
 
-export default function AssessmentLayout({
+export default function AboutLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

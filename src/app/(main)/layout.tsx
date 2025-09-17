@@ -1,7 +1,7 @@
-// src/app/layout.tsx
+// src/app/(main)/layout.tsx
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { PostHogProvider } from "./providers";
+import { PostHogProvider } from "../providers";
 import {
   Geist,
   Geist_Mono,
@@ -9,7 +9,7 @@ import {
   Poppins,
   Crimson_Text,
 } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Header } from "@/components/header/Header";
 

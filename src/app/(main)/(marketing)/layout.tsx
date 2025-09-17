@@ -1,3 +1,4 @@
+// src/app/(main)/(marketing)/layout.tsx
 import React from "react";
 
 export default function MarketingLayout({

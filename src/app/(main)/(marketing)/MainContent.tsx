@@ -1,4 +1,4 @@
-// scr/app/(marketing)/MainContent.tsx
+// src/app/(main)/(marketing)/MainContent.tsx
 "use client";
 
 import { useRef } from "react";

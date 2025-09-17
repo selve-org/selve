@@ -1,18 +1,17 @@
+// src/app/(main)/assessment/layout.tsx
 import React from "react";
 import { Footer } from "@/components/footer/Footer";
 import { FooterVisibilityProvider } from "@/context/FooterVisibilityContext";
 
-export default function AboutLayout({
+export default function AssessmentLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <FooterVisibilityProvider>
-      <div className="min-h-screen flex flex-col pt-16">
-        <main className="flex-grow">{children}</main>
-        <Footer />
-      </div>
+      <main className="flex-grow">{children}</main>
+      <Footer />
     </FooterVisibilityProvider>
   );
 }
