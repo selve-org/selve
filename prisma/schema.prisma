@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -16,16 +10,16 @@ datasource db {
 
 model User {
   id                  String       @id @default(cuid())
-  clerkId             String       @unique
   email               String       @unique
   name                String?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
-  profile             Profile?
-  responsesGiven      Response[]   @relation("ResponsesGiven")
-  responsesAbout      Response[]   @relation("ResponsesAbout")
+  clerkId             String       @unique
   inviteLinksSent     InviteLink[] @relation("InviterRelation")
   inviteLinksReceived InviteLink[] @relation("TargetRelation")
+  profile             Profile?
+  responsesAbout      Response[]   @relation("ResponsesAbout")
+  responsesGiven      Response[]   @relation("ResponsesGiven")
 }
 
 model Profile {
@@ -33,33 +27,30 @@ model Profile {
   userId      String   @unique
   bio         String?
   avatarUrl   String?
-  personality Json? // can be Big Five, MBTI, etc., output of AI
+  personality Json?
   createdAt   DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Question {
-  id           String   @id @default(uuid())
+  id           String     @id @default(uuid())
   text         String
   category     String?
-  isThirdParty Boolean  @default(false) // is this question meant to be answered by a third party
-  createdAt    DateTime @default(now())
-
-  responses Response[]
+  isThirdParty Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  responses    Response[]
 }
 
 model Response {
-  id           String   @id @default(uuid())
-  questionId   String
-  answeredById String // user who answered
-  aboutUserId  String // user being described
-  answer       String
-  createdAt    DateTime @default(now())
-
-  question       Question @relation(fields: [questionId], references: [id])
-  answeredByUser User     @relation("ResponsesGiven", fields: [answeredById], references: [id])
+  id             String   @id @default(uuid())
+  questionId     String
+  answeredById   String
+  aboutUserId    String
+  answer         String
+  createdAt      DateTime @default(now())
   aboutUser      User     @relation("ResponsesAbout", fields: [aboutUserId], references: [id])
+  answeredByUser User     @relation("ResponsesGiven", fields: [answeredById], references: [id])
+  question       Question @relation(fields: [questionId], references: [id])
 }
 
 model InviteLink {
@@ -69,7 +60,6 @@ model InviteLink {
   targetId  String
   expiresAt DateTime?
   createdAt DateTime  @default(now())
-
-  inviter User @relation("InviterRelation", fields: [inviterId], references: [id])
-  target  User @relation("TargetRelation", fields: [targetId], references: [id])
+  inviter   User      @relation("InviterRelation", fields: [inviterId], references: [id])
+  target    User      @relation("TargetRelation", fields: [targetId], references: [id])
 }

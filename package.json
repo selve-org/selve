@@ -9,6 +9,9 @@
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/nextjs": "^6.20.2",
