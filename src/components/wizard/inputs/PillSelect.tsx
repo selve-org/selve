@@ -14,7 +14,7 @@ interface PillSelectProps {
 
 /**
  * PillSelect Component
- * 
+ *
  * Pill-shaped button selection (capsule design)
  * Supports single or multiple selection
  */
@@ -40,7 +40,8 @@ export const PillSelect: React.FC<PillSelectProps> = ({
     }
   };
 
-  const isSelected = (optionValue: string) => selectedValues.includes(optionValue);
+  const isSelected = (optionValue: string) =>
+    selectedValues.includes(optionValue);
 
   const layoutClasses = {
     horizontal: "flex flex-row flex-wrap",
@@ -55,9 +56,14 @@ export const PillSelect: React.FC<PillSelectProps> = ({
   };
 
   return (
-    <div className={`${layoutClasses[layout as keyof typeof layoutClasses]} ${spacingClasses[spacing as keyof typeof spacingClasses]}`}>
+    <div
+      className={`${layoutClasses[layout as keyof typeof layoutClasses]} ${
+        spacingClasses[spacing as keyof typeof spacingClasses]
+      }`}
+    >
       {options.map((option) => {
-        const optionValue = typeof option === "string" ? option : String(option.value);
+        const optionValue =
+          typeof option === "string" ? option : String(option.value);
         const optionLabel = typeof option === "string" ? option : option.label;
         const selected = isSelected(optionValue);
 

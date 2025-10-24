@@ -39,7 +39,7 @@ export const Textarea: React.FC<TextareaProps> = ({
 
   return (
     <div className="w-full">
-            <textarea
+      <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
