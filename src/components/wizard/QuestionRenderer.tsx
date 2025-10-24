@@ -21,7 +21,7 @@ interface QuestionRendererProps {
 
 /**
  * QuestionRenderer Component
- * 
+ *
  * Dynamically renders the appropriate input component based on question type
  * This is the "waiter" that interprets the "customer's" (backend) instructions
  * and uses the available "tools" (input components) to render the question
@@ -106,7 +106,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       case "likert-scale":
         return (
           <div className="p-8 bg-gray-800 rounded-lg text-center text-gray-400">
-            <p className="mb-2">Input type &quot;{type}&quot; not yet implemented</p>
+            <p className="mb-2">
+              Input type &quot;{type}&quot; not yet implemented
+            </p>
             <p className="text-sm">This will be available soon</p>
           </div>
         );
@@ -123,33 +125,31 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   return (
     <motion.div
-      className="space-y-6"
+      className="space-y-2"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Question Header */}
-      <div className="space-y-2">
-        <h2 className="text-2xl md:text-3xl font-bold text-white">
-          {text}
-          {isRequired && <span className="text-red-400 ml-2">*</span>}
-        </h2>
-        {description && (
-          <p className="text-gray-400 text-base md:text-lg">{description}</p>
-        )}
-      </div>
+      {/* Question Label */}
+      <label className="block text-xs text-white leading-4 mb-2">
+        {text}
+        {isRequired && <span className="text-red-400 ml-1">*</span>}
+      </label>
 
       {/* Input Component */}
-      <div className="pt-4">
-        {renderInput()}
-      </div>
+      <div className="mb-2">{renderInput()}</div>
+
+      {/* Description/Help text */}
+      {description && (
+        <p className="text-sm text-[#999999] leading-5 mt-2">{description}</p>
+      )}
 
       {/* Tooltip */}
       {renderConfig.tooltip && (
-        <div className="flex items-start gap-2 p-4 bg-blue-900/20 border border-blue-800 rounded-lg">
+        <div className="flex items-start gap-2 p-3 bg-[#2e2e2e] rounded-[4px] mt-2">
           <svg
-            className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"
+            className="w-4 h-4 text-[#666666] mt-0.5 flex-shrink-0"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -159,7 +159,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               clipRule="evenodd"
             />
           </svg>
-          <p className="text-sm text-blue-300">{renderConfig.tooltip}</p>
+          <p className="text-xs text-[#999999]">{renderConfig.tooltip}</p>
         </div>
       )}
     </motion.div>

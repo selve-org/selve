@@ -13,7 +13,7 @@ interface TextInputProps {
 
 /**
  * TextInput Component
- * 
+ *
  * Standard text input field with validation
  */
 export const TextInput: React.FC<TextInputProps> = ({
@@ -43,24 +43,16 @@ export const TextInput: React.FC<TextInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        maxLength={maxLength}
-        className={`
-          w-full ${sizeClasses[size]}
-          bg-gray-800 text-white rounded-lg
-          border ${error ? "border-red-500" : "border-gray-700"}
-          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
-          placeholder-gray-500
-          transition-all duration-200
-        `}
+        className="w-full bg-[#1c1c1c] text-white border border-[#2e2e2e] rounded-[4px] px-4 py-3 text-[14px] placeholder:text-[#666666] focus:outline-none focus:ring-1 focus:ring-purple-600 transition-all"
       />
       {config.helpText && !error && (
-        <p className="mt-2 text-sm text-gray-400">{config.helpText}</p>
+        <p className="mt-2 text-[11px] text-[#aaaaaa] leading-[16.51px]">
+          {config.helpText}
+        </p>
       )}
-      {error && (
-        <p className="mt-2 text-sm text-red-400">{error}</p>
-      )}
+      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
       {maxLength && (
-        <p className="mt-1 text-xs text-gray-500 text-right">
+        <p className="mt-1 text-xs text-[#666666] text-right">
           {value.length} / {maxLength}
         </p>
       )}

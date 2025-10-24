@@ -1,12 +1,12 @@
 // prisma/seed.ts
 /**
  * Prisma Seed File
- * 
+ *
  * Seeds the database with sample questionnaire data for testing
  * Run with: npx prisma db seed
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../src/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -55,7 +55,8 @@ async function main() {
     data: {
       sectionId: behaviorSection.id,
       title: "Great Progress!",
-      description: "You've completed the personal information section. Now let's explore your behavioral patterns.",
+      description:
+        "You've completed the personal information section. Now let's explore your behavioral patterns.",
       order: 2,
       iconType: "progress",
     },
