@@ -78,7 +78,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({
               ${
                 selected
                   ? "bg-purple-600 text-white border-purple-600"
-                  : "bg-transparent text-[#999999] border-[#2e2e2e] hover:border-[#3e3e3e]"
+                  : "bg-transparent text-gray-600 dark:text-[#999999] border-gray-300 dark:border-[#2e2e2e] hover:border-gray-400 dark:hover:border-[#3e3e3e]"
               }
             `}
             whileHover={{ scale: 1.02 }}

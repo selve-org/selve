@@ -86,21 +86,21 @@ export default function WizardPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#1c1c1c] text-white">
+    <div className="flex min-h-screen bg-[#1c1c1c] dark:bg-[#1c1c1c] bg-white text-foreground">
       {/* Left Side: Artistic Canvas (hidden on mobile/tablet) */}
       <div className="hidden lg:block lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:h-screen">
         <ArtisticCanvas />
       </div>
 
       {/* Right Side: Question Form (scrollable) */}
-      <div className="w-full lg:w-1/2 lg:ml-auto min-h-screen bg-[#1c1c1c]">
+      <div className="w-full lg:w-1/2 lg:ml-auto min-h-screen bg-white dark:bg-[#1c1c1c]">
         <div className="max-w-[512px] mx-auto px-5 md:px-0 py-16 min-h-screen flex flex-col">
           {/* Header with section title */}
           <div className="text-center pt-10 pb-2">
-            <h1 className="text-[36px] font-black leading-10 text-white mb-2">
-              Personal Information
+            <h1 className="text-[36px] font-black leading-10 text-gray-900 dark:text-white mb-2">
+              Let&apos;s Decipher You!
             </h1>
-            <p className="text-sm text-[#999999] leading-5 px-10">
+            <p className="text-sm text-gray-600 dark:text-[#999999] leading-5 px-10">
               Your date of birth isn&apos;t shown publicly and isn&apos;t shared
               with anyone.
             </p>
@@ -118,8 +118,8 @@ export default function WizardPage() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <div className="w-12 h-12 border-2 border-[#2e2e2e] border-t-white rounded-full animate-spin mb-4" />
-                  <p className="text-[#999999] text-sm">Loading...</p>
+                  <div className="w-12 h-12 border-2 border-gray-300 dark:border-[#2e2e2e] border-t-gray-900 dark:border-t-white rounded-full animate-spin mb-4" />
+                  <p className="text-gray-600 dark:text-[#999999] text-sm">Loading...</p>
                 </motion.div>
               )}
 
@@ -150,7 +150,7 @@ export default function WizardPage() {
                   <p className="text-red-400 text-center text-sm">{error}</p>
                   <button
                     onClick={() => window.location.reload()}
-                    className="mt-6 px-6 py-3 bg-[#2e2e2e] hover:bg-[#3e3e3e] text-white rounded-full transition-colors text-sm"
+                    className="mt-6 px-6 py-3 bg-gray-200 dark:bg-[#2e2e2e] hover:bg-gray-300 dark:hover:bg-[#3e3e3e] text-gray-900 dark:text-white rounded-full transition-colors text-sm"
                   >
                     Retry
                   </button>
@@ -195,10 +195,10 @@ export default function WizardPage() {
                       />
                     </svg>
                   </motion.div>
-                  <h2 className="text-4xl font-bold mb-4">
+                  <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
                     You&apos;re All Done!
                   </h2>
-                  <p className="text-lg text-[#999999] mb-8 max-w-md">
+                  <p className="text-lg text-gray-600 dark:text-[#999999] mb-8 max-w-md">
                     Thank you for completing the assessment. Your profile is
                     being generated.
                   </p>
@@ -235,8 +235,8 @@ export default function WizardPage() {
                   <button
                     type="submit"
                     disabled={isLoading || !currentAnswer}
-                    className="w-full px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-[#2e2e2e] 
-                      text-white disabled:text-[#4d4d4d] font-normal rounded-full
+                    className="w-full px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 dark:disabled:bg-[#2e2e2e] 
+                      text-white disabled:text-gray-400 dark:disabled:text-[#4d4d4d] font-normal rounded-full
                       transition-all duration-200 disabled:cursor-not-allowed text-sm"
                   >
                     {isLoading ? "Submitting..." : "Continue"}
@@ -248,7 +248,7 @@ export default function WizardPage() {
                       <button
                         type="button"
                         onClick={handleSkip}
-                        className="text-[#666666] hover:text-[#999999] text-sm transition-colors"
+                        className="text-gray-500 dark:text-[#666666] hover:text-gray-700 dark:hover:text-[#999999] text-sm transition-colors"
                       >
                         Skip
                       </button>
@@ -261,8 +261,8 @@ export default function WizardPage() {
 
           {/* Footer */}
           <div className="text-center py-5 opacity-50">
-            <p className="text-[#9ca3af] text-sm leading-5">
-              © Copyright 2025 - Trove Africa Holdings | All Rights Reserved
+            <p className="text-gray-400 dark:text-[#9ca3af] text-sm leading-5">
+              © Copyright 2025 - SELVE | All Rights Reserved
             </p>
           </div>
         </div>

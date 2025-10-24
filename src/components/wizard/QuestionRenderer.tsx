@@ -132,7 +132,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       transition={{ duration: 0.3 }}
     >
       {/* Question Label */}
-      <label className="block text-xs text-white leading-4 mb-2">
+      <label className="block text-xs text-gray-900 dark:text-white leading-4 mb-2">
         {text}
         {isRequired && <span className="text-red-400 ml-1">*</span>}
       </label>
@@ -142,14 +142,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
       {/* Description/Help text */}
       {description && (
-        <p className="text-sm text-[#999999] leading-5 mt-2">{description}</p>
+        <p className="text-sm text-gray-600 dark:text-[#999999] leading-5 mt-2">{description}</p>
       )}
 
       {/* Tooltip */}
       {renderConfig.tooltip && (
-        <div className="flex items-start gap-2 p-3 bg-[#2e2e2e] rounded-[4px] mt-2">
+        <div className="flex items-start gap-2 p-3 bg-gray-100 dark:bg-[#2e2e2e] rounded-[4px] mt-2">
           <svg
-            className="w-4 h-4 text-[#666666] mt-0.5 flex-shrink-0"
+            className="w-4 h-4 text-gray-500 dark:text-[#666666] mt-0.5 flex-shrink-0"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -159,7 +159,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               clipRule="evenodd"
             />
           </svg>
-          <p className="text-xs text-[#999999]">{renderConfig.tooltip}</p>
+          <p className="text-xs text-gray-600 dark:text-[#999999]">{renderConfig.tooltip}</p>
         </div>
       )}
     </motion.div>

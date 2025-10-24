@@ -97,8 +97,8 @@ export const Checkpoint: React.FC<CheckpointProps> = ({
         {/* Continue Button */}
         <motion.button
           onClick={onContinue}
-          className="px-8 py-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-full
-            shadow-lg shadow-green-500/30 transition-all duration-200
+          className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-full
+            shadow-lg shadow-purple-600/30 transition-all duration-200
             hover:scale-105 active:scale-95"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

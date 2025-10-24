@@ -40,16 +40,16 @@ export const DateInput: React.FC<DateInputProps> = ({
         placeholder={placeholder}
         className={`
           w-full px-[17px] py-[13px] text-sm
-          bg-[#1c1c1c] text-white rounded-[4px]
-          border ${error ? "border-red-500" : "border-[#2e2e2e]"}
+          bg-white dark:bg-[#1c1c1c] text-gray-900 dark:text-white rounded-[4px]
+          border ${error ? "border-red-500" : "border-gray-300 dark:border-[#2e2e2e]"}
           focus:outline-none focus:ring-1 focus:ring-purple-600 focus:border-purple-600
-          [color-scheme:dark]
+          dark:[color-scheme:dark]
           transition-all duration-200
           leading-5
         `}
       />
       {config.helpText && !error && (
-        <p className="mt-2 text-[11px] text-[#aaaaaa] leading-[16.51px]">
+        <p className="mt-2 text-[11px] text-gray-500 dark:text-[#aaaaaa] leading-[16.51px]">
           {config.helpText}
         </p>
       )}

@@ -43,16 +43,16 @@ export const TextInput: React.FC<TextInputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-[#1c1c1c] text-white border border-[#2e2e2e] rounded-[4px] px-4 py-3 text-[14px] placeholder:text-[#666666] focus:outline-none focus:ring-1 focus:ring-purple-600 transition-all"
+        className="w-full bg-white dark:bg-[#1c1c1c] text-gray-900 dark:text-white border border-gray-300 dark:border-[#2e2e2e] rounded-[4px] px-4 py-3 text-[14px] placeholder:text-gray-400 dark:placeholder:text-[#666666] focus:outline-none focus:ring-1 focus:ring-purple-600 transition-all"
       />
       {config.helpText && !error && (
-        <p className="mt-2 text-[11px] text-[#aaaaaa] leading-[16.51px]">
+        <p className="mt-2 text-[11px] text-gray-500 dark:text-[#aaaaaa] leading-[16.51px]">
           {config.helpText}
         </p>
       )}
       {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
       {maxLength && (
-        <p className="mt-1 text-xs text-[#666666] text-right">
+        <p className="mt-1 text-xs text-gray-500 dark:text-[#666666] text-right">
           {value.length} / {maxLength}
         </p>
       )}

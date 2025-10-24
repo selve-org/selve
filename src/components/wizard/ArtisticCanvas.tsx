@@ -92,11 +92,11 @@ export const ArtisticCanvas: React.FC = () => {
     setItems(shuffled);
   }, [imageLoadError]);
 
-  // Rotation timer - random interval within 20 seconds
+  // Rotation timer - random interval between 10-20 seconds
   useEffect(() => {
     if (items.length === 0) return;
 
-    const getRandomInterval = () => Math.random() * 20000; // 0-20 seconds
+    const getRandomInterval = () => Math.random() * 10000 + 10000; // 10-20 seconds
 
     const rotate = () => {
       setCurrentIndex((prev) => (prev + 1) % items.length);
@@ -240,7 +240,7 @@ export const ArtisticCanvas: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-black relative overflow-hidden">
+    <div className="w-full h-full bg-white dark:bg-black relative overflow-hidden">
       <AnimatePresence mode="wait">
         {currentItem.type === "image" && currentItem.src ? (
           <motion.div
@@ -259,8 +259,8 @@ export const ArtisticCanvas: React.FC = () => {
               priority={currentIndex === 0}
               onError={() => handleImageError(currentItem.src!)}
             />
-            {/* Subtle dark overlay for better image blending */}
-            <div className="absolute inset-0 bg-black/20" />
+            {/* Subtle overlay for better image blending */}
+            <div className="absolute inset-0 bg-white/10 dark:bg-black/20" />
           </motion.div>
         ) : (
           <motion.canvas
