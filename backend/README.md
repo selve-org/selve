@@ -5,6 +5,7 @@ FastAPI backend for adaptive questionnaire and personality profiling.
 ## Architecture
 
 This backend handles:
+
 - Adaptive question logic (demographic vs psychological)
 - Personality analysis algorithms
 - AI report generation (Phase 3)
@@ -52,6 +53,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## API Endpoints
 
 ### Health Check
+
 ```
 GET /health
 ```
@@ -59,15 +61,18 @@ GET /health
 Returns database connection status.
 
 ### Next Question
+
 ```
 GET /api/next-question?sessionId={id}
 ```
 
 Returns the next question using adaptive logic:
+
 - Demographic questions: Sequential order
 - Psychological questions: Adaptive algorithm (Phase 2)
 
 Response:
+
 ```json
 {
   "id": "q1_name",
@@ -96,9 +101,11 @@ Next.js renders question
 ## Adaptive Logic
 
 **Demographic Questions:** Sequential, zero processing
+
 - Name, DOB, email, etc.
 
 **Psychological Questions:** Adaptive algorithm (Phase 2)
+
 - Trait scoring
 - Item Response Theory (IRT)
 - Optimal next question selection
@@ -106,6 +113,7 @@ Next.js renders question
 ## Database
 
 Shares Neon PostgreSQL with frontend:
+
 - Connection pooling via SQLAlchemy
 - Async operations
 - Reads answers, returns questions

@@ -29,7 +29,9 @@ export async function GET(
     );
 
     if (!response.ok) {
-      throw new Error(`FastAPI returned ${response.status}: ${response.statusText}`);
+      throw new Error(
+        `FastAPI returned ${response.status}: ${response.statusText}`
+      );
     }
 
     const data = await response.json();
@@ -37,23 +39,23 @@ export async function GET(
     // Transform FastAPI response to match frontend expectations
     // FastAPI returns: { id, text, type, options?, questionType, metadata?, placeholder?, required? }
     // Frontend expects: { question, checkpoint?, progress }
-    
+
     // Map backend type to frontend QuestionInputType
     const mapType = (backendType: string): string => {
       const typeMap: Record<string, string> = {
-        'text': 'text-input',
-        'email': 'email-input',
-        'phone': 'phone-input',
-        'date': 'date-input',
-        'time': 'time-input',
-        'datetime': 'datetime-input',
-        'number': 'number-input',
-        'scale': 'scale-slider',
-        'pill': 'pill-select',
+        text: "text-input",
+        email: "email-input",
+        phone: "phone-input",
+        date: "date-input",
+        time: "time-input",
+        datetime: "datetime-input",
+        number: "number-input",
+        scale: "scale-slider",
+        pill: "pill-select",
       };
       return typeMap[backendType] || backendType;
     };
-    
+
     return NextResponse.json({
       question: {
         id: data.id,
@@ -81,9 +83,9 @@ export async function GET(
 
     // Fallback: Return error response
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch question from backend",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
