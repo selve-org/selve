@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SELVE
 
-## Getting Started
+Adaptive questionnaire and AI-driven psychological profiling platform.
 
-First, run the development server:
+## Project Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+selve/
+├── frontend/          # Next.js application
+├── backend/           # FastAPI application
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd backend
+make install          # Install dependencies
+make dev              # Start server on :8000
+```
 
-## Learn More
+### Frontend
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cd frontend
+pnpm install
+pnpm dev              # Start on :3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Frontend (Next.js) handles UI, authentication, and data storage.
+Backend (FastAPI) handles adaptive question logic and psychology algorithms.
+Both share a Neon PostgreSQL database.
 
-## Deploy on Vercel
+```
+Next.js ←→ FastAPI ←→ Neon PostgreSQL
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS 4, Prisma, Clerk
+**Backend:** FastAPI, Python 3.12, SQLAlchemy, Pydantic
+**Database:** Neon PostgreSQL
+
+## Documentation
+
+- Frontend: `/frontend/README.md`
+- Backend: `/backend/README.md`
+- Phase 1 Summary: `/PHASE_1_COMPLETE.md`
+- Temporary Changes: `/TEMP_CHANGES.md`
+
+````
+
+## Environment Configuration
+
+Set `NODE_ENV` in `.env`:
+
+```bash
+NODE_ENV=development    # Uses DATABASE_URL_DEV
+NODE_ENV=production     # Uses DATABASE_URL_PROD
+````
+
+Database URLs:
+
+- Development: Neon branch `development`
+- Production: Neon branch `production`
+
+## Tech Stack
+
+- Next.js 15.3.4
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Prisma ORM
+- Neon PostgreSQL
+- Clerk Auth
+- Sentry
+- PostHog

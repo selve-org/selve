@@ -3,11 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "NODE_ENV=development next dev --turbopack",
+    "dev:prod": "NODE_ENV=production next dev --turbopack",
     "build": "next build",
+    "build:dev": "NODE_ENV=development next build",
+    "build:prod": "NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:push:dev": "NODE_ENV=development prisma db push",
+    "db:push:prod": "NODE_ENV=production prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:dev": "NODE_ENV=development prisma migrate dev",
+    "db:migrate:prod": "NODE_ENV=production prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:seed:dev": "NODE_ENV=development prisma db seed",
+    "db:seed:prod": "NODE_ENV=production prisma db seed",
+    "db:studio": "prisma studio",
+    "db:studio:dev": "NODE_ENV=development prisma studio",
+    "db:studio:prod": "NODE_ENV=production prisma studio"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

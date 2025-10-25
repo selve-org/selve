@@ -240,7 +240,10 @@ export const ArtisticCanvas: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-white dark:bg-black relative overflow-hidden">
+    <div className="w-full h-full relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-900 animate-gradient-xy" />
+
       <AnimatePresence mode="wait">
         {currentItem.type === "image" && currentItem.src ? (
           <motion.div
