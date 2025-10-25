@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String       @id @default(cuid())
+  email               String       @unique
+  name                String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  clerkId             String       @unique
+  inviteLinksSent     InviteLink[] @relation("InviterRelation")
+  inviteLinksReceived InviteLink[] @relation("TargetRelation")
+  profile             Profile?
+  responsesAbout      Response[]   @relation("ResponsesAbout")
+  responsesGiven      Response[]   @relation("ResponsesGiven")
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  bio         String?
+  avatarUrl   String?
+  personality Json?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Question {
+  id           String     @id @default(uuid())
+  text         String
+  category     String?
+  isThirdParty Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  responses    Response[]
+}
+
+model Response {
+  id             String   @id @default(uuid())
+  questionId     String
+  answeredById   String
+  aboutUserId    String
+  answer         String
+  createdAt      DateTime @default(now())
+  aboutUser      User     @relation("ResponsesAbout", fields: [aboutUserId], references: [id])
+  answeredByUser User     @relation("ResponsesGiven", fields: [answeredById], references: [id])
+  question       Question @relation(fields: [questionId], references: [id])
+}
+
+model InviteLink {
+  id        String    @id @default(uuid())
+  code      String    @unique
+  inviterId String
+  targetId  String
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  inviter   User      @relation("InviterRelation", fields: [inviterId], references: [id])
+  target    User      @relation("TargetRelation", fields: [targetId], references: [id])
+}
+
+// Questionnaire System Models
+model QuestionnaireSection {
+  id          String                     @id @default(uuid())
+  title       String
+  description String?
+  order       Int
+  createdAt   DateTime                   @default(now())
+  questions   QuestionnaireQuestion[]
+  checkpoints QuestionnaireCheckpoint[]
+}
+
+model QuestionnaireQuestion {
+  id           String                @id @default(uuid())
+  text         String
+  description  String?
+  type         String
+  renderConfig Json
+  order        Int?
+  isRequired   Boolean               @default(true)
+  sectionId    String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  section      QuestionnaireSection? @relation(fields: [sectionId], references: [id])
+  
+  // TODO: RESTORE AFTER PHASE 2 - Temporarily removed for placeholder question testing
+  // answers      QuestionnaireAnswer[]
+}
+
+model QuestionnaireSession {
+  id          String                @id @default(cuid())
+  userId      String?
+  status      String                @default("in-progress")
+  currentStep Int                   @default(0)
+  metadata    Json?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  completedAt DateTime?
+  answers     QuestionnaireAnswer[]
+}
+
+model QuestionnaireAnswer {
+  id         String                @id @default(uuid())
+  sessionId  String
+  questionId String                // Question ID from backend (may not exist in DB during placeholder mode)
+  answer     Json
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  session    QuestionnaireSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // TODO: RESTORE AFTER PHASE 2 - Foreign key removed to allow placeholder questions from FastAPI
+  // Without this, we get P2003 error when saving answers for questions not in DB
+  // question   QuestionnaireQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([sessionId, questionId])
+}
+
+model QuestionnaireCheckpoint {
+  id          String               @id @default(uuid())
+  sectionId   String
+  title       String
+  description String?
+  order       Int
+  iconType    String?
+  createdAt   DateTime             @default(now())
+  section     QuestionnaireSection @relation(fields: [sectionId], references: [id])
+}
