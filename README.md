@@ -1,6 +1,6 @@
 # SELVE
 
-Adaptive questionnaire and AI-driven psychological profiling platform.
+Selve is an AI-driven psychological profiling platform.
 
 ## Project Structure
 
@@ -49,10 +49,7 @@ Next.js ←→ FastAPI ←→ Neon PostgreSQL
 
 - Frontend: `/frontend/README.md`
 - Backend: `/backend/README.md`
-- Phase 1 Summary: `/PHASE_1_COMPLETE.md`
-- Temporary Changes: `/TEMP_CHANGES.md`
 
-````
 
 ## Environment Configuration
 

@@ -8,7 +8,7 @@ This backend handles:
 
 - Adaptive question logic (demographic vs psychological)
 - Personality analysis algorithms
-- AI report generation (Phase 3)
+- AI report generation (coming soon)
 
 ## Project Structure
 
