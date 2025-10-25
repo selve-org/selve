@@ -61,3 +61,7 @@ next-env.d.ts
 .env.sentry-build-plugin
 
 /src/generated/prisma
+
+
+# Data
+data/
