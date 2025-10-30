@@ -50,6 +50,20 @@ class SelveProfile:
     chronos: DimensionScore
     kael: DimensionScore
     
+    @property
+    def dimension_scores(self) -> Dict[str, float]:
+        """Get normalized scores for all dimensions (0-100)."""
+        return {
+            'LUMEN': self.lumen.normalized_score,
+            'AETHER': self.aether.normalized_score,
+            'ORPHEUS': self.orpheus.normalized_score,
+            'ORIN': self.orin.normalized_score,
+            'LYRA': self.lyra.normalized_score,
+            'VARA': self.vara.normalized_score,
+            'CHRONOS': self.chronos.normalized_score,
+            'KAEL': self.kael.normalized_score
+        }
+    
     def to_dict(self):
         return {
             'LUMEN': self.lumen.to_dict(),

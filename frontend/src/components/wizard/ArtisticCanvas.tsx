@@ -29,8 +29,9 @@ export const ArtisticCanvas: React.FC = () => {
   const [imageLoadError, setImageLoadError] = useState<Set<string>>(new Set());
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Artistic images from /public/artistico/
+  // Artistic images from public folder
   const artisticImages = [
+    // Abstract & concept art
     "/artistico/20250728_0025_image.png",
     "/artistico/Behaviour.webp",
     "/artistico/HD-wallpaper-girl-painting-abstract-art-painting-art-abstract-artist-digital-art.jpg",
@@ -39,6 +40,47 @@ export const ArtisticCanvas: React.FC = () => {
     "/artistico/pixlr-image-generator-6886ad9322ee964dff70b575.png",
     "/artistico/pixlr-image-generator-6886ad9322ee964dff70b576.png",
     "/artistico/yin-yang-nature-stockcake.jpg",
+    "/artistico/Neural-Intelligence-In-Art-And-Design.jpg",
+    "/artistico/representation-collective-mind-process-concept.jpg",
+    "/artistico/doubt.jpg",
+
+    // Nature & connection themes
+    "/artistico/nature.webp",
+    "/artistico/Nature.jpeg",
+    "/artistico/autumn.avif",
+    "/artistico/Lines-of-Connection-Getty-15.webp",
+
+    // Cyril Rolando digital illustrations (dreamlike, introspective)
+    "/artistico/cyril-rolando-digital-illustrations-1.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-3.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-5.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-7.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-8.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-10.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-12.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-13.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-14.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-15.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-16.jpg",
+    "/artistico/cyril-rolando-digital-illustrations-18.jpg",
+
+    // Personality & emotion themes
+    "/artistico/A-multi-colored-painting-of-a-girl_s-face.jpg",
+    "/artistico/dibujo-artistico.webp",
+    "/artistico/multiple_personality-1398777481m.webp",
+    "/artistico/personality-study-series-face-young.jpg",
+    "/artistico/original-ad0edf5a242edc5bedef9f2d050cd534.webp",
+
+    // Emotional range & storytelling
+    "/artistico/lonely.jpg",
+    "/artistico/anger-catoon.jpg",
+    "/artistico/cartoon-sad.jpg",
+    "/artistico/manipulate-art.jpg",
+    "/artistico/manipulation-art.jpg",
+    "/artistico/istockphoto-813059638-612x612.jpg",
+    "/artistico/images.jpg",
+    "/artistico/trees.jpg",
+    "/artistico/illustration-of-cartoon-night-nature-scene.jpg",
   ];
 
   // Sophisticated artistic patterns as fallback
@@ -243,7 +285,7 @@ export const ArtisticCanvas: React.FC = () => {
     <div className="w-full h-full relative overflow-hidden">
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-900 animate-gradient-xy" />
-      
+
       <AnimatePresence mode="wait">
         {currentItem.type === "image" && currentItem.src ? (
           <motion.div

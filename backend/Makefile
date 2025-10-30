@@ -34,7 +34,7 @@ install:
 # Development
 dev:
 	@echo "▶️  Starting FastAPI server on http://localhost:8000"
-	cd backend && ./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 run: dev
 

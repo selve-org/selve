@@ -320,13 +320,15 @@ async def get_results(session_id: str):
     # Score responses
     profile = scorer.score_responses(responses)
     
-    # Generate narrative (pass demographics for personalization)
+    # Generate narrative
     narrative = generate_narrative(profile.dimension_scores)
     
     # Personalize archetype with name if available
     if "name" in demographics and demographics["name"]:
         name = demographics["name"].split()[0]  # Use first name
-        narrative.archetype_description = f"Hi {name}! {narrative.archetype_description}"
+        # Modify the archetype description in the narrative
+        original_description = narrative.archetype.description
+        narrative.archetype.description = f"Hi {name}! {original_description}"
     
     # Mark session as completed
     session["completed_at"] = datetime.now().isoformat()

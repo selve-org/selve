@@ -214,7 +214,7 @@ export default function WizardPage() {
               )}
 
               {/* Question Form */}
-              {currentQuestion && !isLoading && !showCheckpoint && (
+              {currentQuestion && !isLoading && !showCheckpoint && !isComplete && (
                 <motion.form
                   key={currentQuestion.id}
                   onSubmit={handleSubmit}
