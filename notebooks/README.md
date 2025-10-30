@@ -21,13 +21,16 @@ Think of it like this: Before you can sell a scale that measures weight, you nee
 **Cronbach's Alpha** is the gold standard for measuring reliability in psychology. It answers: "Do all the questions in a dimension measure the same underlying trait?"
 
 ### The Scale:
+
 - **α > 0.90**: Excellent ⭐⭐⭐ (publish-ready, professional-grade)
 - **α > 0.80**: Good ✅ (reliable for research and practice)
 - **α > 0.70**: Acceptable ✓ (usable but could be better)
 - **α < 0.70**: Questionable ⚠️ (needs improvement)
 
 ### Real-World Analogy:
+
 Imagine you ask 10 different questions to measure "how social someone is":
+
 - If someone who answers "yes" to "I love parties" also answers "yes" to "I enjoy meeting new people", that's good - the questions agree
 - If their answers are all over the place (yes to parties, no to people), the questions aren't measuring the same thing
 - Alpha measures how much the questions "agree" with each other
@@ -37,7 +40,9 @@ Imagine you ask 10 different questions to measure "how social someone is":
 ## The 4 Validation Notebooks
 
 ### 📓 01_big5_validation.ipynb
+
 **What it validates**: 5 dimensions from the Big Five personality model
+
 - **LUMEN** ✨ (Extraversion) - Social energy and enthusiasm
 - **AETHER** 🌫️ (Emotional Stability) - Calm under pressure
 - **ORPHEUS** 🎵 (Agreeableness) - Empathy and compassion
@@ -53,7 +58,9 @@ Imagine you ask 10 different questions to measure "how social someone is":
 ---
 
 ### 📓 02_hexaco_vara_validation.ipynb
+
 **What it validates**: VARA ⚖️ (Honesty-Humility)
+
 - Measures sincerity, fairness, greed-avoidance, and modesty
 - The "ethical core" - are you genuine and humble, or manipulative and status-seeking?
 
@@ -66,7 +73,9 @@ Imagine you ask 10 different questions to measure "how social someone is":
 ---
 
 ### 📓 03_16pf_kael_validation.ipynb
+
 **What it validates**: KAEL 🔥 (Assertiveness/Dominance)
+
 - Measures boldness, leadership, confidence, and social dominance
 - Do you lead or follow? Are you direct or reserved?
 
@@ -79,7 +88,9 @@ Imagine you ask 10 different questions to measure "how social someone is":
 ---
 
 ### 📓 04_hexaco_chronos_validation.ipynb
+
 **What it validates**: CHRONOS ⏳ (Patience and Flow)
+
 - Measures patience, forgiveness, gentleness, and flexibility
 - Can you stay calm when criticized? Do you hold grudges? Are you adaptable?
 
@@ -93,16 +104,16 @@ Imagine you ask 10 different questions to measure "how social someone is":
 
 ## Summary: The Complete SELVE Framework
 
-| # | Dimension | Symbol | What It Measures | Cronbach's α | Status |
-|---|-----------|--------|------------------|--------------|--------|
-| 1 | **LUMEN** | ✨ | Social energy, enthusiasm, talkativeness | 0.897 | Excellent |
-| 2 | **AETHER** | 🌫️ | Emotional stability, calm under pressure | 0.872 | Good |
-| 3 | **ORPHEUS** | 🎵 | Empathy, compassion, emotional sensitivity | 0.837 | Good |
-| 4 | **VARA** | ⚖️ | Honesty, humility, integrity, fairness | 0.900 | Excellent |
-| 5 | **CHRONOS** | ⏳ | Patience, forgiveness, flexibility, timing | **0.937** | Excellent ⭐ |
-| 6 | **KAEL** | 🔥 | Assertiveness, dominance, leadership | 0.821 | Good |
-| 7 | **ORIN** | 🧭 | Organization, discipline, planning | 0.821 | Good |
-| 8 | **LYRA** | 🦋 | Openness, curiosity, imagination | 0.804 | Good |
+| #   | Dimension   | Symbol | What It Measures                           | Cronbach's α | Status       |
+| --- | ----------- | ------ | ------------------------------------------ | ------------ | ------------ |
+| 1   | **LUMEN**   | ✨     | Social energy, enthusiasm, talkativeness   | 0.897        | Excellent    |
+| 2   | **AETHER**  | 🌫️     | Emotional stability, calm under pressure   | 0.872        | Good         |
+| 3   | **ORPHEUS** | 🎵     | Empathy, compassion, emotional sensitivity | 0.837        | Good         |
+| 4   | **VARA**    | ⚖️     | Honesty, humility, integrity, fairness     | 0.900        | Excellent    |
+| 5   | **CHRONOS** | ⏳     | Patience, forgiveness, flexibility, timing | **0.937**    | Excellent ⭐ |
+| 6   | **KAEL**    | 🔥     | Assertiveness, dominance, leadership       | 0.821        | Good         |
+| 7   | **ORIN**    | 🧭     | Organization, discipline, planning         | 0.821        | Good         |
+| 8   | **LYRA**    | 🦋     | Openness, curiosity, imagination           | 0.804        | Good         |
 
 **Average Reliability**: α = 0.861 (Excellent overall framework)
 
