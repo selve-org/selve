@@ -10,6 +10,7 @@ export { TextInput } from "./TextInput";
 export { Textarea } from "./Textarea";
 export { DateInput } from "./DateInput";
 export { ScaleSlider } from "./ScaleSlider";
+export { NumberInput } from "./NumberInput";
 
 // TODO: Add more input types as needed:
 // - NumberInput

@@ -39,7 +39,7 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
   return (
     <div className="w-full space-y-4">
       {/* Slider */}
-      <div className="relative pt-8">
+      <div className="relative pt-6">
         <input
           type="range"
           min={min}
@@ -49,16 +49,16 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
           onChange={(e) => onChange(Number(e.target.value))}
           className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-6
-            [&::-webkit-slider-thumb]:h-6
+            [&::-webkit-slider-thumb]:w-5
+            [&::-webkit-slider-thumb]:h-5
             [&::-webkit-slider-thumb]:rounded-full
             [&::-webkit-slider-thumb]:bg-green-500
             [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-lg
             [&::-webkit-slider-thumb]:transition-transform
             [&::-webkit-slider-thumb]:hover:scale-110
-            [&::-moz-range-thumb]:w-6
-            [&::-moz-range-thumb]:h-6
+            [&::-moz-range-thumb]:w-5
+            [&::-moz-range-thumb]:h-5
             [&::-moz-range-thumb]:rounded-full
             [&::-moz-range-thumb]:bg-green-500
             [&::-moz-range-thumb]:cursor-pointer
@@ -75,7 +75,7 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
               left: `${((currentValue - min) / (max - min)) * 100}%`,
             }}
           >
-            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+            <div className="bg-green-500 text-white ml-10% w-5 h-5 flex items-center justify-center rounded-full text-xs font-semibold shadow-lg">
               {currentValue}
             </div>
           </div>
@@ -83,17 +83,28 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
       </div>
 
       {/* Scale labels */}
-      <div className="flex justify-between text-sm">
-        {points.map((point) => (
-          <div
-            key={point}
-            className={`text-center ${
-              point === currentValue ? "text-green-400 font-medium" : "text-gray-500"
-            }`}
-          >
-            <div>{labels[point] || point}</div>
-          </div>
-        ))}
+      <div className="flex justify-between text-xs md:text-sm px-1">
+        {/* Only show first and last labels on mobile, all on desktop */}
+        {points.map((point, index) => {
+          const isFirst = index === 0;
+          const isLast = index === points.length - 1;
+          const showOnMobile = isFirst || isLast;
+          
+          return (
+            <div
+              key={point}
+              className={`text-center flex-1 ${
+                showOnMobile ? '' : 'hidden md:block'
+              } ${
+                point === currentValue 
+                  ? "text-green-400 font-semibold" 
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              <div className="truncate px-1">{labels[point] || point}</div>
+            </div>
+          );
+        })}
       </div>
 
       {config.helpText && (

@@ -10,17 +10,23 @@ import type {
   WizardState,
 } from "@/types/questionnaire";
 
+// API base URL - defaults to localhost for development
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 /**
  * useQuestionnaire Hook
  * 
  * Manages the complete questionnaire state including:
- * - Session creation and management
- * - Question fetching (adaptive mode)
+ * - Session creation and management via SELVE backend
+ * - Adaptive question fetching
  * - Answer submission
  * - Progress tracking
- * - Checkpoint handling
+ * - Automatic completion and redirect to results
  * 
- * This is the main state management for the wizard
+ * Connected to SELVE Backend API:
+ * - POST /api/assessment/start - Initialize session
+ * - POST /api/assessment/answer - Submit answers
+ * - Adaptive testing automatically selects next questions
  */
 export function useQuestionnaire() {
   const [state, setState] = useState<WizardState>({
@@ -39,34 +45,73 @@ export function useQuestionnaire() {
 
   const [showCheckpoint, setShowCheckpoint] = useState<QuestionnaireCheckpoint | null>(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [questionQueue, setQuestionQueue] = useState<QuestionnaireQuestion[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   /**
-   * Initialize session and fetch first question
+   * Initialize session and fetch first questions from SELVE backend
    */
   const initializeSession = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      // Create new session
-      const sessionResponse = await fetch("/api/questionnaire/sessions", {
+      // Start assessment with SELVE backend
+      const response = await fetch(`${API_BASE}/api/assessment/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          user_id: null, // Could be set from auth context
+          metadata: { source: "web" },
+        }),
       });
 
-      if (!sessionResponse.ok) {
-        throw new Error("Failed to create session");
+      if (!response.ok) {
+        throw new Error("Failed to start assessment");
       }
 
-      const { session } = await sessionResponse.json();
+      const data = await response.json();
+      const { session_id, questions, total_questions, progress } = data;
+
+      // Store session ID
+      setSessionId(session_id);
+
+      // Convert backend questions to frontend format
+      const formattedQuestions: QuestionnaireQuestion[] = questions.map((q: any) => ({
+        id: q.id,
+        text: q.text,
+        type: q.type || "scale-slider", // Use backend type or default to scale-slider
+        section: q.dimension,
+        subsection: q.dimension,
+        isRequired: q.isRequired,
+        renderConfig: q.renderConfig || {
+          min: 1,
+          max: 5,
+          step: 1,
+          labels: {
+            1: "Strongly Disagree",
+            2: "Disagree",
+            3: "Neutral",
+            4: "Agree",
+            5: "Strongly Agree"
+          }
+        },
+      }));
+
+      setQuestionQueue(formattedQuestions);
+      setCurrentQuestionIndex(0);
 
       setState((prev) => ({
         ...prev,
-        session,
+        session: { id: session_id, createdAt: new Date().toISOString() } as QuestionnaireSession,
+        currentQuestion: formattedQuestions[0] || null,
+        isLoading: false,
+        progress: {
+          current: 0,
+          total: total_questions,
+          percentage: progress,
+        },
       }));
-
-      // Fetch first question
-      await fetchNextQuestion(session.id);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to initialize";
       Sentry.captureException(error);
@@ -79,59 +124,11 @@ export function useQuestionnaire() {
   }, []);
 
   /**
-   * Fetch the next question for the session
-   */
-  const fetchNextQuestion = useCallback(async (sessionId: string) => {
-    try {
-      setState((prev) => ({ ...prev, isLoading: true }));
-
-      const response = await fetch(`/api/questionnaire/questions/${sessionId}`);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch question");
-      }
-
-      const data = await response.json();
-
-      // Check if questionnaire is complete
-      if (data.done) {
-        setIsComplete(true);
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          progress: data.progress || prev.progress,
-        }));
-        return;
-      }
-
-      // Check if there's a checkpoint to show
-      if (data.checkpoint) {
-        setShowCheckpoint(data.checkpoint);
-      }
-
-      setState((prev) => ({
-        ...prev,
-        currentQuestion: data.question || null,
-        isLoading: false,
-        progress: data.progress || prev.progress,
-      }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to fetch question";
-      Sentry.captureException(error);
-      setState((prev) => ({
-        ...prev,
-        error: errorMessage,
-        isLoading: false,
-      }));
-    }
-  }, []);
-
-  /**
-   * Submit an answer and move to next question
+   * Submit an answer and get next adaptive questions from backend
    */
   const submitAnswer = useCallback(
     async (questionId: string, answer: unknown) => {
-      if (!state.session) {
+      if (!sessionId) {
         setState((prev) => ({ ...prev, error: "No active session" }));
         return;
       }
@@ -139,19 +136,23 @@ export function useQuestionnaire() {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-        const response = await fetch("/api/questionnaire/answers", {
+        // Submit answer to SELVE backend
+        const response = await fetch(`${API_BASE}/api/assessment/answer`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            sessionId: state.session.id,
-            questionId,
-            answer,
+            session_id: sessionId,
+            question_id: questionId,
+            response: answer as number, // 1-5 scale
           }),
         });
 
         if (!response.ok) {
           throw new Error("Failed to submit answer");
         }
+
+        const data = await response.json();
+        const { next_questions, is_complete, progress, questions_answered, total_questions } = data;
 
         // Update local answers map
         const newAnswers = new Map(state.answers);
@@ -160,10 +161,60 @@ export function useQuestionnaire() {
         setState((prev) => ({
           ...prev,
           answers: newAnswers,
+          progress: {
+            current: questions_answered,
+            total: total_questions,
+            percentage: progress,
+          },
         }));
 
-        // Fetch next question
-        await fetchNextQuestion(state.session.id);
+        // Check if assessment is complete
+        if (is_complete) {
+          setIsComplete(true);
+          setState((prev) => ({ ...prev, isLoading: false }));
+          
+          // Redirect to results page after short delay
+          setTimeout(() => {
+            window.location.href = `/results/${sessionId}`;
+          }, 1500);
+          return;
+        }
+
+        // Add next adaptive questions to queue
+        if (next_questions && next_questions.length > 0) {
+          const formattedQuestions: QuestionnaireQuestion[] = next_questions.map((q: any) => ({
+            id: q.id,
+            text: q.text,
+            type: q.type || "scale-slider", // Use backend type or default to scale-slider
+            section: q.dimension,
+            subsection: q.dimension,
+            isRequired: q.isRequired,
+            renderConfig: q.renderConfig || {
+              min: 1,
+              max: 5,
+              step: 1,
+              labels: {
+                1: "Strongly Disagree",
+                2: "Disagree",
+                3: "Neutral",
+                4: "Agree",
+                5: "Strongly Agree"
+              }
+            },
+          }));
+
+          setQuestionQueue((prev) => [...prev, ...formattedQuestions]);
+        }
+
+        // Move to next question in queue
+        const nextIndex = currentQuestionIndex + 1;
+        setCurrentQuestionIndex(nextIndex);
+
+        setState((prev) => ({
+          ...prev,
+          currentQuestion: questionQueue[nextIndex] || null,
+          isLoading: false,
+        }));
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to submit answer";
         Sentry.captureException(error);
@@ -174,7 +225,7 @@ export function useQuestionnaire() {
         }));
       }
     },
-    [state.session, state.answers, fetchNextQuestion]
+    [sessionId, state.answers, currentQuestionIndex, questionQueue]
   );
 
   /**

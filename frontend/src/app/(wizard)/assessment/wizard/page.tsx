@@ -93,16 +93,15 @@ export default function WizardPage() {
       </div>
 
       {/* Right Side: Question Form (scrollable) */}
-      <div className="w-full lg:w-1/2 lg:ml-auto min-h-screen bg-white dark:bg-[#1c1c1c]">
-        <div className="max-w-[512px] mx-auto px-5 md:px-0 py-16 min-h-screen flex flex-col">
+      <div className="w-full lg:w-1/2 lg:ml-auto min-h-screen bg-white dark:bg-[#1c1c1c] flex flex-col">
+        <div className="max-w-[512px] mx-auto px-5 md:px-0 py-16 flex-1 flex flex-col">
           {/* Header with section title */}
-          <div className="text-center pt-10 pb-2">
+          <div className="text-center pt-10 pb-8">
             <h1 className="text-[36px] font-black leading-10 text-gray-900 dark:text-white mb-2">
               Let&apos;s Decipher You!
             </h1>
-            <p className="text-sm text-gray-600 dark:text-[#999999] leading-5 px-10">
-              Your date of birth isn&apos;t shown publicly and isn&apos;t shared
-              with anyone.
+            <p className="text-sm text-gray-600 dark:text-[#999999] leading-5 px-4 md:px-3">
+              Your data isn&apos;t shared with anyone and remains completely private.
             </p>
           </div>
 
@@ -260,13 +259,13 @@ export default function WizardPage() {
               )}
             </AnimatePresence>
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="text-center py-5 opacity-50">
-            <p className="text-gray-400 dark:text-[#9ca3af] text-sm leading-5">
-              © Copyright 2025 - SELVE | All Rights Reserved
-            </p>
-          </div>
+        {/* Footer - Fixed at bottom */}
+        <div className="text-center py-6">
+          <p className="text-gray-400 dark:text-[#666666] text-xs">
+            © Copyright 2025 - SELVE | All Rights Reserved
+          </p>
         </div>
       </div>
     </div>

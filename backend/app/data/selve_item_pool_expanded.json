@@ -1,0 +1,622 @@
+{
+  "LUMEN": [
+    {
+      "item": "XExpr6",
+      "correlation": 0.7898036425664714,
+      "reversed": true,
+      "text": "I don't talk a lot.",
+      "source": "HEXACO"
+    },
+    {
+      "item": "XExpr8",
+      "correlation": 0.7466828281389422,
+      "reversed": true,
+      "text": "I say little.",
+      "source": "HEXACO"
+    },
+    {
+      "item": "XExpr1",
+      "correlation": 0.7400526334410243,
+      "reversed": false,
+      "text": "I talk a lot.",
+      "source": "HEXACO"
+    },
+    {
+      "item": "E5",
+      "correlation": 0.7110778924827769,
+      "reversed": false,
+      "text": "I start conversations.",
+      "source": "Big5"
+    },
+    {
+      "item": "E7",
+      "correlation": 0.7030915647768476,
+      "reversed": false,
+      "text": "I talk to a lot of different people at parties.",
+      "source": "Big5"
+    },
+    {
+      "item": "E4",
+      "correlation": 0.6842893246077857,
+      "reversed": true,
+      "text": "I keep in the background.",
+      "source": "Big5"
+    },
+    {
+      "item": "E3",
+      "correlation": 0.6510217329438576,
+      "reversed": false,
+      "text": "I feel comfortable around people.",
+      "source": "Big5"
+    },
+    {
+      "item": "E2",
+      "correlation": 0.6480437776610981,
+      "reversed": true,
+      "text": "I don't talk a lot.",
+      "source": "Big5"
+    },
+    {
+      "item": "E10",
+      "correlation": 0.6357802174017686,
+      "reversed": true,
+      "text": "I am quiet around strangers.",
+      "source": "Big5"
+    },
+    {
+      "item": "E1",
+      "correlation": 0.6259263741997005,
+      "reversed": false,
+      "text": "I am the life of the party.",
+      "source": "Big5"
+    },
+    {
+      "item": "XExpr10",
+      "correlation": 0.5848615229498958,
+      "reversed": true,
+      "text": "I speak softly.",
+      "source": "HEXACO"
+    },
+    {
+      "item": "E9",
+      "correlation": 0.5768915410000929,
+      "reversed": false,
+      "text": "I don't mind being the center of attention.",
+      "source": "Big5"
+    },
+    {
+      "item": "E6",
+      "correlation": 0.573090454560715,
+      "reversed": true,
+      "text": "I have little to say.",
+      "source": "Big5"
+    },
+    {
+      "item": "XExpr3",
+      "correlation": 0.5434897115071949,
+      "reversed": false,
+      "text": "I am the life of the party.",
+      "source": "HEXACO"
+    },
+    {
+      "item": "XExpr7",
+      "correlation": 0.5281052794587918,
+      "reversed": true,
+      "text": "I don't like to draw attention to myself.",
+      "source": "HEXACO"
+    },
+    {
+      "item": "E8",
+      "correlation": 0.5215230479473784,
+      "reversed": true,
+      "text": "I don't like to draw attention to myself.",
+      "source": "Big5"
+    }
+  ],
+  "AETHER": [
+    {
+      "item": "N6",
+      "correlation": 0.6914379519915256,
+      "reversed": true,
+      "text": "I get upset easily."
+    },
+    {
+      "item": "N8",
+      "correlation": 0.6905763628540472,
+      "reversed": true,
+      "text": "I have frequent mood swings."
+    },
+    {
+      "item": "N7",
+      "correlation": 0.654901683731596,
+      "reversed": true,
+      "text": "I change my mood a lot."
+    },
+    {
+      "item": "N1",
+      "correlation": 0.647909600001181,
+      "reversed": true,
+      "text": "I get stressed out easily."
+    },
+    {
+      "item": "N9",
+      "correlation": 0.6433962863793045,
+      "reversed": true,
+      "text": "I get irritated easily."
+    },
+    {
+      "item": "N10",
+      "correlation": 0.6182056127525574,
+      "reversed": true,
+      "text": "I often feel blue."
+    },
+    {
+      "item": "N3",
+      "correlation": 0.5613345725230401,
+      "reversed": true,
+      "text": "I worry about things."
+    },
+    {
+      "item": "N5",
+      "correlation": 0.4999897309751228,
+      "reversed": true,
+      "text": "I am easily disturbed."
+    },
+    {
+      "item": "N2",
+      "correlation": 0.4950441644518393,
+      "reversed": false,
+      "text": "I am relaxed most of the time."
+    }
+  ],
+  "ORPHEUS": [
+    {
+      "item": "A4",
+      "correlation": 0.6924674641549626,
+      "reversed": false,
+      "text": "I sympathize with others' feelings."
+    },
+    {
+      "item": "A9",
+      "correlation": 0.6312581090236026,
+      "reversed": false,
+      "text": "I feel others' emotions."
+    },
+    {
+      "item": "A7",
+      "correlation": 0.6187946082482052,
+      "reversed": true,
+      "text": "I am not really interested in others."
+    },
+    {
+      "item": "A5",
+      "correlation": 0.6104442140199234,
+      "reversed": true,
+      "text": "I am not interested in other people's problems."
+    },
+    {
+      "item": "A8",
+      "correlation": 0.5493233431674766,
+      "reversed": false,
+      "text": "I take time out for others."
+    },
+    {
+      "item": "A2",
+      "correlation": 0.5300510663570052,
+      "reversed": false,
+      "text": "I am interested in people."
+    },
+    {
+      "item": "A6",
+      "correlation": 0.5037183744973198,
+      "reversed": false,
+      "text": "I have a soft heart."
+    },
+    {
+      "item": "A10",
+      "correlation": 0.4151469932091771,
+      "reversed": false,
+      "text": "I make people feel at ease."
+    },
+    {
+      "item": "A1",
+      "correlation": 0.38781409535958555,
+      "reversed": true,
+      "text": "I feel little concern for others."
+    }
+  ],
+  "ORIN": [
+    {
+      "item": "C5",
+      "correlation": 0.5613489014178037,
+      "reversed": false,
+      "text": "I get chores done right away."
+    },
+    {
+      "item": "C6",
+      "correlation": 0.5585005552528854,
+      "reversed": true,
+      "text": "I often forget to put things back in their proper place."
+    },
+    {
+      "item": "C4",
+      "correlation": 0.5440941449359278,
+      "reversed": true,
+      "text": "I make a mess of things."
+    },
+    {
+      "item": "C1",
+      "correlation": 0.5399088773685665,
+      "reversed": false,
+      "text": "I am always prepared."
+    },
+    {
+      "item": "C9",
+      "correlation": 0.539470461251674,
+      "reversed": false,
+      "text": "I follow a schedule."
+    },
+    {
+      "item": "C2",
+      "correlation": 0.47940536158530045,
+      "reversed": true,
+      "text": "I leave my belongings around."
+    },
+    {
+      "item": "C8",
+      "correlation": 0.4624837796279394,
+      "reversed": true,
+      "text": "I shirk my duties."
+    },
+    {
+      "item": "C7",
+      "correlation": 0.4567484627532523,
+      "reversed": false,
+      "text": "I like order."
+    },
+    {
+      "item": "C10",
+      "correlation": 0.41226506342669317,
+      "reversed": false,
+      "text": "I am exacting in my work."
+    },
+    {
+      "item": "C3",
+      "correlation": 0.3540281963682478,
+      "reversed": false,
+      "text": "I pay attention to details."
+    }
+  ],
+  "LYRA": [
+    {
+      "item": "O10",
+      "correlation": 0.5895556930551805,
+      "reversed": false,
+      "text": "I am full of ideas."
+    },
+    {
+      "item": "O1",
+      "correlation": 0.5349441569121977,
+      "reversed": false,
+      "text": "I have a rich vocabulary."
+    },
+    {
+      "item": "O2",
+      "correlation": 0.5151944246886379,
+      "reversed": true,
+      "text": "I have difficulty understanding abstract ideas."
+    },
+    {
+      "item": "O5",
+      "correlation": 0.5151649539958203,
+      "reversed": false,
+      "text": "I have excellent ideas."
+    },
+    {
+      "item": "O3",
+      "correlation": 0.46369101171768684,
+      "reversed": false,
+      "text": "I have a vivid imagination."
+    },
+    {
+      "item": "O8",
+      "correlation": 0.4602087504758688,
+      "reversed": false,
+      "text": "I use difficult words."
+    },
+    {
+      "item": "O6",
+      "correlation": 0.4522094746506231,
+      "reversed": true,
+      "text": "I do not have a good imagination."
+    },
+    {
+      "item": "O4",
+      "correlation": 0.43811559554320273,
+      "reversed": true,
+      "text": "I am not interested in abstract ideas."
+    },
+    {
+      "item": "O7",
+      "correlation": 0.43043432050790253,
+      "reversed": false,
+      "text": "I am quick to understand things."
+    }
+  ],
+  "VARA": [
+    {
+      "item": "HGree4",
+      "correlation": 0.6415737833952424,
+      "reversed": true,
+      "text": "I have a strong need for power."
+    },
+    {
+      "item": "HMode5",
+      "correlation": 0.6387030573490349,
+      "reversed": true,
+      "text": "I would like to have more power than other people."
+    },
+    {
+      "item": "HFair7",
+      "correlation": 0.5818502173299451,
+      "reversed": true,
+      "text": "I cheat to get ahead."
+    },
+    {
+      "item": "HGree10",
+      "correlation": 0.5762478127603611,
+      "reversed": true,
+      "text": "I am out for my own personal gain."
+    },
+    {
+      "item": "HGree5",
+      "correlation": 0.5736230905142657,
+      "reversed": true,
+      "text": "I seek status."
+    },
+    {
+      "item": "HMode6",
+      "correlation": 0.5660484386696356,
+      "reversed": true,
+      "text": "I believe that I am better than others."
+    },
+    {
+      "item": "HSinc3",
+      "correlation": 0.545148440428738,
+      "reversed": true,
+      "text": "I tell other people what they want to hear so that they will do what I want them to do."
+    },
+    {
+      "item": "HSinc2",
+      "correlation": 0.5232786175029893,
+      "reversed": true,
+      "text": "I use flattery to get ahead."
+    },
+    {
+      "item": "HSinc4",
+      "correlation": 0.5159437443822653,
+      "reversed": true,
+      "text": "I put on a show to impress people."
+    },
+    {
+      "item": "HFair10",
+      "correlation": 0.4981444857690665,
+      "reversed": true,
+      "text": "I would not regret my behavior if I were to take advantage of someone impulsively."
+    },
+    {
+      "item": "HMode9",
+      "correlation": 0.4960540611472413,
+      "reversed": true,
+      "text": "I am likely to show off if I get the chance."
+    },
+    {
+      "item": "HFair1",
+      "correlation": 0.48144432297327877,
+      "reversed": false,
+      "text": "I would never take things that aren't mine."
+    },
+    {
+      "item": "HSinc6",
+      "correlation": 0.47617237243260957,
+      "reversed": true,
+      "text": "I play a role in order to impress people."
+    },
+    {
+      "item": "HFair8",
+      "correlation": 0.46952964442459655,
+      "reversed": true,
+      "text": "I steal things."
+    },
+    {
+      "item": "HGree6",
+      "correlation": 0.4634412531383219,
+      "reversed": true,
+      "text": "I am mainly interested in money."
+    },
+    {
+      "item": "HSinc5",
+      "correlation": 0.4613741025223622,
+      "reversed": true,
+      "text": "I switch my loyalties when I feel like it."
+    },
+    {
+      "item": "HMode1",
+      "correlation": 0.4571795642738431,
+      "reversed": false,
+      "text": "I don't think that I'm better than other people."
+    },
+    {
+      "item": "HFair4",
+      "correlation": 0.4511602595305338,
+      "reversed": false,
+      "text": "I would feel very badly for a long time if I were to steal from someone."
+    }
+  ],
+  "CHRONOS": [
+    {
+      "item": "APati7",
+      "correlation": 0.7278751572771077,
+      "reversed": true,
+      "text": "I get angry easily."
+    },
+    {
+      "item": "APati6",
+      "correlation": 0.7231994349711445,
+      "reversed": true,
+      "text": "I am easily annoyed."
+    },
+    {
+      "item": "APati8",
+      "correlation": 0.7187768124874373,
+      "reversed": true,
+      "text": "I get irritated easily."
+    },
+    {
+      "item": "APati2",
+      "correlation": 0.7026607015485735,
+      "reversed": false,
+      "text": "I rarely feel angry with people."
+    },
+    {
+      "item": "APati1",
+      "correlation": 0.6496059729803667,
+      "reversed": false,
+      "text": "I find that it takes a lot to make me feel angry at someone."
+    },
+    {
+      "item": "AForg5",
+      "correlation": 0.6327538723671904,
+      "reversed": true,
+      "text": "I find it hard to forgive others."
+    },
+    {
+      "item": "APati5",
+      "correlation": 0.6301099746288574,
+      "reversed": false,
+      "text": "I seldom get mad."
+    },
+    {
+      "item": "APati4",
+      "correlation": 0.6248256315504569,
+      "reversed": false,
+      "text": "I rarely get irritated."
+    },
+    {
+      "item": "APati9",
+      "correlation": 0.6197765682501808,
+      "reversed": true,
+      "text": "I lose my temper."
+    },
+    {
+      "item": "AForg6",
+      "correlation": 0.6025831768109279,
+      "reversed": true,
+      "text": "I hold a grudge."
+    },
+    {
+      "item": "AForg3",
+      "correlation": 0.5792685016810449,
+      "reversed": false,
+      "text": "I am inclined to forgive others."
+    },
+    {
+      "item": "AFlex7",
+      "correlation": 0.5514499556066605,
+      "reversed": true,
+      "text": "I am annoyed by others' mistakes."
+    },
+    {
+      "item": "AGent8",
+      "correlation": 0.540604855184732,
+      "reversed": true,
+      "text": "I speak ill of others."
+    },
+    {
+      "item": "APati3",
+      "correlation": 0.528680753262217,
+      "reversed": false,
+      "text": "I am usually a patient person."
+    },
+    {
+      "item": "AGent5",
+      "correlation": 0.5256845034237623,
+      "reversed": true,
+      "text": "I become frustrated and angry with people when they don't live up to my expectations."
+    },
+    {
+      "item": "AGent6",
+      "correlation": 0.5245617706922935,
+      "reversed": true,
+      "text": "I am quick to judge others."
+    },
+    {
+      "item": "AForg2",
+      "correlation": 0.5211774258457111,
+      "reversed": false,
+      "text": "I try to forgive and forget."
+    },
+    {
+      "item": "AGent10",
+      "correlation": 0.5145951415130926,
+      "reversed": true,
+      "text": "I criticize others' shortcomings."
+    }
+  ],
+  "KAEL": [
+    {
+      "item": "D1",
+      "correlation": 0.6510055285670464,
+      "reversed": false,
+      "text": "I am good at making impromptu speeches."
+    },
+    {
+      "item": "D5",
+      "correlation": 0.5776122649864508,
+      "reversed": false,
+      "text": "I have a strong personality."
+    },
+    {
+      "item": "D7",
+      "correlation": 0.5578768061650027,
+      "reversed": true,
+      "text": "I would be afraid to give a speech in public."
+    },
+    {
+      "item": "D2",
+      "correlation": 0.4906684049014826,
+      "reversed": false,
+      "text": "I don't mind being the center of attention."
+    },
+    {
+      "item": "D9",
+      "correlation": 0.47337511369884977,
+      "reversed": true,
+      "text": "I hate being the center of attention."
+    },
+    {
+      "item": "D3",
+      "correlation": 0.4199963244170665,
+      "reversed": false,
+      "text": "I feel comfortable around people."
+    },
+    {
+      "item": "D4",
+      "correlation": 0.41939983587647145,
+      "reversed": false,
+      "text": "I have leadership abilities."
+    },
+    {
+      "item": "D6",
+      "correlation": 0.40824914519478284,
+      "reversed": false,
+      "text": "I know how to captivate people."
+    },
+    {
+      "item": "D10",
+      "correlation": 0.39473927900844435,
+      "reversed": true,
+      "text": "I have little to say."
+    }
+  ]
+}

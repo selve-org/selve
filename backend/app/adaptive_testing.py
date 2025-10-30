@@ -51,9 +51,8 @@ class AdaptiveTester:
             item_pool_path: Path to item pool JSON file
         """
         if item_pool_path is None:
-            # Default to expanded item pool
-            backend_dir = Path(__file__).parent.parent
-            item_pool_path = str(backend_dir.parent / 'data' / 'selve_item_pool_expanded.json')
+            # Default to expanded item pool in app/data
+            item_pool_path = str(Path(__file__).parent / 'data' / 'selve_item_pool_expanded.json')
         
         self.scorer = SelveScorer(item_pool_path)
         self.item_pool_path = item_pool_path

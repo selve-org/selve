@@ -10,6 +10,7 @@ import {
   Textarea,
   DateInput,
   ScaleSlider,
+  NumberInput,
 } from "./inputs";
 
 interface QuestionRendererProps {
@@ -55,6 +56,16 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <TextInput
             value={(value as string) || ""}
+            onChange={onChange}
+            config={renderConfig}
+            error={error}
+          />
+        );
+
+      case "number-input":
+        return (
+          <NumberInput
+            value={(value as number) || 0}
             onChange={onChange}
             config={renderConfig}
             error={error}
@@ -125,20 +136,20 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   return (
     <motion.div
-      className="space-y-2"
+      className="space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
       {/* Question Label */}
-      <label className="block text-xs text-gray-900 dark:text-white leading-4 mb-2">
+      <label className="block text-base md:text-lg text-gray-900 dark:text-white font-medium leading-6">
         {text}
         {isRequired && <span className="text-red-400 ml-1">*</span>}
       </label>
 
       {/* Input Component */}
-      <div className="mb-2">{renderInput()}</div>
+      <div>{renderInput()}</div>
 
       {/* Description/Help text */}
       {description && (

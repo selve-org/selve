@@ -45,7 +45,7 @@ class SubmitAnswerRequest(BaseModel):
     """Request to submit an answer"""
     session_id: str
     question_id: str
-    response: int = Field(..., ge=1, le=5, description="Response value 1-5")
+    response: Any = Field(..., description="Response value (varies by question type)")
 
 
 class SubmitAnswerResponse(BaseModel):
@@ -63,6 +63,7 @@ class GetResultsResponse(BaseModel):
     scores: Dict[str, float]
     narrative: Dict[str, Any]
     completed_at: str
+    demographics: Optional[Dict[str, Any]] = None
 
 
 # ============================================================================
@@ -77,7 +78,7 @@ async def start_assessment(request: StartAssessmentRequest):
     Returns:
     - session_id: Unique session identifier
     - questions: Initial quick screen questions (16 items)
-    - total_questions: Estimated total (26-50 items)
+    - total_questions: Estimated total (30-54 items including demographics)
     - progress: Initial progress (0.0)
     """
     # Generate session ID
@@ -87,33 +88,104 @@ async def start_assessment(request: StartAssessmentRequest):
     tester = AdaptiveTester()
     
     # Get initial quick screen questions
-    initial_questions = tester.quick_screen()
+    personality_questions = tester.get_quick_screen()
+    
+    # Create demographic questions (first 4 questions)
+    demographic_questions = [
+        {
+            "id": "demo_name",
+            "text": "What's your name?",
+            "type": "text-input",
+            "dimension": "demographics",
+            "isRequired": True,
+            "renderConfig": {
+                "placeholder": "Enter your full name",
+                "helpText": "We'll use this to personalize your results"
+            }
+        },
+        {
+            "id": "demo_age",
+            "text": "How old are you?",
+            "type": "number-input",
+            "dimension": "demographics",
+            "isRequired": True,
+            "renderConfig": {
+                "min": 13,
+                "max": 120,
+                "placeholder": "Enter your age",
+                "helpText": "Must be 13 or older to take this assessment"
+            }
+        },
+        {
+            "id": "demo_gender",
+            "text": "What's your gender?",
+            "type": "pill-select",
+            "dimension": "demographics",
+            "isRequired": False,
+            "renderConfig": {
+                "options": [
+                    {"label": "Male", "value": "male"},
+                    {"label": "Female", "value": "female"},
+                    {"label": "Non-binary", "value": "non_binary"},
+                    {"label": "Prefer not to say", "value": "prefer_not_to_say"}
+                ]
+            }
+        },
+        {
+            "id": "demo_country",
+            "text": "Which country are you from?",
+            "type": "text-input",
+            "dimension": "demographics",
+            "isRequired": False,
+            "renderConfig": {
+                "placeholder": "Enter your country",
+                "helpText": "This helps us understand cultural context"
+            }
+        }
+    ]
     
     # Store session
     sessions[session_id] = {
         "tester": tester,
         "scorer": SelveScorer(),
         "responses": {},
+        "demographics": {},
         "started_at": datetime.now().isoformat(),
         "user_id": request.user_id,
         "metadata": request.metadata or {},
     }
     
-    # Format questions for frontend
-    questions = [
+    # Format personality questions for frontend
+    personality_formatted = [
         {
-            "id": q["id"],
+            "id": q["item"],  # Use "item" field as the ID
             "text": q["text"],
             "dimension": q["dimension"],
+            "type": "scale-slider",  # SELVE uses Likert scale (1-5)
             "isRequired": True,
+            "renderConfig": {
+                "min": 1,
+                "max": 5,
+                "step": 1,
+                "labels": {
+                    "1": "Strongly Disagree",
+                    "2": "Disagree",
+                    "3": "Neutral",
+                    "4": "Agree",
+                    "5": "Strongly Agree"
+                }
+            }
         }
-        for q in initial_questions
+        for q in personality_questions
     ]
+    
+    # Combine: demographics first, then personality
+    all_questions = demographic_questions + personality_formatted
     
     return StartAssessmentResponse(
         session_id=session_id,
-        questions=questions,
-        total_questions=50,  # Maximum possible
+        questions=all_questions,
+        total_questions=54,  # 4 demographics + ~50 personality
         progress=0.0,
     )
 
@@ -140,8 +212,24 @@ async def submit_answer(request: SubmitAnswerRequest):
     
     tester: AdaptiveTester = session["tester"]
     responses: Dict = session["responses"]
+    demographics: Dict = session["demographics"]
     
-    # Store response
+    # Check if this is a demographic question
+    if request.question_id.startswith("demo_"):
+        # Store demographic info
+        demo_field = request.question_id.replace("demo_", "")
+        demographics[demo_field] = request.response
+        
+        # Demographics don't affect adaptive testing, just continue
+        return SubmitAnswerResponse(
+            next_questions=None,
+            is_complete=False,
+            progress=len(demographics) / 54.0,  # 4 demos out of ~54 total
+            questions_answered=len(demographics),
+            total_questions=54,
+        )
+    
+    # Store personality response
     responses[request.question_id] = request.response
     
     # Check if we should continue testing
@@ -153,8 +241,8 @@ async def submit_answer(request: SubmitAnswerRequest):
             next_questions=None,
             is_complete=True,
             progress=1.0,
-            questions_answered=len(responses),
-            total_questions=len(responses),
+            questions_answered=len(demographics) + len(responses),
+            total_questions=len(demographics) + len(responses),
         )
     
     # Get next adaptive questions
@@ -163,17 +251,30 @@ async def submit_answer(request: SubmitAnswerRequest):
     # Format questions
     next_questions = [
         {
-            "id": q["id"],
+            "id": q["item"],  # Use "item" field as the ID
             "text": q["text"],
             "dimension": q["dimension"],
+            "type": "scale-slider",  # SELVE uses Likert scale (1-5)
             "isRequired": True,
+            "renderConfig": {
+                "min": 1,
+                "max": 5,
+                "step": 1,
+                "labels": {
+                    "1": "Strongly Disagree",
+                    "2": "Disagree",
+                    "3": "Neutral",
+                    "4": "Agree",
+                    "5": "Strongly Agree"
+                }
+            }
         }
         for q in next_items
     ]
     
     # Calculate progress (estimate based on typical completion)
-    questions_answered = len(responses)
-    estimated_total = 40  # Average completion point
+    questions_answered = len(demographics) + len(responses)
+    estimated_total = 44  # 4 demographics + ~40 personality average
     progress = min(questions_answered / estimated_total, 0.95)  # Cap at 95% until done
     
     return SubmitAnswerResponse(
@@ -193,7 +294,7 @@ async def get_results(session_id: str):
     Returns:
     - scores: Dimension scores (0-100)
     - narrative: Complete psychological narrative
-      - archetype: Personality archetype
+      - archetype: Personality archetype with personalized greeting
       - dimensions: Detailed dimension narratives
       - summary: Executive summary
     """
@@ -203,6 +304,7 @@ async def get_results(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found")
     
     responses = session["responses"]
+    demographics = session.get("demographics", {})
     scorer: SelveScorer = session["scorer"]
     
     # Check if complete
@@ -218,8 +320,13 @@ async def get_results(session_id: str):
     # Score responses
     profile = scorer.score_responses(responses)
     
-    # Generate narrative
+    # Generate narrative (pass demographics for personalization)
     narrative = generate_narrative(profile.dimension_scores)
+    
+    # Personalize archetype with name if available
+    if "name" in demographics and demographics["name"]:
+        name = demographics["name"].split()[0]  # Use first name
+        narrative.archetype_description = f"Hi {name}! {narrative.archetype_description}"
     
     # Mark session as completed
     session["completed_at"] = datetime.now().isoformat()
@@ -229,6 +336,7 @@ async def get_results(session_id: str):
         scores=profile.dimension_scores,
         narrative=narrative.to_dict(),
         completed_at=session["completed_at"],
+        demographics=demographics,  # Include demographics in response
     )
 
 
