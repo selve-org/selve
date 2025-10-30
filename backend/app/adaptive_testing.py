@@ -21,7 +21,7 @@ from dataclasses import dataclass
 import statistics
 from pathlib import Path
 
-from scoring import SelveScorer, SelveProfile
+from app.scoring import SelveScorer, SelveProfile
 
 
 @dataclass
