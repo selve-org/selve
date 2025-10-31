@@ -62,8 +62,8 @@ class AdaptiveTester:
             self.item_pool = json.load(f)
         
         # Adaptive testing parameters
-        self.UNCERTAINTY_THRESHOLD = 0.6  # Above this = needs more items
-        self.MIN_ITEMS_PER_DIMENSION = 2  # Quick screen minimum
+        self.UNCERTAINTY_THRESHOLD = 0.5  # Above this = needs more items (lowered from 0.6)
+        self.MIN_ITEMS_PER_DIMENSION = 4  # Quick screen minimum (increased from 2 to ensure follow-ups)
         self.MAX_ITEMS_PER_DIMENSION = 12  # Maximum items to ask
         self.TARGET_TOTAL_ITEMS = 50  # Target for standard assessment
         self.MAX_TOTAL_ITEMS = 70  # Absolute maximum
@@ -222,6 +222,28 @@ class AdaptiveTester:
         Returns:
             List of item dicts to ask next
         """
+        return self.select_next_items_excluding(responses, set(responses.keys()), max_items)
+    
+    def select_next_items_excluding(
+        self,
+        responses: Dict[str, int],
+        exclude_items: Set[str],
+        max_items: int = 10
+    ) -> List[Dict]:
+        """
+        Select next items to ask, excluding specific item codes.
+        
+        This is used to avoid re-suggesting questions that are pending
+        (sent to user but not yet answered).
+        
+        Args:
+            responses: Dict of item_code -> response value
+            exclude_items: Set of item codes to exclude (answered + pending)
+            max_items: Maximum number of items to return
+        
+        Returns:
+            List of item dicts to ask next
+        """
         # Calculate uncertainty for all dimensions
         dimensions = ['LUMEN', 'AETHER', 'ORPHEUS', 'ORIN', 'LYRA', 'VARA', 'CHRONOS', 'KAEL']
         uncertainties = []
@@ -236,7 +258,6 @@ class AdaptiveTester:
         
         # Select items for uncertain dimensions
         next_items = []
-        answered_codes = set(responses.keys())
         
         for uncertainty in uncertainties:
             if len(next_items) >= max_items:
@@ -245,10 +266,10 @@ class AdaptiveTester:
             # Get all items for this dimension
             dim_items = self.scorer.get_items_by_dimension(uncertainty.dimension)
             
-            # Filter out already answered items
+            # Filter out excluded items (answered + pending)
             available_items = [
                 item for item in dim_items 
-                if item['item'] not in answered_codes
+                if item['item'] not in exclude_items
             ]
             
             # Sort by correlation (highest first)

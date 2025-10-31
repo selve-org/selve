@@ -115,24 +115,42 @@ class SelveScorer:
         'KAEL': {'symbol': '🔥', 'color': '#FF6347', 'name': 'Assertiveness'}
     }
     
-    def __init__(self, item_pool_path: Optional[str] = None):
+    def __init__(self, item_pool_path: Optional[str] = None, include_scenarios: bool = True):
         """
         Initialize scorer with item pool.
         
         Args:
             item_pool_path: Path to selve_item_pool_expanded.json
+            include_scenarios: Whether to include LaHaye-style scenario items
         """
         if item_pool_path is None:
             item_pool_path = Path(__file__).parent / "data" / "selve_item_pool_expanded.json"
         
         self.item_pool_path = Path(item_pool_path)
+        self.include_scenarios = include_scenarios
         self.item_pool = self._load_item_pool()
         self.dimension_items = self._organize_items_by_dimension()
         
     def _load_item_pool(self) -> Dict:
-        """Load item pool from JSON file."""
+        """Load item pool from JSON file and optionally merge scenarios."""
         with open(self.item_pool_path, 'r') as f:
-            return json.load(f)
+            base_pool = json.load(f)
+        
+        # Merge scenario items if enabled
+        if self.include_scenarios:
+            scenarios_path = self.item_pool_path.parent / "selve_scenarios.json"
+            if scenarios_path.exists():
+                with open(scenarios_path, 'r') as f:
+                    scenarios = json.load(f)
+                
+                # Merge scenarios into base pool
+                for dimension, scenario_items in scenarios.items():
+                    if dimension in base_pool:
+                        base_pool[dimension].extend(scenario_items)
+                    else:
+                        base_pool[dimension] = scenario_items
+        
+        return base_pool
     
     def _organize_items_by_dimension(self) -> Dict[str, List[Dict]]:
         """Organize items by dimension for efficient lookup."""

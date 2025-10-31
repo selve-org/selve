@@ -15,14 +15,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
  * useQuestionnaire Hook
- * 
+ *
  * Manages the complete questionnaire state including:
  * - Session creation and management via SELVE backend
  * - Adaptive question fetching
  * - Answer submission
  * - Progress tracking
  * - Automatic completion and redirect to results
- * 
+ *
  * Connected to SELVE Backend API:
  * - POST /api/assessment/start - Initialize session
  * - POST /api/assessment/answer - Submit answers
@@ -43,11 +43,17 @@ export function useQuestionnaire() {
     },
   });
 
-  const [showCheckpoint, setShowCheckpoint] = useState<QuestionnaireCheckpoint | null>(null);
+  const [showCheckpoint, setShowCheckpoint] =
+    useState<QuestionnaireCheckpoint | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [questionQueue, setQuestionQueue] = useState<QuestionnaireQuestion[]>([]);
+  const [questionQueue, setQuestionQueue] = useState<QuestionnaireQuestion[]>(
+    []
+  );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [isGoingBack, setIsGoingBack] = useState(false);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
   /**
    * Initialize session and fetch first questions from SELVE backend
@@ -77,33 +83,37 @@ export function useQuestionnaire() {
       setSessionId(session_id);
 
       // Convert backend questions to frontend format
-      const formattedQuestions: QuestionnaireQuestion[] = questions.map((q: any) => ({
-        id: q.id,
-        text: q.text,
-        type: q.type || "scale-slider", // Use backend type or default to scale-slider
-        section: q.dimension,
-        subsection: q.dimension,
-        isRequired: q.isRequired,
-        renderConfig: q.renderConfig || {
-          min: 1,
-          max: 5,
-          step: 1,
-          labels: {
-            1: "Strongly Disagree",
-            2: "Disagree",
-            3: "Neutral",
-            4: "Agree",
-            5: "Strongly Agree"
-          }
-        },
-      }));
+      const formattedQuestions: QuestionnaireQuestion[] = questions.map(
+        (q: any) => ({
+          id: q.id,
+          text: q.text,
+          type: q.type || "scale-slider", // Use backend type or default to scale-slider
+          sectionId: q.dimension,
+          isRequired: q.isRequired,
+          renderConfig: q.renderConfig || {
+            min: 1,
+            max: 5,
+            step: 1,
+            labels: {
+              1: "Strongly Disagree",
+              2: "Disagree",
+              3: "Neutral",
+              4: "Agree",
+              5: "Strongly Agree",
+            },
+          },
+        })
+      );
 
       setQuestionQueue(formattedQuestions);
       setCurrentQuestionIndex(0);
 
       setState((prev) => ({
         ...prev,
-        session: { id: session_id, createdAt: new Date().toISOString() } as QuestionnaireSession,
+        session: {
+          id: session_id,
+          createdAt: new Date().toISOString(),
+        } as QuestionnaireSession,
         currentQuestion: formattedQuestions[0] || null,
         isLoading: false,
         progress: {
@@ -113,7 +123,8 @@ export function useQuestionnaire() {
         },
       }));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to initialize";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to initialize";
       Sentry.captureException(error);
       setState((prev) => ({
         ...prev,
@@ -144,6 +155,7 @@ export function useQuestionnaire() {
             session_id: sessionId,
             question_id: questionId,
             response: answer as number, // 1-5 scale
+            is_going_back: isGoingBack, // Flag if this is a resubmission after going back
           }),
         });
 
@@ -152,7 +164,26 @@ export function useQuestionnaire() {
         }
 
         const data = await response.json();
-        const { next_questions, is_complete, progress, questions_answered, total_questions } = data;
+        const {
+          next_questions,
+          is_complete,
+          progress,
+          questions_answered,
+          total_questions,
+          can_go_back,
+          warning_message,
+        } = data;
+
+        // Update can_go_back state from backend
+        if (can_go_back !== undefined) {
+          setCanGoBack(can_go_back);
+        }
+        if (warning_message) {
+          setWarningMessage(warning_message);
+        }
+
+        // Reset going back flag after submission
+        setIsGoingBack(false);
 
         // Update local answers map
         const newAnswers = new Map(state.answers);
@@ -172,7 +203,7 @@ export function useQuestionnaire() {
         if (is_complete) {
           setIsComplete(true);
           setState((prev) => ({ ...prev, isLoading: false }));
-          
+
           // Redirect to results page after short delay
           setTimeout(() => {
             window.location.href = `/results/${sessionId}`;
@@ -181,42 +212,53 @@ export function useQuestionnaire() {
         }
 
         // Add next adaptive questions to queue
+        let updatedQueue = questionQueue;
         if (next_questions && next_questions.length > 0) {
-          const formattedQuestions: QuestionnaireQuestion[] = next_questions.map((q: any) => ({
-            id: q.id,
-            text: q.text,
-            type: q.type || "scale-slider", // Use backend type or default to scale-slider
-            section: q.dimension,
-            subsection: q.dimension,
-            isRequired: q.isRequired,
-            renderConfig: q.renderConfig || {
-              min: 1,
-              max: 5,
-              step: 1,
-              labels: {
-                1: "Strongly Disagree",
-                2: "Disagree",
-                3: "Neutral",
-                4: "Agree",
-                5: "Strongly Agree"
-              }
-            },
-          }));
+          const formattedQuestions: QuestionnaireQuestion[] =
+            next_questions.map((q: any) => ({
+              id: q.id,
+              text: q.text,
+              type: q.type || "scale-slider", // Use backend type or default to scale-slider
+              sectionId: q.dimension,
+              isRequired: q.isRequired,
+              renderConfig: q.renderConfig || {
+                min: 1,
+                max: 5,
+                step: 1,
+                labels: {
+                  1: "Strongly Disagree",
+                  2: "Disagree",
+                  3: "Neutral",
+                  4: "Agree",
+                  5: "Strongly Agree",
+                },
+              },
+            }));
 
-          setQuestionQueue((prev) => [...prev, ...formattedQuestions]);
+          updatedQueue = [...questionQueue, ...formattedQuestions];
+          setQuestionQueue(updatedQueue);
         }
 
-        // Move to next question in queue
-        const nextIndex = currentQuestionIndex + 1;
-        setCurrentQuestionIndex(nextIndex);
+        // Move to next question in queue (unless we went back)
+        if (!isGoingBack) {
+          const nextIndex = currentQuestionIndex + 1;
+          setCurrentQuestionIndex(nextIndex);
 
-        setState((prev) => ({
-          ...prev,
-          currentQuestion: questionQueue[nextIndex] || null,
-          isLoading: false,
-        }));
+          setState((prev) => ({
+            ...prev,
+            currentQuestion: updatedQueue[nextIndex] || null,
+            isLoading: false,
+          }));
+        } else {
+          // Stay on current question after resubmitting
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+          }));
+        }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to submit answer";
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to submit answer";
         Sentry.captureException(error);
         setState((prev) => ({
           ...prev,
@@ -225,17 +267,83 @@ export function useQuestionnaire() {
         }));
       }
     },
-    [sessionId, state.answers, currentQuestionIndex, questionQueue]
+    [sessionId, state.answers, currentQuestionIndex, questionQueue, isGoingBack]
   );
 
   /**
    * Go back to previous question (if supported)
-   * TODO: Implement navigation history for going back
+   * Calls backend /assessment/back endpoint and loads the previous question
    */
-  const goBack = useCallback(() => {
-    // This would require storing question history
-    console.log("Go back - not yet implemented");
-  }, []);
+  const goBack = useCallback(async () => {
+    if (!sessionId || !canGoBack) {
+      console.log("Cannot go back: ", { sessionId, canGoBack });
+      return;
+    }
+
+    try {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      // Call backend to go back
+      const response = await fetch(`${API_BASE}/api/assessment/back`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to go back");
+      }
+
+      const data = await response.json();
+      const { previous_question, current_index, can_go_back, warning_message } =
+        data;
+
+      // Update states
+      setCanGoBack(can_go_back);
+      setWarningMessage(warning_message || null);
+      setIsGoingBack(true); // Set flag so next submission knows it's a resubmission
+
+      // Format the previous question
+      const formattedQuestion: QuestionnaireQuestion = {
+        id: previous_question.id,
+        text: previous_question.text,
+        type: previous_question.type || "scale-slider",
+        sectionId: previous_question.dimension,
+        isRequired: previous_question.isRequired,
+        renderConfig: previous_question.renderConfig || {
+          min: 1,
+          max: 5,
+          step: 1,
+          labels: {
+            1: "Strongly Disagree",
+            2: "Disagree",
+            3: "Neutral",
+            4: "Agree",
+            5: "Strongly Agree",
+          },
+        },
+      };
+
+      // Update current question and index
+      setCurrentQuestionIndex(current_index);
+      setState((prev) => ({
+        ...prev,
+        currentQuestion: formattedQuestion,
+        isLoading: false,
+      }));
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to go back";
+      Sentry.captureException(error);
+      setState((prev) => ({
+        ...prev,
+        error: errorMessage,
+        isLoading: false,
+      }));
+    }
+  }, [sessionId, canGoBack]);
 
   /**
    * Skip current question (if allowed)
@@ -281,7 +389,10 @@ export function useQuestionnaire() {
       for (const rule of validation) {
         switch (rule.type) {
           case "minLength":
-            if (typeof answer === "string" && answer.length < (rule.value as number)) {
+            if (
+              typeof answer === "string" &&
+              answer.length < (rule.value as number)
+            ) {
               return {
                 isValid: false,
                 error: rule.message || `Minimum length is ${rule.value}`,
@@ -290,7 +401,10 @@ export function useQuestionnaire() {
             break;
 
           case "maxLength":
-            if (typeof answer === "string" && answer.length > (rule.value as number)) {
+            if (
+              typeof answer === "string" &&
+              answer.length > (rule.value as number)
+            ) {
               return {
                 isValid: false,
                 error: rule.message || `Maximum length is ${rule.value}`,
@@ -362,6 +476,8 @@ export function useQuestionnaire() {
     progress: state.progress,
     showCheckpoint,
     isComplete,
+    canGoBack,
+    warningMessage,
 
     // Actions
     submitAnswer,

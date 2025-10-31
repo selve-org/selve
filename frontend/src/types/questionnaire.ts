@@ -24,6 +24,7 @@ export type QuestionInputType =
   | "time-input" // Time picker
   | "datetime-input" // Date and time picker
   | "scale-slider" // Numeric scale/slider (e.g., 1-10)
+  | "country-select" // Country autocomplete selector
   | "checkbox" // Single checkbox or multiple checkboxes
   | "radio" // Radio button group
   | "dropdown" // Select dropdown

@@ -11,7 +11,9 @@ import {
   DateInput,
   ScaleSlider,
   NumberInput,
+  Radio,
 } from "./inputs";
+import { CountrySelect } from "./inputs/CountrySelect";
 
 interface QuestionRendererProps {
   question: QuestionnaireQuestion;
@@ -104,10 +106,29 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           />
         );
 
-      // TODO: Add more input type handlers as components are created
-      case "number-input":
-      case "checkbox":
       case "radio":
+        return (
+          <Radio
+            value={(value as string) || ""}
+            onChange={onChange}
+            options={renderConfig.options || []}
+            error={error}
+          />
+        );
+
+      case "country-select":
+        return (
+          <CountrySelect
+            value={(value as string) || ""}
+            onChange={onChange}
+            error={error}
+            placeholder={renderConfig.placeholder}
+            helpText={renderConfig.helpText}
+          />
+        );
+
+      // TODO: Add more input type handlers as components are created
+      case "checkbox":
       case "dropdown":
       case "multi-select":
       case "file-upload":

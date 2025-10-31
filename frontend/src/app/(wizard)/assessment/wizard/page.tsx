@@ -7,6 +7,8 @@ import { ArtisticCanvas } from "@/components/wizard/ArtisticCanvas";
 import { QuestionRenderer } from "@/components/wizard/QuestionRenderer";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
 import { Checkpoint } from "@/components/wizard/Checkpoint";
+import { BackButton } from "@/components/wizard/BackButton";
+import { BackWarningModal } from "@/components/wizard/BackWarningModal";
 import { useQuestionnaire } from "@/hooks/useQuestionnaire";
 
 /**
@@ -20,6 +22,7 @@ import { useQuestionnaire } from "@/hooks/useQuestionnaire";
  * - Adaptive question flow
  * - Progress tracking
  * - Checkpoint milestones
+ * - Back navigation with warning
  * - Responsive design
  * - Beautiful animations
  */
@@ -31,7 +34,10 @@ export default function WizardPage() {
     progress,
     showCheckpoint,
     isComplete,
+    canGoBack,
+    warningMessage,
     submitAnswer,
+    goBack,
     skipQuestion,
     continueFromCheckpoint,
     validateAnswer,
@@ -40,6 +46,7 @@ export default function WizardPage() {
 
   const [currentAnswer, setCurrentAnswer] = useState<unknown>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [showBackWarning, setShowBackWarning] = useState(false);
 
   /**
    * Handle answer change from input components
@@ -47,6 +54,28 @@ export default function WizardPage() {
   const handleAnswerChange = (value: unknown) => {
     setCurrentAnswer(value);
     setValidationError(null); // Clear error on change
+  };
+
+  /**
+   * Handle back button click (show warning modal first)
+   */
+  const handleBackClick = () => {
+    setShowBackWarning(true);
+  };
+
+  /**
+   * Confirm going back (after warning)
+   */
+  const handleBackConfirm = async () => {
+    setShowBackWarning(false);
+    await goBack();
+  };
+
+  /**
+   * Cancel going back
+   */
+  const handleBackCancel = () => {
+    setShowBackWarning(false);
   };
 
   /**
@@ -101,7 +130,8 @@ export default function WizardPage() {
               Let&apos;s Decipher You!
             </h1>
             <p className="text-sm text-gray-600 dark:text-[#999999] leading-5 px-4 md:px-3">
-              Your data isn&apos;t shared with anyone and remains completely private.
+              Your data isn&apos;t shared with anyone and remains completely
+              private.
             </p>
           </div>
 
@@ -214,49 +244,62 @@ export default function WizardPage() {
               )}
 
               {/* Question Form */}
-              {currentQuestion && !isLoading && !showCheckpoint && !isComplete && (
-                <motion.form
-                  key={currentQuestion.id}
-                  onSubmit={handleSubmit}
-                  className="space-y-4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {/* Question Renderer */}
-                  <QuestionRenderer
-                    question={currentQuestion}
-                    value={currentAnswer ?? getAnswer(currentQuestion.id)}
-                    onChange={handleAnswerChange}
-                    error={validationError || undefined}
-                  />
-
-                  {/* Continue Button */}
-                  <button
-                    type="submit"
-                    disabled={isLoading || !currentAnswer}
-                    className="w-full px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 dark:disabled:bg-[#2e2e2e] 
-                      text-white disabled:text-gray-400 dark:disabled:text-[#4d4d4d] font-normal rounded-full
-                      transition-all duration-200 disabled:cursor-not-allowed text-sm"
+              {currentQuestion &&
+                !isLoading &&
+                !showCheckpoint &&
+                !isComplete && (
+                  <motion.form
+                    key={currentQuestion.id}
+                    onSubmit={handleSubmit}
+                    className="space-y-4"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    {isLoading ? "Submitting..." : "Continue"}
-                  </button>
+                    {/* Question Renderer */}
+                    <QuestionRenderer
+                      question={currentQuestion}
+                      value={currentAnswer ?? getAnswer(currentQuestion.id)}
+                      onChange={handleAnswerChange}
+                      error={validationError || undefined}
+                    />
 
-                  {/* Skip Link */}
-                  {!currentQuestion.isRequired && (
-                    <div className="text-center pt-1 pb-5">
+                    {/* Action buttons */}
+                    <div className="flex gap-3 items-center">
+                      {/* Back button */}
+                      <BackButton
+                        onClick={handleBackClick}
+                        disabled={!canGoBack}
+                        isLoading={isLoading}
+                      />
+
+                      {/* Continue button */}
                       <button
-                        type="button"
-                        onClick={handleSkip}
-                        className="text-gray-500 dark:text-[#666666] hover:text-gray-700 dark:hover:text-[#999999] text-sm transition-colors"
+                        type="submit"
+                        disabled={isLoading || !currentAnswer}
+                        className="flex-1 px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 dark:disabled:bg-[#2e2e2e] 
+                        text-white disabled:text-gray-400 dark:disabled:text-[#4d4d4d] font-normal rounded-full
+                        transition-all duration-200 disabled:cursor-not-allowed text-sm"
                       >
-                        Skip
+                        {isLoading ? "Submitting..." : "Continue"}
                       </button>
                     </div>
-                  )}
-                </motion.form>
-              )}
+
+                    {/* Skip Link */}
+                    {!currentQuestion.isRequired && (
+                      <div className="text-center pt-1 pb-5">
+                        <button
+                          type="button"
+                          onClick={handleSkip}
+                          className="text-gray-500 dark:text-[#666666] hover:text-gray-700 dark:hover:text-[#999999] text-sm transition-colors"
+                        >
+                          Skip
+                        </button>
+                      </div>
+                    )}
+                  </motion.form>
+                )}
             </AnimatePresence>
           </div>
         </div>
@@ -268,6 +311,14 @@ export default function WizardPage() {
           </p>
         </div>
       </div>
+
+      {/* Back Warning Modal */}
+      <BackWarningModal
+        isOpen={showBackWarning}
+        onConfirm={handleBackConfirm}
+        onCancel={handleBackCancel}
+        warningMessage={warningMessage}
+      />
     </div>
   );
 }

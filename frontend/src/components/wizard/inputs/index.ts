@@ -1,7 +1,7 @@
 // src/components/wizard/inputs/index.ts
 /**
  * Input Components Index
- * 
+ *
  * Exports all available input components for the questionnaire wizard
  */
 
@@ -11,6 +11,7 @@ export { Textarea } from "./Textarea";
 export { DateInput } from "./DateInput";
 export { ScaleSlider } from "./ScaleSlider";
 export { NumberInput } from "./NumberInput";
+export { Radio } from "./Radio";
 
 // TODO: Add more input types as needed:
 // - NumberInput

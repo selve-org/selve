@@ -57,6 +57,60 @@ const DIMENSION_NAMES: Record<string, string> = {
   KAEL: "Confidence",
 };
 
+const DIMENSION_DETAILS: Record<
+  string,
+  { emoji: string; origin: string; meaning: string; essence: string }
+> = {
+  LUMEN: {
+    emoji: "✨",
+    origin: "Latin",
+    meaning: "Light, radiance, illumination",
+    essence: "Bright, expressive, connective",
+  },
+  AETHER: {
+    emoji: "🌫️",
+    origin: "Greek",
+    meaning: "Upper air, pure essence",
+    essence: "Honest, humble, genuine",
+  },
+  ORPHEUS: {
+    emoji: "🎵",
+    origin: "Greek",
+    meaning: "Mythical musician who moved hearts",
+    essence: "Empathic, attuned, healing",
+  },
+  ORIN: {
+    emoji: "🧭",
+    origin: "Hebrew/Irish",
+    meaning: "Light, pale green, pine tree",
+    essence: "Steady, organized, enduring",
+  },
+  LYRA: {
+    emoji: "🦋",
+    origin: "Greek/Latin",
+    meaning: "Lyre, constellation, Orpheus' harp",
+    essence: "Curious, artistic, visionary",
+  },
+  VARA: {
+    emoji: "⚖️",
+    origin: "Sanskrit/Old Norse",
+    meaning: "Truth, vow, protection, choice",
+    essence: "Moral, loyal, steadfast",
+  },
+  CHRONOS: {
+    emoji: "⏳",
+    origin: "Greek",
+    meaning: "Time, patience, endurance",
+    essence: "Patient, forgiving, graceful",
+  },
+  KAEL: {
+    emoji: "🔥",
+    origin: "Gaelic/Irish",
+    meaning: "Mighty warrior, slender one (symbolic for will and fire)",
+    essence: "Bold, assertive, creative force",
+  },
+};
+
 export default function ResultsPage() {
   const params = useParams();
   const router = useRouter();
@@ -199,6 +253,84 @@ export default function ResultsPage() {
           </div>
         </motion.section>
 
+        {/* Your Core Dimensions - Etymology Introduction */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mb-16"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+            Your Core Dimensions
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            Your personality is composed of eight ancient dimensions. Here are
+            your three strongest forces:
+          </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {narrative.top_dimensions.slice(0, 3).map((topDim, i) => {
+              const details = DIMENSION_DETAILS[topDim.name];
+              if (!details) return null;
+
+              return (
+                <motion.div
+                  key={topDim.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
+                  className="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 rounded-xl border-2 border-purple-200 dark:border-purple-800"
+                >
+                  <div className="text-4xl mb-3 text-center">
+                    {details.emoji}
+                  </div>
+                  <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1 text-center">
+                    {topDim.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 text-center">
+                    {DIMENSION_NAMES[topDim.name]}
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        Origin:
+                      </span>{" "}
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {details.origin}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        Meaning:
+                      </span>{" "}
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {details.meaning}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        Essence:
+                      </span>{" "}
+                      <span className="italic text-gray-700 dark:text-gray-300">
+                        {details.essence}
+                      </span>
+                    </div>
+                    <div className="pt-2 mt-2 border-t border-purple-200 dark:border-purple-800">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-purple-600 dark:text-purple-400">
+                          Your Score
+                        </span>
+                        <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                          {Math.round(topDim.score)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+
         {/* Life Purpose */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -222,34 +354,47 @@ export default function ResultsPage() {
           className="mb-16"
         >
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-            Your Dimensions
+            All Eight Dimensions
           </h2>
           <div className="space-y-6">
-            {Object.entries(scores).map(([dim, score], i) => (
-              <motion.div
-                key={dim}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + i * 0.05 }}
-              >
-                <div className="flex justify-between mb-2">
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {DIMENSION_NAMES[dim] || dim}
-                  </span>
-                  <span className="text-purple-600 dark:text-purple-400 font-bold">
-                    {Math.round(score)}/100
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-[#2e2e2e] rounded-full h-3 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${score}%` }}
-                    transition={{ delay: 0.7 + i * 0.05, duration: 0.6 }}
-                    className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full"
-                  />
-                </div>
-              </motion.div>
-            ))}
+            {Object.entries(scores).map(([dim, score], i) => {
+              const details = DIMENSION_DETAILS[dim];
+              return (
+                <motion.div
+                  key={dim}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + i * 0.05 }}
+                >
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                      {details && (
+                        <span className="text-xl">{details.emoji}</span>
+                      )}
+                      <span>
+                        {dim}{" "}
+                        {details && (
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">
+                            ({DIMENSION_NAMES[dim]})
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span className="text-purple-600 dark:text-purple-400 font-bold">
+                      {Math.round(score)}/100
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-[#2e2e2e] rounded-full h-3 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${score}%` }}
+                      transition={{ delay: 0.7 + i * 0.05, duration: 0.6 }}
+                      className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full"
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.section>
 
