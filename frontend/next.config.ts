@@ -1,10 +1,14 @@
-import {withSentryConfig} from "@sentry/nextjs";
+// import {withSentryConfig} from "@sentry/nextjs";  // Disabled to prevent proxy errors
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
 };
 
+// Sentry disabled - was causing proxy errors
+export default nextConfig;
+
+/* SENTRY CONFIG - DISABLED
 export default withSentryConfig(withSentryConfig(nextConfig, {
 // For all available options, see:
 // https://www.npmjs.com/package/@sentry/webpack-plugin#options
@@ -66,3 +70,4 @@ disableLogger: true,
 // https://vercel.com/docs/cron-jobs
 automaticVercelMonitors: true,
 });
+*/

@@ -53,7 +53,7 @@
       "item": "E2",
       "correlation": 0.6480437776610981,
       "reversed": true,
-      "text": "I don't talk a lot.",
+      "text": "I tend to be quiet in most situations.",
       "source": "Big5"
     },
     {
@@ -95,7 +95,7 @@
       "item": "XExpr3",
       "correlation": 0.5434897115071949,
       "reversed": false,
-      "text": "I am the life of the party.",
+      "text": "I'm usually the most energetic person in the room at parties.",
       "source": "HEXACO"
     },
     {
@@ -109,7 +109,7 @@
       "item": "E8",
       "correlation": 0.5215230479473784,
       "reversed": true,
-      "text": "I don't like to draw attention to myself.",
+      "text": "I prefer to stay in the background rather than be noticed.",
       "source": "Big5"
     }
   ],
@@ -470,7 +470,7 @@
       "item": "APati8",
       "correlation": 0.7187768124874373,
       "reversed": true,
-      "text": "I get irritated easily."
+      "text": "Small things can annoy me pretty quickly."
     },
     {
       "item": "APati2",
@@ -586,7 +586,7 @@
       "item": "D2",
       "correlation": 0.4906684049014826,
       "reversed": false,
-      "text": "I don't mind being the center of attention."
+      "text": "I'm comfortable when everyone's eyes are on me."
     },
     {
       "item": "D9",
@@ -598,7 +598,7 @@
       "item": "D3",
       "correlation": 0.4199963244170665,
       "reversed": false,
-      "text": "I feel comfortable around people."
+      "text": "I'm at ease when I'm with other people."
     },
     {
       "item": "D4",
@@ -616,7 +616,7 @@
       "item": "D10",
       "correlation": 0.39473927900844435,
       "reversed": true,
-      "text": "I have little to say."
+      "text": "I don't contribute much to conversations."
     }
   ]
 }

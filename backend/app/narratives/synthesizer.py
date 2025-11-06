@@ -253,19 +253,23 @@ class NarrativePromptBuilder:
         low_traits = self.analyzer.get_low_traits()
         conflicts = self.analyzer.detect_conflicts()
         
-        # Build dimension summaries
+        # Build dimension summaries WITHOUT showing variable names
         dim_summaries = []
         for dim in self.analyzer.dimensions:
             template = dim.template
+            trait_name = self.analyzer.DIMENSION_NAMES[dim.name]
+            level = dim.level.replace('_', ' ').title()
+            core_nature = template.get('core_nature', 'N/A')[:200]
+            
             summary = f"""
-{dim.name} ({self.analyzer.DIMENSION_NAMES[dim.name]}): {dim.score}/100 - {dim.level.replace('_', ' ').title()}
-Core: {template.get('core_nature', 'N/A')[:200]}...
+{trait_name}: {dim.score}/100 - {level}
+Core: {core_nature}...
 """
             dim_summaries.append(summary)
         
-        # Build conflict descriptions
+        # Build conflict descriptions WITHOUT variable names
         conflict_text = "\n".join([
-            f"- {c.dim1.name} ({c.dim1.score}) vs {c.dim2.name} ({c.dim2.score}): {c.impact}"
+            f"- {self.analyzer.DIMENSION_NAMES[c.dim1.name]} ({c.dim1.score}) vs {self.analyzer.DIMENSION_NAMES[c.dim2.name]} ({c.dim2.score}): {c.impact}"
             for c in conflicts
         ]) if conflicts else "No major conflicts detected"
         
@@ -274,7 +278,7 @@ Core: {template.get('core_nature', 'N/A')[:200]}...
 PROFILE: {profile['pattern']}
 {profile['description']}
 
-SCORES:
+TRAIT SCORES:
 {"".join(dim_summaries)}
 
 CONFLICTS:
@@ -282,6 +286,12 @@ CONFLICTS:
 
 YOUR TASK:
 Write the "Core Identity" section (400-600 words) that explains who this person is.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe the person naturally using everyday language
+- Readers should NOT see internal variable names - only natural descriptions
 
 Guidelines:
 1. Explain how these 8 traits work together to make one person
@@ -297,17 +307,18 @@ Write in second person ("You are..."). No bullet points - just clear, flowing pa
     
     def build_motivations_prompt(self) -> str:
         """Build prompt for unified motivations section"""
-        # Extract all "what drives you" from templates
+        # Extract all "what drives you" from templates WITHOUT variable names
         all_motivations = []
         for dim in self.analyzer.dimensions:
             template = dim.template
+            trait_name = self.analyzer.DIMENSION_NAMES[dim.name]
             if 'what_drives_you' in template:
                 for motivation in template['what_drives_you']:
-                    all_motivations.append(f"{dim.name}: {motivation}")
+                    all_motivations.append(f"{trait_name}: {motivation}")
         
         prompt = f"""Write a personality assessment in plain, conversational language.
 
-SCORES:
+TRAIT SCORES:
 {self._get_dimension_summary()}
 
 WHAT DRIVES THIS PERSON:
@@ -315,6 +326,11 @@ WHAT DRIVES THIS PERSON:
 
 YOUR TASK:
 Write a "Core Motivations" section (300-400 words) that explains what really drives this person.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe the person naturally using everyday language
 
 Guidelines:
 1. Find 3-5 main themes that connect different motivations
@@ -341,7 +357,7 @@ Write in second person. Keep it conversational and honest."""
         
         prompt = f"""Explain the conflicts in this person's personality in simple terms.
 
-SCORES:
+TRAIT SCORES:
 {self._get_dimension_summary()}
 
 CONFLICTS DETECTED:
@@ -349,6 +365,11 @@ CONFLICTS DETECTED:
 
 YOUR TASK:
 Write a "Conflicts" section (200-300 words) that explains where this person's traits clash.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe the conflicts naturally using everyday language
 
 Guidelines:
 1. Explain each conflict in plain English - what's pulling in different directions
@@ -375,7 +396,7 @@ Write in second person. Just explain what's going on clearly."""
         
         prompt = f"""Explain this person's strengths in simple, direct language.
 
-SCORES:
+TRAIT SCORES:
 {self._get_dimension_summary()}
 
 HIGH SCORING TRAITS:
@@ -383,6 +404,11 @@ HIGH SCORING TRAITS:
 
 YOUR TASK:
 Write a "Strengths" section (200-300 words) that explains what this person does well.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe their strengths naturally using everyday language
 
 Guidelines:
 1. Focus on the highest scoring traits and what they mean in practice
@@ -409,7 +435,7 @@ Write in second person. Just tell them what they're good at."""
         
         prompt = f"""Explain what this person should work on, in plain talk.
 
-SCORES:
+TRAIT SCORES:
 {self._get_dimension_summary()}
 
 GROWTH PRIORITIES:
@@ -417,6 +443,11 @@ GROWTH PRIORITIES:
 
 YOUR TASK:
 Write a "Growth Areas" section (200-300 words) that explains what needs improvement.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe growth areas naturally using everyday language
 
 Guidelines:
 1. Focus on the lowest scores and biggest problems
@@ -439,15 +470,15 @@ Write in second person. Just tell them what to work on and why."""
         vara = dim_dict.get('VARA')
         
         rel_summary = f"""
-Social Energy (LUMEN): {lumen.score if lumen else 'N/A'}/100
-Empathy (ORPHEUS): {orpheus.score if orpheus else 'N/A'}/100
-Emotional Stability (AETHER): {aether.score if aether else 'N/A'}/100
-Honesty (VARA): {vara.score if vara else 'N/A'}/100
+Social Energy: {lumen.score if lumen else 'N/A'}/100
+Empathy: {orpheus.score if orpheus else 'N/A'}/100
+Emotional Stability: {aether.score if aether else 'N/A'}/100
+Honesty: {vara.score if vara else 'N/A'}/100
 """
         
         prompt = f"""Explain how this person shows up in relationships.
 
-SCORES:
+TRAIT SCORES:
 {self._get_dimension_summary()}
 
 KEY RELATIONSHIP TRAITS:
@@ -455,6 +486,11 @@ KEY RELATIONSHIP TRAITS:
 
 YOUR TASK:
 Write a "Relationships" section (200-300 words) about how this person connects with others.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe their relationship style naturally using everyday language
 
 Guidelines:
 1. Explain their relationship style in everyday terms
@@ -477,15 +513,15 @@ Write in second person. Just explain how they are with people."""
         kael = dim_dict.get('KAEL')
         
         work_summary = f"""
-Organization (ORIN): {orin.score if orin else 'N/A'}/100
-Creativity (LYRA): {lyra.score if lyra else 'N/A'}/100
-Patience (CHRONOS): {chronos.score if chronos else 'N/A'}/100
-Confidence (KAEL): {kael.score if kael else 'N/A'}/100
+Organization: {orin.score if orin else 'N/A'}/100
+Creativity: {lyra.score if lyra else 'N/A'}/100
+Patience: {chronos.score if chronos else 'N/A'}/100
+Confidence: {kael.score if kael else 'N/A'}/100
 """
         
         prompt = f"""Explain how this person operates at work or with tasks.
 
-SCORES:
+TRAIT SCORES:
 {self._get_dimension_summary()}
 
 KEY WORK TRAITS:
@@ -493,6 +529,11 @@ KEY WORK TRAITS:
 
 YOUR TASK:
 Write a "Work Style" section (200-300 words) about how this person gets things done.
+
+CRITICAL RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe their work style naturally using everyday language
 
 Guidelines:
 1. Explain their approach to work and tasks in plain terms
@@ -506,10 +547,11 @@ Write in second person. Just tell them how they work."""
         return prompt
     
     def _get_dimension_summary(self) -> str:
-        """Get brief summary of all dimensions"""
+        """Get brief summary of all dimensions WITHOUT variable names"""
         lines = []
         for dim in self.analyzer.dimensions:
-            lines.append(f"- {dim.name}: {dim.score}/100 ({dim.level.replace('_', ' ')})")
+            trait_name = self.analyzer.DIMENSION_NAMES[dim.name]
+            lines.append(f"- {trait_name}: {dim.score}/100 ({dim.level.replace('_', ' ')})")
         return "\n".join(lines)
 
 
