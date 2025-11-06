@@ -8,14 +8,20 @@ Handles the complete assessment flow:
 4. Generate narrative results
 """
 
+import os
+from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
+# Load environment variables for OpenAI
+load_dotenv()
+
 from app.adaptive_testing import AdaptiveTester
 from app.scoring import SelveScorer
 from app.narratives import generate_narrative
+from app.narratives.integrated_generator import generate_integrated_narrative
 from app.response_validator import ResponseValidator
 
 router = APIRouter()
@@ -766,15 +772,61 @@ async def get_results(session_id: str):
     if validator:
         validation_result = validator.validate_responses(responses)
     
-    # Generate narrative
-    narrative = generate_narrative(profile.dimension_scores)
+    # Generate narrative using integrated OpenAI generator
+    # Convert float scores to int for the generator
+    int_scores = {dim: int(score) for dim, score in profile.dimension_scores.items()}
     
-    # Personalize archetype with name if available
+    try:
+        # Try OpenAI integrated narrative first
+        integrated_narrative = generate_integrated_narrative(int_scores, use_llm=True)
+        
+        # Build narrative structure compatible with frontend
+        narrative_dict = {
+            'profile_pattern': integrated_narrative['profile_pattern'],
+            'sections': integrated_narrative['sections'],
+            'scores': integrated_narrative['scores'],
+            'generation_cost': integrated_narrative.get('generation_cost', 0.0),
+            'metadata': integrated_narrative.get('metadata', {}),
+        }
+        
+        print(f"\n✅ Generated integrated narrative with OpenAI")
+        print(f"   Cost: ${integrated_narrative.get('generation_cost', 0):.4f}")
+        print(f"   Model: {integrated_narrative.get('metadata', {}).get('model', 'unknown')}")
+        
+    except Exception as e:
+        # Fallback to template-based narrative
+        print(f"\n⚠️ OpenAI narrative failed, falling back to templates: {e}")
+        narrative = generate_narrative(profile.dimension_scores)
+        
+        # Convert old format to new format
+        narrative_dict = {
+            'profile_pattern': {
+                'pattern': 'Generated Profile',
+                'description': narrative.summary
+            },
+            'sections': {
+                'core_identity': narrative.summary,
+                'archetype': {
+                    'name': narrative.archetype.name,
+                    'description': narrative.archetype.description,
+                    'core_traits': narrative.archetype.core_traits,
+                    'strengths': narrative.archetype.strengths,
+                    'challenges': narrative.archetype.challenges,
+                }
+            },
+            'scores': profile.dimension_scores,
+            'generation_cost': 0.0,
+            'metadata': {
+                'generation_method': 'template'
+            }
+        }
+    
+    # Personalize with name if available
     if "demo_name" in demographics and demographics["demo_name"]:
         name = demographics["demo_name"].split()[0]  # Use first name
-        # Modify the archetype description in the narrative
-        original_description = narrative.archetype.description
-        narrative.archetype.description = f"Hi {name}! {original_description}"
+        # Prepend greeting to core identity section
+        if 'core_identity' in narrative_dict['sections']:
+            narrative_dict['sections']['core_identity'] = f"Hi {name}! " + narrative_dict['sections']['core_identity']
     
     # Mark session as completed
     session["completed_at"] = datetime.now().isoformat()
@@ -783,7 +835,7 @@ async def get_results(session_id: str):
     response_data = {
         "session_id": session_id,
         "scores": profile.dimension_scores,
-        "narrative": narrative.to_dict(),
+        "narrative": narrative_dict,
         "completed_at": session["completed_at"],
         "demographics": demographics,
     }
