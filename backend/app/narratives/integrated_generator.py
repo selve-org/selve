@@ -4,12 +4,35 @@ Combines rule-based analysis with OpenAI-generated prose
 """
 from typing import Dict, Any, Optional
 import logging
+import re
 from .synthesizer import PersonalityAnalyzer, NarrativePromptBuilder
 from .openai_generator import get_openai_generator, OpenAIGenerator
 from .openai_config import OpenAIConfig
 from .dimensions import DIMENSION_TEMPLATES
 
 logger = logging.getLogger(__name__)
+
+
+def strip_markdown_headers(text: str) -> str:
+    """
+    Remove markdown headers from text since we have our own UI headings.
+    Strips patterns like:
+    - ## Heading
+    - # Heading
+    - **Section Title**
+    at the start of lines.
+    """
+    # Remove markdown headers (## or #)
+    text = re.sub(r'^#{1,6}\s+.*$', '', text, flags=re.MULTILINE)
+    
+    # Remove bold section titles at start of lines (e.g. **Conflicts** or **Growth Areas**)
+    text = re.sub(r'^\*\*[^*]+\*\*\s*$', '', text, flags=re.MULTILINE)
+    
+    # Remove any resulting multiple blank lines
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    
+    # Strip leading/trailing whitespace
+    return text.strip()
 
 
 class IntegratedNarrativeGenerator:
@@ -88,7 +111,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=800
             )
-            narrative['sections']['core_identity'] = result['text']
+            narrative['sections']['core_identity'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             # Motivations
@@ -97,7 +120,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=600
             )
-            narrative['sections']['motivations'] = result['text']
+            narrative['sections']['motivations'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             # Conflicts
@@ -106,7 +129,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=500
             )
-            narrative['sections']['conflicts'] = result['text']
+            narrative['sections']['conflicts'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             # Strengths
@@ -115,7 +138,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=500
             )
-            narrative['sections']['strengths'] = result['text']
+            narrative['sections']['strengths'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             # Growth Areas
@@ -124,7 +147,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=500
             )
-            narrative['sections']['growth_areas'] = result['text']
+            narrative['sections']['growth_areas'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             # Relationships
@@ -133,7 +156,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=500
             )
-            narrative['sections']['relationships'] = result['text']
+            narrative['sections']['relationships'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             # Work Style
@@ -142,7 +165,7 @@ class IntegratedNarrativeGenerator:
                 system_message=system_message,
                 max_output_tokens=500
             )
-            narrative['sections']['work_style'] = result['text']
+            narrative['sections']['work_style'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
             logger.info(f"Total generation cost: ${narrative['generation_cost']:.4f}")

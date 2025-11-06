@@ -364,10 +364,10 @@ export default function ResultsPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="relative group"
+                  className="relative group h-full"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-green-200 dark:border-green-900/50 shadow-lg hover:shadow-2xl transition-all">
+                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-green-200 dark:border-green-900/50 shadow-lg hover:shadow-2xl transition-all">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl shadow-lg">
                         💪
@@ -390,10 +390,10 @@ export default function ResultsPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="relative group"
+                  className="relative group h-full"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-amber-200 dark:border-amber-900/50 shadow-lg hover:shadow-2xl transition-all">
+                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-amber-200 dark:border-amber-900/50 shadow-lg hover:shadow-2xl transition-all">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-2xl shadow-lg">
                         ⚡
@@ -446,10 +446,10 @@ export default function ResultsPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="relative group"
+                  className="relative group h-full"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-pink-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-rose-200 dark:border-rose-900/50 shadow-lg hover:shadow-2xl transition-all">
+                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-rose-200 dark:border-rose-900/50 shadow-lg hover:shadow-2xl transition-all">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
                         💝
@@ -472,10 +472,10 @@ export default function ResultsPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="relative group"
+                  className="relative group h-full"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-900/50 shadow-lg hover:shadow-2xl transition-all">
+                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-900/50 shadow-lg hover:shadow-2xl transition-all">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-lg">
                         💼

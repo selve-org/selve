@@ -517,14 +517,16 @@ async def submit_answer(request: SubmitAnswerRequest):
             
             # Emergency fallback: Get ANY item for dimensions with 0 items
             # BUT: Skip items that will be filtered by demographics
+            # ALSO: Skip items that are already pending (user hasn't answered them yet)
             emergency_items = []
             for dim in dimensions_with_zero_items:
                 all_dim_items = tester.scorer.get_items_by_dimension(dim)
-                # Get items NOT yet answered AND NOT excluded by demographics
+                # Get items NOT yet answered AND NOT excluded by demographics AND NOT already pending
                 available = [
                     item for item in all_dim_items 
                     if item['item'] not in responses 
                     and item['item'] not in demographic_exclusions
+                    and item['item'] not in pending_questions  # Don't re-add pending questions
                 ]
                 if available:
                     # Take top 2 highest correlation items
@@ -534,9 +536,9 @@ async def submit_answer(request: SubmitAnswerRequest):
                         if 'dimension' not in item:
                             item['dimension'] = dim
                         emergency_items.append(item)
-                    print(f"   Added {len(available[:2])} emergency items for {dim} (excluding demographic-filtered items)")
+                    print(f"   Added {len(available[:2])} emergency items for {dim} (excluding demographic-filtered and already-pending items)")
                 else:
-                    print(f"   ⚠️ No non-demographic items available for {dim} - dimension will have limited data")
+                    print(f"   ⚠️ No non-demographic/non-pending items available for {dim} - using already-pending items if any exist")
             
             if emergency_items:
                 # Use emergency items - these won't be filtered by demographics
