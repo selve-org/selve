@@ -5,6 +5,7 @@ This directory contains narrative templates for all 8 SELVE dimensions across 5 
 ## Structure
 
 Each dimension has its own file:
+
 - `base.py` - DimensionTemplate class definition
 - `lumen.py` - LUMEN (Social Energy) - 3/5 complete
 - `aether.py` - AETHER (Emotional Stability) - **5/5 COMPLETE ✅**
@@ -19,13 +20,17 @@ Each dimension has its own file:
 ## Writing New Templates
 
 ### 1. Choose a dimension file
+
 Open the relevant `.py` file (e.g., `orin.py` for Organization templates).
 
 ### 2. Use AETHER as reference
+
 `aether.py` contains all 5 levels complete. Copy the structure.
 
 ### 3. Write using LaHaye patterns
+
 See `/home/chris/selve/LAHAYE_WRITING_PATTERNS.md` for the 7 core patterns:
+
 1. Specific behavioral predictions
 2. Uncomfortable exposure
 3. Predictive scenarios
@@ -35,7 +40,9 @@ See `/home/chris/selve/LAHAYE_WRITING_PATTERNS.md` for the 7 core patterns:
 7. Vocational patterns
 
 ### 4. Fill all 13 fields
+
 Each DimensionTemplate requires:
+
 - `title` - 3-5 words, memorable archetype name
 - `core_nature` - WHO they are, 2-3 sentences
 - `description` - Expanded core nature, 3-4 sentences
@@ -51,19 +58,24 @@ Each DimensionTemplate requires:
 - `growth_path` - What they need to develop
 
 ### 5. Quality standards
+
 Every template must pass the "gut-punch test":
+
 - ✅ "How did they KNOW?!" reaction
 - ✅ Uncomfortably accurate predictions
 - ✅ Spouse/friend would nod reading this
 - ✅ Can see themselves doing these specific things
 
 ### 6. Add to package
+
 After writing templates:
+
 1. Uncomment the import in `__init__.py`
 2. Add dimension to DIMENSION_TEMPLATES dict
-3. Add template exports to __all__ list
+3. Add template exports to **all** list
 
 ### 7. Test
+
 ```python
 from app.narratives import DIMENSION_TEMPLATES, NarrativeGenerator
 
@@ -87,11 +99,13 @@ print(narrative.dimension_narratives[0].template.title)
 ## Examples
 
 ### Good (from AETHER_LOW):
+
 > "Your mind is a pinball machine and every thought is a ball ricocheting at high speed. You've cried in the bathroom more than once. Your partner loves you but is tired."
 
 Specific, physical, uncomfortable, relationship impact. ✅
 
 ### Bad (generic Big5 style):
+
 > "You may experience stress more intensely than others and can benefit from developing coping strategies."
 
 Vague, therapeutic, no predictions, no specific behaviors. ❌
