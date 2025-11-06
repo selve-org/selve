@@ -10,7 +10,34 @@ interface AssessmentResults {
   session_id: string;
   scores: Record<string, number>;
   narrative: {
-    archetype: {
+    profile_pattern?: {
+      pattern: string;
+      description: string;
+    };
+    sections: {
+      core_identity?: string;
+      motivations?: string;
+      conflicts?: string;
+      strengths?: string;
+      growth_areas?: string;
+      relationships?: string;
+      work_style?: string;
+      // Old format fallback
+      archetype?: {
+        name: string;
+        description: string;
+        core_traits: string[];
+        strengths: string[];
+        challenges: string[];
+      };
+    };
+    generation_cost?: number;
+    metadata?: {
+      model?: string;
+      generation_method?: string;
+    };
+    // Old format fields
+    archetype?: {
       name: string;
       essence: string;
       description: string;
@@ -23,7 +50,7 @@ interface AssessmentResults {
       famous_examples: string[];
       growth_direction: string;
     };
-    dimensions: Array<{
+    dimensions?: Array<{
       dimension: string;
       score: number;
       level: string;
@@ -40,8 +67,8 @@ interface AssessmentResults {
       at_best: string;
       growth_path: string;
     }>;
-    top_dimensions: Array<{ name: string; score: number }>;
-    summary: string;
+    top_dimensions?: Array<{ name: string; score: number }>;
+    summary?: string;
   };
   completed_at: string;
 }
@@ -193,15 +220,220 @@ export default function ResultsPage() {
 
   const { narrative, scores } = results;
 
+  // Check if we have the new integrated format
+  const isIntegratedFormat = narrative.profile_pattern && narrative.sections;
+  const hasOldFormat = narrative.archetype && narrative.dimensions;
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#1c1c1c]">
       <div className="max-w-4xl mx-auto px-4 py-16">
-        {/* Archetype Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-16"
-        >
+        {/* Show generation metadata if available */}
+        {narrative.metadata?.generation_method === "openai" && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 px-4 py-2 bg-purple-50 dark:bg-purple-900/10 rounded-lg text-center text-sm text-purple-600 dark:text-purple-400"
+          >
+            ✨ AI-Generated Personality Report • Model:{" "}
+            {narrative.metadata.model || "unknown"}
+            {narrative.generation_cost && (
+              <span className="ml-2 opacity-70">
+                (${narrative.generation_cost.toFixed(4)})
+              </span>
+            )}
+          </motion.div>
+        )}
+
+        {/* NEW INTEGRATED FORMAT */}
+        {isIntegratedFormat && (
+          <>
+            {/* Header */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-12 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                className="w-24 h-24 rounded-full bg-purple-600/20 border-4 border-purple-600 flex items-center justify-center mx-auto mb-6"
+              >
+                <svg
+                  className="w-12 h-12 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </motion.div>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                Your Personality Profile
+              </h1>
+              {narrative.profile_pattern && (
+                <div className="max-w-2xl mx-auto">
+                  <p className="text-xl text-purple-600 dark:text-purple-400 font-semibold mb-2">
+                    {narrative.profile_pattern.pattern}
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {narrative.profile_pattern.description}
+                  </p>
+                </div>
+              )}
+            </motion.section>
+
+            {/* Core Identity */}
+            {narrative.sections.core_identity && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-12 p-8 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 rounded-2xl"
+              >
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                  Core Identity
+                </h2>
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    {narrative.sections.core_identity}
+                  </p>
+                </div>
+              </motion.section>
+            )}
+
+            {/* Motivations */}
+            {narrative.sections.motivations && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mb-12 p-8 bg-blue-50 dark:bg-blue-900/10 rounded-2xl"
+              >
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                  What Drives You
+                </h2>
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    {narrative.sections.motivations}
+                  </p>
+                </div>
+              </motion.section>
+            )}
+
+            {/* Two Column Layout: Strengths & Conflicts */}
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {narrative.sections.strengths && (
+                <motion.section
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="p-6 bg-green-50 dark:bg-green-900/10 rounded-xl"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    Your Strengths
+                  </h2>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {narrative.sections.strengths}
+                    </p>
+                  </div>
+                </motion.section>
+              )}
+
+              {narrative.sections.conflicts && (
+                <motion.section
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="p-6 bg-orange-50 dark:bg-orange-900/10 rounded-xl"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    Internal Conflicts
+                  </h2>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {narrative.sections.conflicts}
+                    </p>
+                  </div>
+                </motion.section>
+              )}
+            </div>
+
+            {/* Growth Areas */}
+            {narrative.sections.growth_areas && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mb-12 p-8 bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl"
+              >
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                  Growth Areas
+                </h2>
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    {narrative.sections.growth_areas}
+                  </p>
+                </div>
+              </motion.section>
+            )}
+
+            {/* Two Column Layout: Relationships & Work Style */}
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {narrative.sections.relationships && (
+                <motion.section
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="p-6 bg-pink-50 dark:bg-pink-900/10 rounded-xl"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    In Relationships
+                  </h2>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {narrative.sections.relationships}
+                    </p>
+                  </div>
+                </motion.section>
+              )}
+
+              {narrative.sections.work_style && (
+                <motion.section
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="p-6 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    Work Style
+                  </h2>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {narrative.sections.work_style}
+                    </p>
+                  </div>
+                </motion.section>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* OLD FORMAT FALLBACK - Keep existing rendering */}
+        {hasOldFormat && !isIntegratedFormat && (
+          <>
+            {/* Archetype Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-16"
+            >
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
@@ -224,22 +456,22 @@ export default function ResultsPage() {
               </svg>
             </motion.div>
             <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              {narrative.archetype.name}
+              {narrative.archetype?.name}
             </h1>
             <p className="text-xl text-purple-600 dark:text-purple-400 mb-8">
-              {narrative.archetype.essence}
+              {narrative.archetype?.essence}
             </p>
           </div>
 
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-              {narrative.archetype.description}
+              {narrative.archetype?.description}
             </p>
           </div>
 
           {/* Core Traits */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-3">
-            {narrative.archetype.core_traits.map((trait, i) => (
+            {narrative.archetype?.core_traits.map((trait, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -268,7 +500,7 @@ export default function ResultsPage() {
             your three strongest forces:
           </p>
           <div className="grid md:grid-cols-3 gap-6">
-            {narrative.top_dimensions.slice(0, 3).map((topDim, i) => {
+            {narrative.top_dimensions?.slice(0, 3).map((topDim, i) => {
               const details = DIMENSION_DETAILS[topDim.name];
               if (!details) return null;
 
@@ -342,7 +574,7 @@ export default function ResultsPage() {
             Your Life Purpose
           </h2>
           <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-            {narrative.archetype.life_purpose}
+            {narrative.archetype?.life_purpose}
           </p>
         </motion.section>
 
@@ -399,7 +631,7 @@ export default function ResultsPage() {
         </motion.section>
 
         {/* Detailed Dimension Narratives */}
-        {narrative.dimensions.map((dim, index) => (
+        {narrative.dimensions?.map((dim, index) => (
           <motion.section
             key={dim.dimension}
             initial={{ opacity: 0, y: 20 }}
@@ -489,7 +721,7 @@ export default function ResultsPage() {
               Your Strengths
             </h2>
             <ul className="space-y-3">
-              {narrative.archetype.strengths.map((strength, i) => (
+              {narrative.archetype?.strengths.map((strength, i) => (
                 <li key={i} className="flex items-start">
                   <svg
                     className="w-6 h-6 text-green-600 dark:text-green-400 mr-2 flex-shrink-0 mt-0.5"
@@ -522,7 +754,7 @@ export default function ResultsPage() {
               Growth Areas
             </h2>
             <ul className="space-y-3">
-              {narrative.archetype.challenges.map((challenge, i) => (
+              {narrative.archetype?.challenges.map((challenge, i) => (
                 <li key={i} className="flex items-start">
                   <svg
                     className="w-6 h-6 text-orange-600 dark:text-orange-400 mr-2 flex-shrink-0 mt-0.5"
@@ -557,7 +789,7 @@ export default function ResultsPage() {
             Career Paths That Fit You
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {narrative.archetype.career_paths.map((career, i) => (
+            {narrative.archetype?.career_paths.map((career, i) => (
               <div
                 key={i}
                 className="p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-lg text-center text-gray-900 dark:text-white font-medium"
@@ -577,11 +809,81 @@ export default function ResultsPage() {
         >
           <h2 className="text-2xl font-bold mb-4">Your Growth Direction</h2>
           <p className="text-lg leading-relaxed opacity-95">
-            {narrative.archetype.growth_direction}
+            {narrative.archetype?.growth_direction}
           </p>
         </motion.section>
 
         {/* Actions */}
+        <div className="mt-12 flex justify-center gap-4">
+          <button
+            onClick={() => window.print()}
+            className="px-6 py-3 bg-gray-200 dark:bg-[#2e2e2e] hover:bg-gray-300 dark:hover:bg-[#3e3e3e] text-gray-900 dark:text-white rounded-full transition-colors"
+          >
+            Download PDF
+          </button>
+          <button
+            onClick={() => router.push("/")}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors"
+          >
+            Return Home
+          </button>
+        </div>
+          </>
+        )}
+
+        {/* Dimension Scores - Show for both formats */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-16 mt-12"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+            Your Dimension Scores
+          </h2>
+          <div className="space-y-6">
+            {Object.entries(scores).map(([dim, score], i) => {
+              const details = DIMENSION_DETAILS[dim];
+              return (
+                <motion.div
+                  key={dim}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + i * 0.05 }}
+                >
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                      {details && (
+                        <span className="text-xl">{details.emoji}</span>
+                      )}
+                      <span>
+                        {dim}{" "}
+                        {details && (
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">
+                            ({DIMENSION_NAMES[dim]})
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span className="text-purple-600 dark:text-purple-400 font-bold">
+                      {Math.round(score)}/100
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-[#2e2e2e] rounded-full h-3 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${score}%` }}
+                      transition={{ delay: 0.9 + i * 0.05, duration: 0.6 }}
+                      className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full"
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+
+        {/* Actions - Common for all formats */}
         <div className="mt-12 flex justify-center gap-4">
           <button
             onClick={() => window.print()}
