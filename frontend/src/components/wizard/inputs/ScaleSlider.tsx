@@ -12,7 +12,7 @@ interface ScaleSliderProps {
 
 /**
  * ScaleSlider Component
- * 
+ *
  * Numeric scale/slider for ratings (e.g., 1-10 scale)
  */
 export const ScaleSlider: React.FC<ScaleSliderProps> = ({
@@ -20,13 +20,7 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
   onChange,
   config,
 }) => {
-  const {
-    min = 1,
-    max = 10,
-    step = 1,
-    labels = {},
-    showValue = true,
-  } = config;
+  const { min = 1, max = 10, step = 1, labels = {}, showValue = true } = config;
 
   const currentValue = value ?? min;
 
@@ -89,15 +83,15 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
           const isFirst = index === 0;
           const isLast = index === points.length - 1;
           const showOnMobile = isFirst || isLast;
-          
+
           return (
             <div
               key={point}
               className={`text-center flex-1 ${
-                showOnMobile ? '' : 'hidden md:block'
+                showOnMobile ? "" : "hidden md:block"
               } ${
-                point === currentValue 
-                  ? "text-green-400 font-semibold" 
+                point === currentValue
+                  ? "text-green-400 font-semibold"
                   : "text-gray-500 dark:text-gray-400"
               }`}
             >

@@ -13,7 +13,7 @@ interface NumberInputProps {
 
 /**
  * NumberInput Component
- * 
+ *
  * Numeric input field with validation
  */
 export const NumberInput: React.FC<NumberInputProps> = ({
@@ -22,12 +22,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   config,
   error,
 }) => {
-  const {
-    min,
-    max,
-    placeholder = "Enter a number",
-    helpText,
-  } = config;
+  const { min, max, placeholder = "Enter a number", helpText } = config;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
