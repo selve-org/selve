@@ -348,6 +348,24 @@ async def submit_answer(request: SubmitAnswerRequest):
             status = "🔴 NEEDS MORE" if uncertainty.needs_more_items else "✅ CONFIDENT"
             print(f"   {status} {dim:8s} | Uncertainty: {uncertainty.uncertainty_score:.2f} | Items: {uncertainty.n_items_answered} | Recommended: +{uncertainty.recommended_additional_items}")
     
+    # CRITICAL: Override stop decision if any dimension has 0 items
+    # This prevents completing with dimensions that have no data (would show 0/100)
+    if not should_continue:
+        dimensions_with_zero = []
+        for dim in ['LUMEN', 'AETHER', 'ORPHEUS', 'ORIN', 'LYRA', 'VARA', 'CHRONOS', 'KAEL']:
+            dim_items = [code for code in responses.keys() if any(
+                item['item'] == code for item in tester.scorer.get_items_by_dimension(dim)
+            )]
+            if len(dim_items) == 0:
+                dimensions_with_zero.append(dim)
+        
+        if dimensions_with_zero:
+            print(f"\n⚠️  OVERRIDE STOP: Cannot complete with 0-item dimensions!")
+            print(f"   Dimensions with 0 items: {', '.join(dimensions_with_zero)}")
+            print(f"   Forcing continuation to collect minimum data...")
+            should_continue = True
+            reason = f"0-item dimensions need data: {', '.join(dimensions_with_zero)}"
+    
     if not should_continue:
         # Assessment complete
         print(f"\n✅ Assessment Complete! Total items: {len(responses)}")
