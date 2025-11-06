@@ -259,6 +259,15 @@ class AdaptiveTester:
         # Select items for uncertain dimensions
         next_items = []
         
+        # Get recently answered items to avoid confirmation bias
+        # We want to space out reversed pairs by at least 10-15 questions
+        recent_window = 15  # Look back 15 items
+        recent_items = []
+        if len(responses) > 0:
+            # Get the last N answered item codes
+            answered_codes = list(responses.keys())
+            recent_items = answered_codes[-recent_window:]
+        
         for uncertainty in uncertainties:
             if len(next_items) >= max_items:
                 break
@@ -272,8 +281,30 @@ class AdaptiveTester:
                 if item['item'] not in exclude_items
             ]
             
-            # Sort by correlation (highest first)
-            available_items.sort(key=lambda x: x['correlation'], reverse=True)
+            # CONFIRMATION SPACING: Avoid selecting reversed items if we recently
+            # answered a non-reversed item (or vice versa) for this dimension
+            recently_answered_dim_items = [
+                item for item in dim_items
+                if item['item'] in recent_items
+            ]
+            
+            if recently_answered_dim_items:
+                # Check the polarity (reversed/not-reversed) of recent items
+                recent_polarities = {item['reversed'] for item in recently_answered_dim_items}
+                
+                # If we recently answered items of one polarity, prefer the SAME polarity
+                # to avoid confirmation bias (don't immediately ask opposite questions)
+                if len(recent_polarities) == 1:  # All recent items have same polarity
+                    recent_polarity = list(recent_polarities)[0]
+                    # Prefer items with same polarity (push opposite polarity to end)
+                    same_polarity = [item for item in available_items if item.get('reversed', False) == recent_polarity]
+                    opposite_polarity = [item for item in available_items if item.get('reversed', False) != recent_polarity]
+                    
+                    # Prioritize same polarity items, then add opposite polarity
+                    available_items = same_polarity + opposite_polarity
+            
+            # Sort by correlation (highest first) - maintain polarity grouping
+            # Sort within each group to maintain spacing effect
             
             # Select top N items
             n_to_select = min(

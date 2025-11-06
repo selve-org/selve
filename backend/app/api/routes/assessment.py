@@ -506,12 +506,26 @@ async def submit_answer(request: SubmitAnswerRequest):
             print(f"   This indicates context filtering removed too many questions.")
             print(f"   Forcing inclusion of minimum items for each dimension...")
             
+            # Build demographic exclusion list to avoid adding items that will be filtered
+            demographic_exclusions = []
+            if demographics.get("demo_drives") == "no":
+                demographic_exclusions.extend(["LUMEN_SC2", "KAEL_SC1", "CHRONOS_SC2"])
+            if demographics.get("demo_credit_cards") == "no":
+                demographic_exclusions.extend(["AETHER_SC2", "AETHER_SC4"])
+            if demographics.get("demo_has_yard") == "no":
+                demographic_exclusions.extend(["LUMEN_SC3", "ORIN_SC5"])
+            
             # Emergency fallback: Get ANY item for dimensions with 0 items
+            # BUT: Skip items that will be filtered by demographics
             emergency_items = []
             for dim in dimensions_with_zero_items:
                 all_dim_items = tester.scorer.get_items_by_dimension(dim)
-                # Get items NOT yet answered (ignore context exclusions in emergency)
-                available = [item for item in all_dim_items if item['item'] not in responses]
+                # Get items NOT yet answered AND NOT excluded by demographics
+                available = [
+                    item for item in all_dim_items 
+                    if item['item'] not in responses 
+                    and item['item'] not in demographic_exclusions
+                ]
                 if available:
                     # Take top 2 highest correlation items
                     available.sort(key=lambda x: x['correlation'], reverse=True)
@@ -520,14 +534,16 @@ async def submit_answer(request: SubmitAnswerRequest):
                         if 'dimension' not in item:
                             item['dimension'] = dim
                         emergency_items.append(item)
-                    print(f"   Added {len(available[:2])} emergency items for {dim}")
+                    print(f"   Added {len(available[:2])} emergency items for {dim} (excluding demographic-filtered items)")
+                else:
+                    print(f"   ⚠️ No non-demographic items available for {dim} - dimension will have limited data")
             
             if emergency_items:
-                # Use emergency items - mark as emergency mode to bypass filters
+                # Use emergency items - these won't be filtered by demographics
                 next_items = emergency_items
                 is_emergency_mode = True
                 print(f"   ✅ Recovered {len(next_items)} emergency questions")
-                print(f"   🚨 EMERGENCY MODE: Bypassing cultural filters for these critical items")
+                print(f"   These items are safe from demographic filtering")
             else:
                 # Truly no items left - this shouldn't happen but handle gracefully
                 print(f"   ⚠️  No emergency items available - completing anyway")
@@ -548,7 +564,7 @@ async def submit_answer(request: SubmitAnswerRequest):
     
     # FINAL FILTER: Remove culturally-irrelevant questions from this batch
     # (in case they were selected before demographics were complete)
-    # BUT: Skip filtering in emergency mode - we need these questions!
+    # NOTE: Emergency mode items are already pre-filtered for demographics
     if not is_emergency_mode:
         final_exclusions = []
         if demographics.get("demo_drives") == "no":
@@ -573,7 +589,7 @@ async def submit_answer(request: SubmitAnswerRequest):
             if final_exclusions:
                 next_items = [item for item in next_items if item.get("item") not in final_exclusions]
     else:
-        print(f"   🚨 Emergency mode active - skipping cultural filters to force dimension coverage")
+        print(f"   ✅ Emergency mode: Items pre-filtered for demographics, no additional filtering needed")
     
     print(f"\n📋 Next Questions ({len(next_items)} items):")
     for item in next_items:
