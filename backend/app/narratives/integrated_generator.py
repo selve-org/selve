@@ -105,20 +105,20 @@ class IntegratedNarrativeGenerator:
                 "Talk like a friend who tells you the truth, not a novelist writing a character study."
             )
             
-            # Core Identity
+            # Core Identity (longest section - 400-600 words)
             result = self.llm.generate(
                 prompt=prompt_builder.build_core_identity_prompt(),
                 system_message=system_message,
-                max_output_tokens=800
+                max_output_tokens=1200  # Increased to prevent cutoffs
             )
             narrative['sections']['core_identity'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
             
-            # Motivations
+            # Motivations (300-400 words)
             result = self.llm.generate(
                 prompt=prompt_builder.build_motivations_prompt(),
                 system_message=system_message,
-                max_output_tokens=600
+                max_output_tokens=800
             )
             narrative['sections']['motivations'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
@@ -127,7 +127,7 @@ class IntegratedNarrativeGenerator:
             result = self.llm.generate(
                 prompt=prompt_builder.build_conflicts_prompt(),
                 system_message=system_message,
-                max_output_tokens=500
+                max_output_tokens=800
             )
             narrative['sections']['conflicts'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
@@ -136,7 +136,7 @@ class IntegratedNarrativeGenerator:
             result = self.llm.generate(
                 prompt=prompt_builder.build_strengths_prompt(),
                 system_message=system_message,
-                max_output_tokens=500
+                max_output_tokens=800
             )
             narrative['sections']['strengths'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
@@ -145,7 +145,7 @@ class IntegratedNarrativeGenerator:
             result = self.llm.generate(
                 prompt=prompt_builder.build_growth_areas_prompt(),
                 system_message=system_message,
-                max_output_tokens=500
+                max_output_tokens=800
             )
             narrative['sections']['growth_areas'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
@@ -154,7 +154,7 @@ class IntegratedNarrativeGenerator:
             result = self.llm.generate(
                 prompt=prompt_builder.build_relationships_prompt(),
                 system_message=system_message,
-                max_output_tokens=500
+                max_output_tokens=800
             )
             narrative['sections']['relationships'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']
@@ -163,7 +163,7 @@ class IntegratedNarrativeGenerator:
             result = self.llm.generate(
                 prompt=prompt_builder.build_work_style_prompt(),
                 system_message=system_message,
-                max_output_tokens=500
+                max_output_tokens=800
             )
             narrative['sections']['work_style'] = strip_markdown_headers(result['text'])
             narrative['generation_cost'] += result['cost']

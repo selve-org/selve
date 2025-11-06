@@ -227,22 +227,7 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#1c1c1c]">
       <div className="max-w-4xl mx-auto px-4 py-16">
-        {/* Show generation metadata if available */}
-        {narrative.metadata?.generation_method === "openai" && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 px-4 py-2 bg-purple-50 dark:bg-purple-900/10 rounded-lg text-center text-sm text-purple-600 dark:text-purple-400"
-          >
-            ✨ AI-Generated Personality Report • Model:{" "}
-            {narrative.metadata.model || "unknown"}
-            {narrative.generation_cost && (
-              <span className="ml-2 opacity-70">
-                (${narrative.generation_cost.toFixed(4)})
-              </span>
-            )}
-          </motion.div>
-        )}
+        {/* Metadata banner removed - users don't need to see technical details */}
 
         {/* NEW INTEGRATED FORMAT */}
         {isIntegratedFormat && (
@@ -279,7 +264,7 @@ export default function ResultsPage() {
                 </motion.div>
                 
                 <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
-                  Your Personality Profile
+                  {narrative.profile_pattern?.pattern || "Your Personality Profile"}
                 </h1>
                 
                 {narrative.profile_pattern && (
