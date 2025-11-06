@@ -247,179 +247,250 @@ export default function ResultsPage() {
         {/* NEW INTEGRATED FORMAT */}
         {isIntegratedFormat && (
           <>
-            {/* Header */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
+            {/* Header with Hero Design */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-12 text-center"
+              className="mb-16 relative overflow-hidden"
             >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring" }}
-                className="w-24 h-24 rounded-full bg-purple-600/20 border-4 border-purple-600 flex items-center justify-center mx-auto mb-6"
-              >
-                <svg
-                  className="w-12 h-12 text-purple-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-pink-500/10 rounded-3xl blur-3xl" />
+              
+              <div className="relative text-center p-12 rounded-3xl border border-purple-200/50 dark:border-purple-800/50 bg-white/50 dark:bg-[#1c1c1c]/50 backdrop-blur-sm">
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/50"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </motion.div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-                Your Personality Profile
-              </h1>
-              {narrative.profile_pattern && (
-                <div className="max-w-2xl mx-auto">
-                  <p className="text-xl text-purple-600 dark:text-purple-400 font-semibold mb-2">
-                    {narrative.profile_pattern.pattern}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {narrative.profile_pattern.description}
-                  </p>
-                </div>
-              )}
-            </motion.section>
+                  <svg
+                    className="w-10 h-10 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </motion.div>
+                
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
+                  Your Personality Profile
+                </h1>
+                
+                {narrative.profile_pattern && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="max-w-3xl mx-auto space-y-3"
+                  >
+                    <p className="text-2xl text-purple-600 dark:text-purple-400 font-bold">
+                      {narrative.profile_pattern.pattern}
+                    </p>
+                    <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {narrative.profile_pattern.description}
+                    </p>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
 
-            {/* Core Identity */}
+            {/* Core Identity - Hero Card */}
             {narrative.sections.core_identity && (
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mb-12 p-8 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 rounded-2xl"
+                className="mb-12"
               >
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  Core Identity
-                </h2>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                    {narrative.sections.core_identity}
-                  </p>
+                <div className="relative overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-purple-900/20 dark:via-[#1c1c1c] dark:to-indigo-900/20 p-8 md:p-12 shadow-xl">
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl" />
+                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl" />
+                  
+                  <div className="relative">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-2 h-12 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full" />
+                      <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
+                        Core Identity
+                      </h2>
+                    </div>
+                    <div className="prose prose-lg dark:prose-invert max-w-none">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-lg">
+                        {narrative.sections.core_identity}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </motion.section>
             )}
 
             {/* Motivations */}
             {narrative.sections.motivations && (
-              <motion.section
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mb-12 p-8 bg-blue-50 dark:bg-blue-900/10 rounded-2xl"
+                className="mb-12 relative group"
               >
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  What Drives You
-                </h2>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                    {narrative.sections.motivations}
-                  </p>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                <div className="relative p-8 md:p-12 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-3xl border border-blue-200 dark:border-blue-900/50 shadow-xl hover:shadow-2xl transition-all">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl shadow-lg">
+                      🎯
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                      Core Motivations
+                    </h2>
+                  </div>
+                  <div className="prose prose-lg dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {narrative.sections.motivations}
+                    </p>
+                  </div>
                 </div>
-              </motion.section>
+              </motion.div>
             )}
 
             {/* Two Column Layout: Strengths & Conflicts */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               {narrative.sections.strengths && (
-                <motion.section
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="p-6 bg-green-50 dark:bg-green-900/10 rounded-xl"
+                  className="relative group"
                 >
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    Your Strengths
-                  </h2>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                      {narrative.sections.strengths}
-                    </p>
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-green-200 dark:border-green-900/50 shadow-lg hover:shadow-2xl transition-all">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl shadow-lg">
+                        💪
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Your Strengths
+                      </h2>
+                    </div>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {narrative.sections.strengths}
+                      </p>
+                    </div>
                   </div>
-                </motion.section>
+                </motion.div>
               )}
 
               {narrative.sections.conflicts && (
-                <motion.section
+                <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="p-6 bg-orange-50 dark:bg-orange-900/10 rounded-xl"
+                  className="relative group"
                 >
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    Internal Conflicts
-                  </h2>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                      {narrative.sections.conflicts}
-                    </p>
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-amber-200 dark:border-amber-900/50 shadow-lg hover:shadow-2xl transition-all">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-2xl shadow-lg">
+                        ⚡
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Internal Conflicts
+                      </h2>
+                    </div>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {narrative.sections.conflicts}
+                      </p>
+                    </div>
                   </div>
-                </motion.section>
+                </motion.div>
               )}
             </div>
 
             {/* Growth Areas */}
             {narrative.sections.growth_areas && (
-              <motion.section
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="mb-12 p-8 bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl"
+                className="mb-12 relative group"
               >
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  Growth Areas
-                </h2>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                    {narrative.sections.growth_areas}
-                  </p>
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                <div className="relative p-8 md:p-12 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-3xl border border-orange-200 dark:border-orange-900/50 shadow-xl hover:shadow-2xl transition-all">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-2xl shadow-lg">
+                      📈
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                      Growth Areas
+                    </h2>
+                  </div>
+                  <div className="prose prose-lg dark:prose-invert max-w-none">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {narrative.sections.growth_areas}
+                    </p>
+                  </div>
                 </div>
-              </motion.section>
+              </motion.div>
             )}
 
             {/* Two Column Layout: Relationships & Work Style */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               {narrative.sections.relationships && (
-                <motion.section
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="p-6 bg-pink-50 dark:bg-pink-900/10 rounded-xl"
+                  className="relative group"
                 >
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    In Relationships
-                  </h2>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                      {narrative.sections.relationships}
-                    </p>
+                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-pink-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-rose-200 dark:border-rose-900/50 shadow-lg hover:shadow-2xl transition-all">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
+                        💝
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        In Relationships
+                      </h2>
+                    </div>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {narrative.sections.relationships}
+                      </p>
+                    </div>
                   </div>
-                </motion.section>
+                </motion.div>
               )}
 
               {narrative.sections.work_style && (
-                <motion.section
+                <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="p-6 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl"
+                  className="relative group"
                 >
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    Work Style
-                  </h2>
-                  <div className="prose dark:prose-invert max-w-none">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                      {narrative.sections.work_style}
-                    </p>
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="relative p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-900/50 shadow-lg hover:shadow-2xl transition-all">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-lg">
+                        💼
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Work Style
+                      </h2>
+                    </div>
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {narrative.sections.work_style}
+                      </p>
+                    </div>
                   </div>
-                </motion.section>
+                </motion.div>
               )}
             </div>
           </>
