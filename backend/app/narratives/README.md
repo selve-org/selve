@@ -7,7 +7,7 @@
 The SELVE Narrative System transforms dimension scores into comprehensive psychological profiles. It goes beyond surface descriptions to reveal:
 
 - **Core nature** - WHO they are at their essence
-- **Inner world** - HOW they think internally  
+- **Inner world** - HOW they think internally
 - **Motivations** - WHAT drives them
 - **Fears** - WHAT they avoid
 - **Strengths & Shadows** - Their gifts and blind spots
@@ -31,6 +31,7 @@ app/narratives/
 **Psychological Depth Over Generic Descriptions**
 
 Each template reveals the person completely:
+
 - Not just "you're social" but "You are ALIVE in the presence of others. Social connection is oxygen."
 - Not just "strengths" but specific gifts: "Magnetic charisma that draws people in"
 - Not just "challenges" but real fears: "Being alone, forgotten, or invisible"
@@ -50,6 +51,7 @@ Each template reveals the person completely:
 Comprehensive psychological profiles for each dimension at all 5 levels.
 
 **Template Structure:**
+
 ```python
 DimensionTemplate(
     title="The Radiant Socialite",           # Profile name
@@ -69,9 +71,11 @@ DimensionTemplate(
 ```
 
 **Current Status:**
+
 - ✅ **LUMEN** (Social Energy): 3/5 levels complete
+
   - very_high: "The Radiant Socialite"
-  - high: "The Confident Connector"  
+  - high: "The Confident Connector"
   - moderate: "The Situational Socializer"
   - ⏳ low: "The Selective Socializer" (planned)
   - ⏳ very_low: "The Solitary Soul" (planned)
@@ -91,6 +95,7 @@ DimensionTemplate(
 Rich personality patterns based on dimension combinations.
 
 **Archetype Structure:**
+
 ```python
 Archetype(
     name="The Luminary",
@@ -109,6 +114,7 @@ Archetype(
 ```
 
 **Current Archetypes:**
+
 1. ✅ **The Luminary** - Charismatic ethical leader (high LUMEN + VARA + AETHER)
 2. ✅ **The Healer** - Compassionate wounded healer (very_high ORPHEUS + CHRONOS, low AETHER)
 3. ✅ **The Architect** - Systematic builder (very_high ORIN + high LYRA, low ORPHEUS)
@@ -124,17 +130,20 @@ Core engine that creates complete narratives.
 **Key Classes:**
 
 **`NarrativeGenerator`**
+
 - Main generation engine
 - Maps scores to templates
 - Identifies best-fit archetype
 - Assembles complete narrative
 
 **`PersonalityNarrative`**
+
 - Complete personality profile
 - Includes archetype, dimensions, summary
 - JSON-serializable for API delivery
 
 **`DimensionNarrative`**
+
 - Single dimension profile
 - Includes all psychological depth fields
 
@@ -212,6 +221,7 @@ async def create_narrative(scores: dict):
 ```
 
 Returns comprehensive JSON:
+
 ```json
 {
   "archetype": {
@@ -246,6 +256,7 @@ python -m pytest tests/test_narratives.py -v
 ```
 
 **Test Coverage:**
+
 - ✅ Score to level mapping
 - ✅ Dimension narrative generation
 - ✅ Complete narrative generation
@@ -257,6 +268,7 @@ python -m pytest tests/test_narratives.py -v
 ## Current Status
 
 ### ✅ Complete & Working
+
 - Modular package structure
 - Core generation engine
 - 3 psychologically rich LUMEN templates
@@ -266,11 +278,11 @@ python -m pytest tests/test_narratives.py -v
 - Integration with scoring system
 
 ### ⏳ In Progress
+
 - **37 more dimension templates** needed (3/40 complete)
   - Each requires deep psychological content
   - 13 fields per template
   - Total: ~30,000 words of psychological insight
-  
 - **15 more archetypes** planned (5/20 complete)
   - Cover full personality space
   - Account for all dimension combinations
@@ -278,17 +290,21 @@ python -m pytest tests/test_narratives.py -v
 ## Next Steps
 
 ### Option A: Batch Template Generation
+
 Use LLM assistance to generate remaining 37 templates following established pattern:
+
 1. Create prompt template with examples
 2. Generate templates for each dimension × level
 3. Review and integrate
 
 ### Option B: Progressive Expansion
+
 1. Complete 2 templates per dimension (very_high + very_low) = 16 total
 2. Test with users
 3. Fill in middle levels based on feedback
 
 ### Option C: Test First, Then Scale
+
 1. Use current system (3 templates, 5 archetypes)
 2. Validate it meets "100% decipher" goal with users
 3. Expand based on actual needs
@@ -316,17 +332,17 @@ When adding templates or archetypes:
 See `generator.py` main block for full example output. Key excerpt:
 
 ```
-You are best described as **The Luminary**. Radiant leader who illuminates 
-and inspires. Your personality is most defined by your social energy 
+You are best described as **The Luminary**. Radiant leader who illuminates
+and inspires. Your personality is most defined by your social energy
 (score: 85/100), patience (score: 81/100), and agreeableness (score: 78/100).
 
 **Your Life Purpose:**
-To elevate humanity - inspire people to their highest potential while 
-maintaining unwavering ethical standards. You're here to show that 
+To elevate humanity - inspire people to their highest potential while
+maintaining unwavering ethical standards. You're here to show that
 leadership can be both powerful and principled.
 
 **Core Nature:**
-You are ALIVE in the presence of others. Social connection isn't just 
+You are ALIVE in the presence of others. Social connection isn't just
 enjoyable - it's oxygen to you...
 
 **What You Fear:**

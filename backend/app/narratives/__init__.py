@@ -16,12 +16,14 @@ from .archetypes import (
     get_all_archetypes,
     match_archetype
 )
-from .dimension_templates import (
-    DimensionTemplate,
-    LUMEN_VERY_HIGH,
-    LUMEN_HIGH,
-    LUMEN_MODERATE
-)
+from .dimensions import DIMENSION_TEMPLATES
+from .dimensions.base import DimensionTemplate
+
+# Helper function for backward compatibility
+def get_template(dimension: str, level: str) -> DimensionTemplate:
+    """Get template for specific dimension and level."""
+    return DIMENSION_TEMPLATES[dimension][level]
+
 
 __all__ = [
     # Main generator
@@ -37,9 +39,8 @@ __all__ = [
     # Functions
     'get_all_archetypes',
     'match_archetype',
+    'get_template',
     
-    # Available templates (will expand as we add more)
-    'LUMEN_VERY_HIGH',
-    'LUMEN_HIGH',
-    'LUMEN_MODERATE',
+    # Templates dictionary (all 35 templates)
+    'DIMENSION_TEMPLATES',
 ]

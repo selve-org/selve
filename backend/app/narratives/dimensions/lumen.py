@@ -1,51 +1,12 @@
 """
-SELVE Dimension Templates
+LUMEN - Social Energy & Enthusiasm
 
-Comprehensive, psychologically rich descriptions for each dimension at all levels.
-These templates reveal WHO the person truly is - their core nature, motivations,
-fears, desires, and behavioral patterns.
+The dimension measuring extraversion, social energy, and enthusiasm.
+Maps to Big Five Extraversion and LaHaye Sanguine temperament.
 """
 
-from typing import Dict, List
+from .base import DimensionTemplate
 
-
-class DimensionTemplate:
-    """Template for a dimension at a specific level."""
-    
-    def __init__(
-        self,
-        title: str,
-        core_nature: str,
-        description: str,
-        inner_world: str,
-        motivations: List[str],
-        fears: List[str],
-        strengths: List[str],
-        shadows: List[str],
-        in_relationships: str,
-        at_work: str,
-        under_stress: str,
-        at_best: str,
-        growth_path: str
-    ):
-        self.title = title
-        self.core_nature = core_nature
-        self.description = description
-        self.inner_world = inner_world
-        self.motivations = motivations
-        self.fears = fears
-        self.strengths = strengths
-        self.shadows = shadows
-        self.in_relationships = in_relationships
-        self.at_work = at_work
-        self.under_stress = under_stress
-        self.at_best = at_best
-        self.growth_path = growth_path
-
-
-# ============================================================================
-# LUMEN - Social Energy & Enthusiasm
-# ============================================================================
 
 LUMEN_VERY_HIGH = DimensionTemplate(
     title="The Radiant Socialite",
@@ -164,23 +125,82 @@ LUMEN_MODERATE = DimensionTemplate(
     growth_path="Stop apologizing for your flexibility. Track your patterns: when does socializing energize you? When does it drain you? Understanding your triggers gives you agency. Communicate your needs clearly to avoid being misunderstood."
 )
 
-# Continue with LUMEN_LOW and LUMEN_VERY_LOW...
+LUMEN_LOW = DimensionTemplate(
+    title="The Quiet Observer",
+    core_nature="Social interaction is expensive energy. You budget it carefully. You're not shy - you're selective. Small groups are tolerable. Large gatherings are hell. You're most yourself alone, and that's not a problem for you even if it confuses everyone else.",
+    description="You don't hate people - you just don't need them the way others seem to. Socializing drains you like a phone battery running Instagram. You can do it, but afterward you need hours to recharge. You've perfected the Irish goodbye. You RSVP 'maybe' knowing it means 'no.' You're the one who leaves the party early and feels relief, not FOMO.",
+    inner_world="You think: 'How much longer do I have to be here?' You're not bored or anxious - you're just... done. Your social battery has a visible meter and everyone can see it dropping. You count the minutes until you can leave without being rude. You fantasize about canceling plans. You've used 'I'm not feeling well' more times than you can count, and half the time it's technically true - socially exhausted IS a real condition.",
+    motivations=[
+        "To protect your limited social energy",
+        "To avoid draining interactions",
+        "To maintain deep connections with a select few",
+        "To preserve your internal world",
+        "To be understood, not changed"
+    ],
+    fears=[
+        "Being forced into constant social performance",
+        "Losing your alone time",
+        "Being seen as cold or unfriendly",
+        "Your few close relationships ending",
+        "Never being understood by extroverts"
+    ],
+    strengths=[
+        "Deep, meaningful one-on-one connections",
+        "Excellent listener when you're engaged",
+        "Independent and self-sufficient",
+        "Strong internal world and creativity",
+        "Don't need external validation to feel whole"
+    ],
+    shadows=[
+        "Can seem cold or disinterested",
+        "Might hurt others by withdrawing",
+        "May miss opportunities by avoiding social events",
+        "Could isolate beyond what's healthy",
+        "Might be seen as antisocial or unfriendly"
+    ],
+    in_relationships="Your partner has learned not to take your need for space personally. You love them, but you also love being alone. Date nights are fine, but you'd rather stay in than go out. You've explained a hundred times that needing space doesn't mean you're upset. They still don't fully get it. You recharge separately. They recharge together. This is your biggest relationship challenge. You're not avoiding them - you're preserving yourself so you can show up fully later.",
+    at_work="You're the one with headphones on, door closed, 'Do Not Disturb' status permanently set. You dread team-building exercises. You're productive in isolation, drained by collaboration. Video calls are exhausting even when you're not talking. You've perfected the minimal-input meeting strategy: arrive exactly on time, contribute when necessary, leave immediately after. Your manager worries you're not engaged. You're engaged - just not performatively social about it.",
+    under_stress="You withdraw completely. Social contact feels physically painful. You cancel everything. You ignore texts. You need absolute solitude to recover. People think you're mad at them. You're not - you're just depleted. Your alone time isn't optional; it's survival. When you finally re-emerge, you have to explain that you weren't ghosting anyone, you were recharging. They don't understand. You're tired of explaining.",
+    at_best="You've found your people - the few who get you. You've set boundaries around your energy without guilt. You socialize when you want to, not because you feel obligated. You've stopped pretending to be an extrovert. Your close friendships are deep and genuine because you're selective. You've built a life that honors your nature instead of fighting it. You're not lonely - you're content.",
+    growth_path="Stop apologizing for who you are. Needing less social interaction doesn't make you broken. Educate people: introversion isn't shyness, it's energy management. Set clear boundaries without guilt. Find friends who respect your need for space. Build recharge time into your schedule like you'd schedule meetings. And remember: you're not obligated to attend every event, explain every absence, or justify your nature to anyone."
+)
 
-# ============================================================================
-# Templates dictionary for easy access
-# ============================================================================
-
-DIMENSION_TEMPLATES = {
-    'LUMEN': {
-        'very_high': LUMEN_VERY_HIGH,
-        'high': LUMEN_HIGH,
-        'moderate': LUMEN_MODERATE,
-        # Add low and very_low
-    },
-    # Add AETHER, ORPHEUS, ORIN, LYRA, VARA, CHRONOS, KAEL
-}
-
-
-def get_template(dimension: str, level: str) -> DimensionTemplate:
-    """Get template for a dimension at a specific level."""
-    return DIMENSION_TEMPLATES.get(dimension, {}).get(level)
+LUMEN_VERY_LOW = DimensionTemplate(
+    title="The Solitary Hermit",
+    core_nature="People are exhausting. Not sometimes - always. Social interaction feels like work you didn't apply for and can't quit. You're not depressed or anxious (maybe you are, but that's separate) - you genuinely prefer solitude to company. Always. This confuses everyone, including sometimes yourself.",
+    description="You've been called a hermit so many times you've stopped correcting people. Social invitations feel like obligations you didn't agree to. Small talk is torture. Group activities are nightmares. Even one-on-one interaction drains you. You've perfected the art of seeming present while being completely checked out. You count the seconds until you can escape back to solitude. Being alone isn't lonely - it's relief.",
+    inner_world="Your mind is loudest when you're alone, and you prefer it that way. You have rich internal conversations. You don't need external input to feel stimulated. You've been told you're 'in your own world' because you ARE and you like it there. Social interaction interrupts your internal process. You're not ignoring people - you're just more interested in your own thoughts. This isn't arrogance; it's preference.",
+    motivations=[
+        "To minimize forced social interaction",
+        "To protect your solitude at all costs",
+        "To be left alone without judgment",
+        "To understand why you're wired this way",
+        "To survive in an extrovert-designed world"
+    ],
+    fears=[
+        "Being trapped in social situations with no escape",
+        "Losing your alone time permanently",
+        "Being forced to explain yourself constantly",
+        "People thinking you're broken",
+        "Never finding others who understand"
+    ],
+    strengths=[
+        "Complete self-sufficiency",
+        "Deep capacity for solo work and creativity",
+        "Don't need others for validation or happiness",
+        "Can focus deeply without social distraction",
+        "Comfortable with yourself in ways others never achieve"
+    ],
+    shadows=[
+        "Isolation can become unhealthy",
+        "You've hurt people by disappearing",
+        "May miss important life experiences",
+        "Could be lonely but too stubborn to admit it",
+        "Risk becoming genuinely isolated, not just solitary"
+    ],
+    in_relationships="If you're in a relationship, it's a miracle. Your partner has to be extraordinarily independent or extraordinarily patient. You need separate spaces. You need alone time daily, not weekly. They've learned not to ask 'What's wrong?' when you're quiet - nothing's wrong, you're just recharging. You've probably said 'I need space' so many times it's lost meaning. You love them, but you also love being alone more than they'll ever fully understand. This isn't sustainable long-term, and you both know it.",
+    at_work="You work alone or you're miserable. Remote work saved your life. You never turn your camera on. You respond to messages hours later because 'real-time communication' is an oxymoron for you. You've structured your entire career around minimizing human interaction. You're seen as antisocial, difficult, or 'not a team player.' You don't care. You produce results in isolation. That should be enough. It's not always enough for them.",
+    under_stress="You disappear. Completely. Ghost everyone. Turn off your phone. Don't check email. Become unreachable. This is how you cope. People worry. You don't have energy to care. You're not suicidal or in danger - you're just done with people for now. When you re-emerge (days or weeks later), you face frustrated friends and concerned family. You can't explain that you needed to shut down. They don't get it. You're tired of trying to make them get it.",
+    at_best="You've found work that requires minimal interaction. You live alone or with someone who respects your space. You've stopped feeling guilty about who you are. You have one or two people who truly understand you - and that's enough. You've built a life that honors your extreme introversion instead of fighting it. You're not broken - you're just wired for solitude. And you've stopped apologizing for it.",
+    growth_path="This isn't about becoming more social - it's about ensuring your solitude doesn't become isolation. There's a difference between choosing to be alone and hiding from the world. Check in: Are you content or avoiding? Make sure you have at least one person who can reach you in crisis. Consider therapy to understand if your introversion masks depression or social anxiety. And remember: extreme introversion is valid, but complete isolation is dangerous. Find the balance between honoring your nature and staying connected to humanity."
+)

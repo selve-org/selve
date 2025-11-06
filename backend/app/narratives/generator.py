@@ -7,7 +7,7 @@ into deep psychological insights about who the user truly is.
 
 from typing import Dict, List, Optional
 from dataclasses import dataclass
-from .dimension_templates import DimensionTemplate, LUMEN_VERY_HIGH, LUMEN_HIGH, LUMEN_MODERATE
+from .dimensions import DimensionTemplate, DIMENSION_TEMPLATES
 from .archetypes import Archetype, match_archetype, get_all_archetypes
 
 
@@ -77,15 +77,8 @@ class PersonalityNarrative:
 class NarrativeGenerator:
     """Generates deep psychological narratives from SELVE scores."""
     
-    # Temporary: Templates we have so far
-    # Will be replaced with full DIMENSION_TEMPLATES dict once all are created
-    AVAILABLE_TEMPLATES = {
-        'LUMEN': {
-            'very_high': LUMEN_VERY_HIGH,
-            'high': LUMEN_HIGH,
-            'moderate': LUMEN_MODERATE
-        }
-    }
+    # All available dimension templates (loaded from dimensions package)
+    AVAILABLE_TEMPLATES = DIMENSION_TEMPLATES
     
     # Dimension names for display
     DIMENSION_NAMES = {
