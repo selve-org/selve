@@ -246,6 +246,22 @@ class NarrativePromptBuilder:
     def __init__(self, analyzer: PersonalityAnalyzer):
         self.analyzer = analyzer
     
+    @staticmethod
+    def _format_rules(section_name: str) -> str:
+        """Standard formatting rules for all sections"""
+        return f"""FORMATTING RULES:
+- Write in plain paragraphs ONLY - absolutely NO bullet points, NO lists, NO dashes
+- Do NOT start with a section heading like "{section_name}" - we already have that heading in the UI
+- Start directly with the content
+- NEVER use markdown formatting (no ##, no **, no bullet points, no numbered lists)
+- Just write naturally flowing paragraphs
+
+CONTENT RULES:
+- NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc)
+- NEVER say "Your X score is..." or "X is high/low at..."
+- Just describe the person naturally using everyday language
+- Write in second person ("You...")"""
+    
     def build_core_identity_prompt(self) -> str:
         """Build prompt for Core Identity section"""
         profile = self.analyzer.detect_profile_pattern()
@@ -287,7 +303,14 @@ CONFLICTS:
 YOUR TASK:
 Write the "Core Identity" section (400-600 words) that explains who this person is.
 
-CRITICAL RULES:
+FORMATTING RULES:
+- Write in plain paragraphs ONLY - absolutely NO bullet points, NO lists, NO dashes
+- Do NOT start with a section heading like "Core Identity" or "Who You Are" - we already have that
+- Start directly with the content
+- NEVER use markdown formatting (no ##, no **, no bullet points, no numbered lists)
+- Just write naturally flowing paragraphs
+
+CONTENT RULES:
 - NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
 - NEVER say "Your X score is..." or "X is high/low at..."
 - Just describe the person naturally using everyday language
@@ -301,7 +324,7 @@ Guidelines:
 5. Focus on what matters most (the extreme scores and conflicts)
 6. Keep it conversational and easy to understand
 
-Write in second person ("You are..."). No bullet points - just clear, flowing paragraphs."""
+Write in second person ("You are..."). Remember: plain paragraphs only, NO formatting."""
 
         return prompt
     
@@ -327,7 +350,14 @@ WHAT DRIVES THIS PERSON:
 YOUR TASK:
 Write a "Core Motivations" section (300-400 words) that explains what really drives this person.
 
-CRITICAL RULES:
+FORMATTING RULES:
+- Write in plain paragraphs ONLY - absolutely NO bullet points, NO lists, NO dashes
+- Do NOT start with a section heading like "Core Motivations" or "What Drives You" - we already have that
+- Start directly with the content
+- NEVER use markdown formatting (no ##, no **, no bullet points, no numbered lists)
+- Just write naturally flowing paragraphs
+
+CONTENT RULES:
 - NEVER mention dimension variable names (LUMEN, AETHER, CHRONOS, KAEL, etc) in your response
 - NEVER say "Your X score is..." or "X is high/low at..."
 - Just describe the person naturally using everyday language
@@ -339,7 +369,7 @@ Guidelines:
 4. Be direct and practical
 5. Make it flow naturally, not like a list
 
-Write in second person. Keep it conversational and honest."""
+Write in second person. Remember: plain paragraphs only, NO formatting."""
 
         return prompt
     

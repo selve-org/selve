@@ -576,11 +576,16 @@ async def submit_answer(request: SubmitAnswerRequest):
                         print(f"   ❌ No items available for {dim} - all are demographically excluded")
             
             if emergency_items:
-                # Use emergency items - these won't be filtered by demographics
+                # Use emergency items - these OVERRIDE pending questions
+                # Clear pending items for these dimensions since we're sending them now
+                emergency_item_codes = {item['item'] for item in emergency_items}
+                pending_questions -= emergency_item_codes  # Remove from pending
+                
                 next_items = emergency_items
                 is_emergency_mode = True
                 print(f"   ✅ Recovered {len(next_items)} emergency questions")
                 print(f"   These items are safe from demographic filtering")
+                print(f"   Cleared {len(emergency_item_codes)} items from pending queue")
             else:
                 # Truly no items left - this shouldn't happen but handle gracefully
                 print(f"   ⚠️  No emergency items available - completing anyway")
