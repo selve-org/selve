@@ -8,6 +8,8 @@ export { FormattedText } from "./FormattedText";
 export { LoadingSpinner } from "./LoadingSpinner";
 export { ErrorDisplay } from "./ErrorDisplay";
 export { NarrativeSection } from "./NarrativeSection";
+export { ProfileHeader } from "./ProfileHeader";
+export { CoreIdentitySection } from "./CoreIdentitySection";
 export {
   DIMENSION_NAMES,
   DIMENSION_DETAILS,

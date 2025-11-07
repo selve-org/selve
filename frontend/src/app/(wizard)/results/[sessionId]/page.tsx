@@ -8,11 +8,13 @@ import {
   LoadingSpinner,
   ErrorDisplay,
   NarrativeSection,
+  ProfileHeader,
+  CoreIdentitySection,
   DIMENSION_NAMES, 
   DIMENSION_DETAILS,
   type AssessmentResults 
 } from "./components";
-ww
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function ResultsPage() {
@@ -79,80 +81,16 @@ export default function ResultsPage() {
         {isIntegratedFormat && (
           <>
             {/* Header with Hero Design */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-16 relative overflow-hidden"
-            >
-              {/* Background decoration */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-pink-500/10 rounded-3xl blur-3xl" />
-
-              <div className="relative text-center p-12 rounded-3xl border border-purple-200/50 dark:border-purple-800/50 bg-white/50 dark:bg-[#1c1c1c]/50 backdrop-blur-sm">
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/50"
-                >
-                  <svg
-                    className="w-10 h-10 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </motion.div>
-
-                <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
-                  {narrative.profile_pattern?.pattern ||
-                    "Your Personality Profile"}
-                </h1>
-
-                {narrative.profile_pattern?.description && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="max-w-3xl mx-auto"
-                  >
-                    <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                      {narrative.profile_pattern.description}
-                    </p>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
+            <ProfileHeader
+              pattern={narrative.profile_pattern?.pattern}
+              description={narrative.profile_pattern?.description}
+            />
 
             {/* Core Identity - Hero Card */}
             {narrative.sections.core_identity && (
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="mb-12"
-              >
-                <div className="relative overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-purple-900/20 dark:via-[#1c1c1c] dark:to-indigo-900/20 p-8 md:p-12 shadow-xl">
-                  {/* Decorative elements */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl" />
-                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl" />
-
-                  <div className="relative">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-2 h-12 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full" />
-                      <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
-                        Core Identity
-                      </h2>
-                    </div>
-                    <FormattedText text={narrative.sections.core_identity} />
-                  </div>
-                </div>
-              </motion.section>
+              <CoreIdentitySection
+                content={narrative.sections.core_identity}
+              />
             )}
 
             {/* Motivations */}

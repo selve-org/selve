@@ -37,6 +37,24 @@ export interface AssessmentResults {
       famous_examples: string[];
       growth_direction: string;
     };
+    dimensions?: Array<{
+      dimension: string;
+      score: number;
+      level: string;
+      title: string;
+      core_nature: string;
+      inner_world: string;
+      motivations: string[];
+      fears: string[];
+      strengths: string[];
+      shadows: string[];
+      in_relationships: string;
+      at_work: string;
+      under_stress: string;
+      at_best: string;
+      growth_path: string;
+    }>;
+    top_dimensions?: Array<{ name: string; score: number }>;
   };
   metadata: {
     timestamp: string;
@@ -61,6 +79,10 @@ export const DIMENSION_DETAILS: Record<
   string,
   {
     name: string;
+    emoji: string;
+    origin: string;
+    meaning: string;
+    essence: string;
     highMeaning: string;
     lowMeaning: string;
     description: string;
@@ -68,6 +90,10 @@ export const DIMENSION_DETAILS: Record<
 > = {
   LUMEN: {
     name: "Social Radiance",
+    emoji: "✨",
+    origin: "Latin",
+    meaning: "Light, radiance, illumination",
+    essence: "Bright, expressive, connective",
     highMeaning: "Charismatic • Outgoing • Socially Confident",
     lowMeaning: "Reserved • Private • Independent",
     description:
@@ -75,6 +101,10 @@ export const DIMENSION_DETAILS: Record<
   },
   AETHER: {
     name: "Emotional Stability",
+    emoji: "🌫️",
+    origin: "Greek",
+    meaning: "Upper air, pure essence",
+    essence: "Honest, humble, genuine",
     highMeaning: "Calm • Resilient • Emotionally Steady",
     lowMeaning: "Intense • Reactive • Deeply Feeling",
     description:
@@ -82,6 +112,10 @@ export const DIMENSION_DETAILS: Record<
   },
   ORPHEUS: {
     name: "Empathy",
+    emoji: "🎵",
+    origin: "Greek",
+    meaning: "Mythical musician who moved hearts",
+    essence: "Empathic, attuned, healing",
     highMeaning: "Deeply Empathetic • Emotionally Attuned • Compassionate",
     lowMeaning: "Logical • Objective • Emotionally Detached",
     description:
@@ -89,6 +123,10 @@ export const DIMENSION_DETAILS: Record<
   },
   ORIN: {
     name: "Discipline",
+    emoji: "🧭",
+    origin: "Hebrew/Irish",
+    meaning: "Light, pale green, pine tree",
+    essence: "Steady, organized, enduring",
     highMeaning: "Organized • Systematic • Goal-Oriented",
     lowMeaning: "Spontaneous • Flexible • Improvising",
     description:
@@ -96,6 +134,10 @@ export const DIMENSION_DETAILS: Record<
   },
   LYRA: {
     name: "Intellectual Curiosity",
+    emoji: "🦋",
+    origin: "Greek/Latin",
+    meaning: "Lyre, constellation, Orpheus' harp",
+    essence: "Curious, artistic, visionary",
     highMeaning: "Curious • Abstract • Idea-Driven",
     lowMeaning: "Practical • Concrete • Action-Oriented",
     description:
@@ -103,6 +145,10 @@ export const DIMENSION_DETAILS: Record<
   },
   VARA: {
     name: "Moral Integrity",
+    emoji: "⚖️",
+    origin: "Sanskrit/Old Norse",
+    meaning: "Truth, vow, protection, choice",
+    essence: "Moral, loyal, steadfast",
     highMeaning: "Principled • Honest • Ethically Driven",
     lowMeaning: "Pragmatic • Flexible • Situation-Dependent",
     description:
@@ -110,6 +156,10 @@ export const DIMENSION_DETAILS: Record<
   },
   CHRONOS: {
     name: "Patience",
+    emoji: "⏳",
+    origin: "Greek",
+    meaning: "Time, patience, endurance",
+    essence: "Patient, forgiving, graceful",
     highMeaning: "Patient • Tolerant • Even-Tempered",
     lowMeaning: "Impatient • Quick • Action-Biased",
     description:
@@ -117,6 +167,10 @@ export const DIMENSION_DETAILS: Record<
   },
   KAEL: {
     name: "Boldness",
+    emoji: "🔥",
+    origin: "Gaelic/Irish",
+    meaning: "Mighty warrior, slender one (symbolic for will and fire)",
+    essence: "Bold, assertive, creative force",
     highMeaning: "Assertive • Confident • Risk-Taking",
     lowMeaning: "Cautious • Measured • Risk-Averse",
     description:
