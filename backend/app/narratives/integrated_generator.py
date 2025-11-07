@@ -79,6 +79,13 @@ class IntegratedNarrativeGenerator:
         
         # Match user to personality archetype
         archetype = match_archetype(scores)
+        
+        # Safety check (should never happen with BALANCED_ARCHETYPE fallback, but be defensive)
+        if archetype is None:
+            logger.error("❌ match_archetype returned None! Using emergency fallback.")
+            from .archetypes import BALANCED_ARCHETYPE
+            archetype = BALANCED_ARCHETYPE
+        
         conflicts = analyzer.detect_conflicts()
         growth_priorities = analyzer.prioritize_growth_areas()
         
