@@ -304,7 +304,7 @@ YOUR TASK:
 Write the "Core Identity" section (400-600 words) that explains who this person is.
 
 FORMATTING RULES:
-- Write in plain paragraphs ONLY - absolutely NO bullet points, NO lists, NO dashes
+- Wrwite in plain paragraphs ONLY - absolutely NO bullet points, NO lists, NO dashes
 - Do NOT start with a section heading like "Core Identity" or "Who You Are" - we already have that
 - Start directly with the content
 - NEVER use markdown formatting (no ##, no **, no bullet points, no numbered lists)

@@ -4,148 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
-  FormattedText, 
+  FormattedText,
+  LoadingSpinner,
+  ErrorDisplay,
+  NarrativeSection,
   DIMENSION_NAMES, 
   DIMENSION_DETAILS,
   type AssessmentResults 
 } from "./components";
-
+ww
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export default function ResultsPage() {
-
-
-interface AssessmentResults {
-  session_id: string;
-  scores: Record<string, number>;
-  narrative: {
-    profile_pattern?: {
-      pattern: string;
-      description: string;
-    };
-    sections: {
-      core_identity?: string;
-      motivations?: string;
-      conflicts?: string;
-      strengths?: string;
-      growth_areas?: string;
-      relationships?: string;
-      work_style?: string;
-      // Old format fallback
-      archetype?: {
-        name: string;
-        description: string;
-        core_traits: string[];
-        strengths: string[];
-        challenges: string[];
-      };
-    };
-    generation_cost?: number;
-    metadata?: {
-      model?: string;
-      generation_method?: string;
-    };
-    // Old format fields
-    archetype?: {
-      name: string;
-      essence: string;
-      description: string;
-      core_traits: string[];
-      strengths: string[];
-      challenges: string[];
-      life_purpose: string;
-      relationships: string;
-      career_paths: string[];
-      famous_examples: string[];
-      growth_direction: string;
-    };
-    dimensions?: Array<{
-      dimension: string;
-      score: number;
-      level: string;
-      title: string;
-      core_nature: string;
-      inner_world: string;
-      motivations: string[];
-      fears: string[];
-      strengths: string[];
-      shadows: string[];
-      in_relationships: string;
-      at_work: string;
-      under_stress: string;
-      at_best: string;
-      growth_path: string;
-    }>;
-    top_dimensions?: Array<{ name: string; score: number }>;
-    summary?: string;
-  };
-  completed_at: string;
-}
-
-const DIMENSION_NAMES: Record<string, string> = {
-  LUMEN: "Social Energy",
-  AETHER: "Honesty-Humility",
-  ORPHEUS: "Empathy",
-  ORIN: "Curiosity",
-  LYRA: "Creativity",
-  VARA: "Agreeableness",
-  CHRONOS: "Patience",
-  KAEL: "Confidence",
-};
-
-const DIMENSION_DETAILS: Record<
-  string,
-  { emoji: string; origin: string; meaning: string; essence: string }
-> = {
-  LUMEN: {
-    emoji: "✨",
-    origin: "Latin",
-    meaning: "Light, radiance, illumination",
-    essence: "Bright, expressive, connective",
-  },
-  AETHER: {
-    emoji: "🌫️",
-    origin: "Greek",
-    meaning: "Upper air, pure essence",
-    essence: "Honest, humble, genuine",
-  },
-  ORPHEUS: {
-    emoji: "🎵",
-    origin: "Greek",
-    meaning: "Mythical musician who moved hearts",
-    essence: "Empathic, attuned, healing",
-  },
-  ORIN: {
-    emoji: "🧭",
-    origin: "Hebrew/Irish",
-    meaning: "Light, pale green, pine tree",
-    essence: "Steady, organized, enduring",
-  },
-  LYRA: {
-    emoji: "🦋",
-    origin: "Greek/Latin",
-    meaning: "Lyre, constellation, Orpheus' harp",
-    essence: "Curious, artistic, visionary",
-  },
-  VARA: {
-    emoji: "⚖️",
-    origin: "Sanskrit/Old Norse",
-    meaning: "Truth, vow, protection, choice",
-    essence: "Moral, loyal, steadfast",
-  },
-  CHRONOS: {
-    emoji: "⏳",
-    origin: "Greek",
-    meaning: "Time, patience, endurance",
-    essence: "Patient, forgiving, graceful",
-  },
-  KAEL: {
-    emoji: "🔥",
-    origin: "Gaelic/Irish",
-    meaning: "Mighty warrior, slender one (symbolic for will and fire)",
-    essence: "Bold, assertive, creative force",
-  },
-};
 
 export default function ResultsPage() {
   const params = useParams();
@@ -184,46 +52,15 @@ export default function ResultsPage() {
   }, [sessionId]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-[#1c1c1c] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-300 dark:border-[#2e2e2e] border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-[#999999]">
-            Loading your results...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error || !results) {
     return (
-      <div className="min-h-screen bg-white dark:bg-[#1c1c1c] flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500 flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-red-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </div>
-          <p className="text-red-400 mb-6">{error || "Results not found"}</p>
-          <button
-            onClick={() => router.push("/assessment/wizard")}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors"
-          >
-            Take Assessment
-          </button>
-        </div>
-      </div>
+      <ErrorDisplay
+        error={error}
+        onRetakeAssessment={() => router.push("/assessment/wizard")}
+      />
     );
   }
 
@@ -320,141 +157,90 @@ export default function ResultsPage() {
 
             {/* Motivations */}
             {narrative.sections.motivations && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="mb-12 relative group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                <div className="relative p-8 md:p-12 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-3xl border border-blue-200 dark:border-blue-900/50 shadow-xl hover:shadow-2xl transition-all">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl shadow-lg">
-                      🎯
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                      Core Motivations
-                    </h2>
-                  </div>
-                  <FormattedText text={narrative.sections.motivations} />
-                </div>
-              </motion.div>
+              <NarrativeSection
+                title="Core Motivations"
+                emoji="🎯"
+                content={narrative.sections.motivations}
+                gradient={{ from: "from-blue-500/20", to: "to-cyan-500/20" }}
+                border="border-blue-200 dark:border-blue-900/50"
+                delay={0.3}
+                fullWidth={true}
+              />
             )}
 
             {/* Two Column Layout: Strengths & Conflicts */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               {narrative.sections.strengths && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="relative group h-full"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-green-200 dark:border-green-900/50 shadow-lg hover:shadow-2xl transition-all">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl shadow-lg">
-                        💪
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Your Strengths
-                      </h2>
-                    </div>
-                    <FormattedText text={narrative.sections.strengths} />
-                  </div>
-                </motion.div>
+                <NarrativeSection
+                  title="Your Strengths"
+                  emoji="💪"
+                  content={narrative.sections.strengths}
+                  gradient={{
+                    from: "from-green-500/20",
+                    to: "to-emerald-500/20",
+                  }}
+                  border="border-green-200 dark:border-green-900/50"
+                  delay={0.4}
+                  fullWidth={false}
+                />
               )}
 
               {narrative.sections.conflicts && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="relative group h-full"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-amber-200 dark:border-amber-900/50 shadow-lg hover:shadow-2xl transition-all">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-2xl shadow-lg">
-                        ⚡
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Internal Conflicts
-                      </h2>
-                    </div>
-                    <FormattedText text={narrative.sections.conflicts} />
-                  </div>
-                </motion.div>
+                <NarrativeSection
+                  title="Internal Conflicts"
+                  emoji="⚡"
+                  content={narrative.sections.conflicts}
+                  gradient={{
+                    from: "from-amber-500/20",
+                    to: "to-orange-500/20",
+                  }}
+                  border="border-amber-200 dark:border-amber-900/50"
+                  delay={0.4}
+                  fullWidth={false}
+                />
               )}
             </div>
 
             {/* Growth Areas */}
             {narrative.sections.growth_areas && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="mb-12 relative group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                <div className="relative p-8 md:p-12 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-3xl border border-orange-200 dark:border-orange-900/50 shadow-xl hover:shadow-2xl transition-all">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-2xl shadow-lg">
-                      📈
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                      Growth Areas
-                    </h2>
-                  </div>
-                  <FormattedText text={narrative.sections.growth_areas} />
-                </div>
-              </motion.div>
+              <NarrativeSection
+                title="Growth Areas"
+                emoji="📈"
+                content={narrative.sections.growth_areas}
+                gradient={{ from: "from-orange-500/20", to: "to-red-500/20" }}
+                border="border-orange-200 dark:border-orange-900/50"
+                delay={0.5}
+                fullWidth={true}
+              />
             )}
 
             {/* Two Column Layout: Relationships & Work Style */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               {narrative.sections.relationships && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="relative group h-full"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500/20 to-pink-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-rose-200 dark:border-rose-900/50 shadow-lg hover:shadow-2xl transition-all">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
-                        💝
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        In Relationships
-                      </h2>
-                    </div>
-                    <FormattedText text={narrative.sections.relationships} />
-                  </div>
-                </motion.div>
+                <NarrativeSection
+                  title="In Relationships"
+                  emoji="💝"
+                  content={narrative.sections.relationships}
+                  gradient={{ from: "from-rose-500/20", to: "to-pink-500/20" }}
+                  border="border-rose-200 dark:border-rose-900/50"
+                  delay={0.6}
+                  fullWidth={false}
+                />
               )}
 
               {narrative.sections.work_style && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="relative group h-full"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative h-full p-8 bg-white/80 dark:bg-[#2e2e2e]/80 backdrop-blur-sm rounded-2xl border border-indigo-200 dark:border-indigo-900/50 shadow-lg hover:shadow-2xl transition-all">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl shadow-lg">
-                        💼
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Work Style
-                      </h2>
-                    </div>
-                    <FormattedText text={narrative.sections.work_style} />
-                  </div>
-                </motion.div>
+                <NarrativeSection
+                  title="Work Style"
+                  emoji="💼"
+                  content={narrative.sections.work_style}
+                  gradient={{
+                    from: "from-indigo-500/20",
+                    to: "to-purple-500/20",
+                  }}
+                  border="border-indigo-200 dark:border-indigo-900/50"
+                  delay={0.6}
+                  fullWidth={false}
+                />
               )}
             </div>
           </>
