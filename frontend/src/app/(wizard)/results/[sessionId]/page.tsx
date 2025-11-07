@@ -10,6 +10,7 @@ import {
   NarrativeSection,
   ProfileHeader,
   CoreIdentitySection,
+  OldFormatResults,
   DIMENSION_NAMES, 
   DIMENSION_DETAILS,
   type AssessmentResults 
