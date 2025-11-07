@@ -1,8 +1,86 @@
 # COPILOT.md - SELVE Development Journey
 
 > **Purpose**: Single source of truth for project context, decisions, and next steps.  
-> **Updated**: November 6, 2025  
-> **Status**: Active Development - OpenAI Narrative Integration Complete
+> **Updated**: November 7, 2025  
+> **Status**: Active Development - Complete Archetype System Implemented
+
+---
+
+## 🎯 Current Status (Nov 7, 2025)
+
+### ✅ Just Completed: Full Archetype System Implementation
+
+**Problem**: All test results were matching "The Healer" archetype despite different answers.
+
+**Root Cause Analysis**:
+1. Only 5 archetypes were defined (out of 20 planned)
+2. No fallback for unclear/balanced profiles
+3. Matching algorithm too permissive with "moderate" scores (+1 point)
+4. The Healer could win by default with low match scores
+
+**Solution Implemented**:
+
+**1. Complete 20-Archetype System + Fallback (21 total)**:
+- The Luminary, The Healer, The Architect, The Maverick, The Sage
+- The Guardian, The Performer, The Explorer, The Strategist, The Empath
+- The Warrior, The Artist, The Mediator, The Achiever, The Rebel
+- The Mentor, The Visionary, The Craftsman, The Diplomat, The Pioneer
+- The Alchemist
+- **The Renaissance Soul** (fallback for balanced/unclear profiles)
+
+Each archetype includes:
+- Name & essence (one-line core)
+- Rich description (personality pattern)
+- Pattern (dimension requirements, e.g., `{'ORPHEUS': 'very_high', 'CHRONOS': 'very_high', 'AETHER': 'low'}`)
+- Core traits, strengths, challenges
+- Life purpose, relationships, career paths
+- Famous examples, growth direction
+
+**2. Enhanced Matching Algorithm**:
+- **Scoring**: Perfect match (+5), Close match (+3), Moderate (+0.5, reduced from +1)
+- **Threshold**: Minimum 8.0 points required for valid match
+- **Fallback**: Uses Renaissance Soul when match score too low
+- **Debug Logging**:
+  ```
+  🎯 ARCHETYPE MATCHING
+  Dimension Scores:
+    LUMEN    =  85.0 (very_high)
+    AETHER   =  70.0 (high)
+    ...
+  
+  Archetype Match Scores:
+    15.5 points - The Luminary
+           LUMEN=85✓ (perfect very_high)
+           VARA=75≈ (close to high)
+           AETHER=70✓ (perfect high)
+    10.0 points - The Performer
+    ...
+  
+  ✅ Best Match: The Luminary (score: 15.5)
+  ```
+
+**3. Robustness Features**:
+- Safety check for None archetype (emergency fallback to Renaissance Soul)
+- Warning when dimensions missing from scores
+- Clear match indicators: ✓ perfect, ≈ close, ~ moderate, ✗ mismatch
+- Detailed logging for debugging matching issues
+
+**4. Testing**:
+- Created `test_archetypes.py` - comprehensive test suite
+- Tests 7 different personality profiles
+- **Result**: 100% pass rate (7/7 tests passed)
+- Verifies specific archetypes and fallback behavior
+
+**Files Modified**:
+- `backend/app/narratives/archetypes.py`: +16 archetypes, fallback, enhanced matching
+- `backend/app/narratives/integrated_generator.py`: Added None safety check
+- `backend/test_archetypes.py`: New test suite
+
+**Expected Results**:
+- Diverse archetype matches based on actual personality patterns
+- Balanced profiles → "The Renaissance Soul" (not random archetype)
+- Detailed logs for debugging
+- Graceful handling of edge cases
 
 ---
 
@@ -130,6 +208,40 @@
 
 ## 🚨 Current Issues to Fix
 
+### Issue 0: Archetype System Not Being Used
+**Problem**: Results show generic patterns ("Extreme Profile", "Balanced Profile") instead of rich archetype names ("The Luminary", "The Healer", "The Architect")
+
+**Root Cause**: `integrated_generator.py` uses `detect_profile_pattern()` from `synthesizer.py` which returns generic patterns, but there's a complete `archetypes.py` system with 20 rich archetypes that's only used in the template fallback.
+
+**Current State**:
+- ✅ `archetypes.py` has 20 defined archetypes with rich descriptions
+- ✅ `match_archetype()` function matches scores to best archetype
+- ❌ `integrated_generator.py` doesn't call `match_archetype()`
+- ❌ Frontend displays `profile_pattern.pattern` ("Extreme Profile")
+- ✅ User expects archetype names like "The Luminary"
+
+**Files Involved**:
+- `backend/app/narratives/archetypes.py` - 20 archetypes defined (The Luminary, The Healer, The Architect, The Maverick, The Sage, etc.)
+- `backend/app/narratives/integrated_generator.py` - Needs to call `match_archetype()`
+- `backend/app/narratives/synthesizer.py` - `detect_profile_pattern()` returns generic patterns
+- `frontend/src/app/(wizard)/results/[sessionId]/page.tsx` - Line 265 displays pattern as heading
+
+**Fix Strategy**:
+1. Import `match_archetype` in `integrated_generator.py`
+2. Call `match_archetype(dimension_scores)` to get user's archetype
+3. Use archetype name as heading instead of generic pattern
+4. Include archetype description in narrative structure
+5. Possibly use archetype as context for OpenAI prompts
+
+**User Expectation**: Traditional personality archetypes like:
+- "The Luminary" - Radiant leader who inspires
+- "The Healer" - Compassionate soul who transforms pain
+- "The Architect" - Systematic builder of elegant solutions
+- "The Maverick" - Bold disruptor who challenges norms
+- "The Sage" - Wise observer who sees beneath surface
+
+---
+
 ### Issue 1: Repetitive Opposite Questions
 **Problem**: Questions like:
 - Q2: "I am not interested in abstract ideas"
@@ -184,7 +296,39 @@
 
 ## ✅ Recent Wins
 
-1. **OpenAI Integration Complete** (Nov 6)
+1. **Quality Fixes Batch** (January 2025)
+   - **Text Cutoff Fixed**: Increased OpenAI token limits
+     - Core Identity: 800 → 1200 tokens (400-600 words)
+     - Other sections: 500 → 800 tokens
+     - Added `strip_markdown_headers()` to remove `##` and `**bold**` formatting
+   
+   - **0/100 Scores Fixed**: VARA, CHRONOS, KAEL all showing 0/100
+     - Added 0-item dimension check before completing assessment
+     - Override stop decision if any dimension has 0 items
+     - Force continuation until minimum data collected
+     - Prevents emergency questions from never being answered
+   
+   - **Metadata Banner Removed**: Users no longer see technical details
+     - Removed "AI-Generated Personality Report • Model: gpt-5-nano($0.0016)"
+     - Users care about insights, not implementation
+   
+   - **Profile Pattern as Heading**: Dynamic heading instead of generic
+     - Changed from "Your Personality Profile" to actual pattern
+     - Currently shows "Extreme Profile", "Balanced Profile", etc.
+     - **Next**: Should show archetype names ("The Luminary")
+   
+   - **Duplicate Text Fixed**: "Extreme Profile" was showing twice
+     - Removed redundant paragraph display (line 275 in page.tsx)
+     - Pattern now appears once as H1 heading
+   
+   **Files Modified**:
+   - `frontend/src/app/(wizard)/results/[sessionId]/page.tsx` - Banner, heading, duplicate
+   - `backend/app/narratives/integrated_generator.py` - Token limits, header stripping
+   - `backend/app/api/routes/assessment.py` - 0-item dimension check
+   
+   **⚠️ Backend Restart Required**: 0-item fix won't take effect until restart
+
+2. **OpenAI Integration Complete** (Nov 6)
    - Backend API integrated
    - Frontend displays 7 sections
    - Cost tracking working
@@ -205,10 +349,15 @@
 ## 📋 Next Steps (Priority Order)
 
 ### Immediate (This Session)
-1. ✅ Create COPILOT.md (this file)
-2. ⏳ Fix repetitive question pairs
-3. ⏳ Remove dimension name references from prompts
-4. ⏳ Improve results page formatting/spacing
+1. ✅ Update COPILOT.md with recent fixes
+2. ⏳ **Integrate archetype system into OpenAI narratives**
+   - Import `match_archetype` in `integrated_generator.py`
+   - Replace generic patterns with archetype names
+   - Use archetype as heading: "The Luminary", "The Healer", etc.
+   - Include archetype description in narrative sections
+3. ⏳ Remove duplicate "Extreme Profile" text (line 275 page.tsx)
+4. ⏳ Restart backend to activate 0-item dimension check
+5. ⏳ Test with new assessment to verify all fixes work
 
 ### Short-term (Next 1-2 Sessions)
 1. **Database Caching**
