@@ -9,6 +9,7 @@ from .synthesizer import PersonalityAnalyzer, NarrativePromptBuilder
 from .openai_generator import get_openai_generator, OpenAIGenerator
 from .openai_config import OpenAIConfig
 from .dimensions import DIMENSION_TEMPLATES
+from .archetypes import match_archetype
 
 logger = logging.getLogger(__name__)
 
@@ -76,18 +77,35 @@ class IntegratedNarrativeGenerator:
         analyzer = PersonalityAnalyzer(scores, DIMENSION_TEMPLATES)
         prompt_builder = NarrativePromptBuilder(analyzer)
         
-        # Detect patterns
-        profile_pattern = analyzer.detect_profile_pattern()
+        # Match user to personality archetype
+        archetype = match_archetype(scores)
         conflicts = analyzer.detect_conflicts()
         growth_priorities = analyzer.prioritize_growth_areas()
         
-        logger.info(f"Profile pattern: {profile_pattern['pattern']}")
+        logger.info(f"Matched archetype: {archetype.name}")
+        logger.info(f"Archetype essence: {archetype.essence}")
         logger.info(f"Detected {len(conflicts)} conflicts")
         logger.info(f"Identified {len(growth_priorities)} growth priorities")
         
         # Step 2: Generate narrative sections
         narrative = {
-            'profile_pattern': profile_pattern,
+            'profile_pattern': {
+                'pattern': archetype.name,
+                'description': archetype.essence
+            },
+            'archetype': {
+                'name': archetype.name,
+                'essence': archetype.essence,
+                'description': archetype.description,
+                'core_traits': archetype.core_traits,
+                'strengths': archetype.strengths,
+                'challenges': archetype.challenges,
+                'life_purpose': archetype.life_purpose,
+                'relationships': archetype.relationships,
+                'career_paths': archetype.career_paths,
+                'famous_examples': archetype.famous_examples,
+                'growth_direction': archetype.growth_direction
+            },
             'scores': scores,
             'sections': {},
             'generation_cost': 0.0

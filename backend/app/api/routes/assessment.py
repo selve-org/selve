@@ -533,30 +533,47 @@ async def submit_answer(request: SubmitAnswerRequest):
             if demographics.get("demo_has_yard") == "no":
                 demographic_exclusions.extend(["LUMEN_SC3", "ORIN_SC5"])
             
-            # Emergency fallback: Get ANY item for dimensions with 0 items
-            # BUT: Skip items that will be filtered by demographics
-            # ALSO: Skip items that are already pending (user hasn't answered them yet)
+            # Emergency fallback: Get ANY item for dimensions with 0 ANSWERED items
+            # Priority 1: Items not yet seen (not answered, not pending)
+            # Priority 2: Items that are pending but never shown to user (promote to front)
+            # Skip: Items that will be filtered by demographics (user can't answer them anyway)
             emergency_items = []
             for dim in dimensions_with_zero_items:
                 all_dim_items = tester.scorer.get_items_by_dimension(dim)
-                # Get items NOT yet answered AND NOT excluded by demographics AND NOT already pending
-                available = [
+                
+                # First try: Get items NOT answered AND NOT pending AND NOT demographically excluded
+                never_seen = [
                     item for item in all_dim_items 
                     if item['item'] not in responses 
                     and item['item'] not in demographic_exclusions
-                    and item['item'] not in pending_questions  # Don't re-add pending questions
+                    and item['item'] not in pending_questions
                 ]
-                if available:
-                    # Take top 2 highest correlation items
-                    available.sort(key=lambda x: x['correlation'], reverse=True)
-                    for item in available[:2]:
-                        # Ensure dimension field is present
+                
+                if never_seen:
+                    # Perfect - we found items that haven't been queued yet
+                    never_seen.sort(key=lambda x: x['correlation'], reverse=True)
+                    for item in never_seen[:2]:
                         if 'dimension' not in item:
                             item['dimension'] = dim
                         emergency_items.append(item)
-                    print(f"   Added {len(available[:2])} emergency items for {dim} (excluding demographic-filtered and already-pending items)")
+                    print(f"   Added {len(never_seen[:2])} fresh emergency items for {dim}")
                 else:
-                    print(f"   ⚠️ No non-demographic/non-pending items available for {dim} - using already-pending items if any exist")
+                    # All non-demographic items are already pending - promote them to front of queue!
+                    # This happens when questions were added to END of queue but never shown
+                    pending_for_dim = [
+                        item for item in all_dim_items
+                        if item['item'] in pending_questions
+                        and item['item'] not in demographic_exclusions
+                    ]
+                    if pending_for_dim:
+                        pending_for_dim.sort(key=lambda x: x['correlation'], reverse=True)
+                        for item in pending_for_dim[:2]:
+                            if 'dimension' not in item:
+                                item['dimension'] = dim
+                            emergency_items.append(item)
+                        print(f"   ⚠️  Promoted {len(pending_for_dim[:2])} pending items for {dim} to FRONT of queue")
+                    else:
+                        print(f"   ❌ No items available for {dim} - all are demographically excluded")
             
             if emergency_items:
                 # Use emergency items - these won't be filtered by demographics

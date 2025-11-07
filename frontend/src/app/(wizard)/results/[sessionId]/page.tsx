@@ -268,16 +268,13 @@ export default function ResultsPage() {
                     "Your Personality Profile"}
                 </h1>
 
-                {narrative.profile_pattern && (
+                {narrative.profile_pattern?.description && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="max-w-3xl mx-auto space-y-3"
+                    className="max-w-3xl mx-auto"
                   >
-                    <p className="text-2xl text-purple-600 dark:text-purple-400 font-bold">
-                      {narrative.profile_pattern.pattern}
-                    </p>
                     <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                       {narrative.profile_pattern.description}
                     </p>
