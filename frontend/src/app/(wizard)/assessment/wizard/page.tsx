@@ -9,6 +9,7 @@ import { ProgressBar } from "@/components/wizard/ProgressBar";
 import { Checkpoint } from "@/components/wizard/Checkpoint";
 import { BackButton } from "@/components/wizard/BackButton";
 import { BackWarningModal } from "@/components/wizard/BackWarningModal";
+import { ResultsGeneratingLoader } from "@/components/wizard/ResultsGeneratingLoader";
 import { SoundWaveLoader } from "@/components/shared/SoundWaveLoader";
 import { useQuestionnaire } from "@/hooks/useQuestionnaire";
 
@@ -39,6 +40,7 @@ export default function WizardPage() {
     warningMessage,
     submitAnswer,
     goBack,
+    checkCanGoBack,
     skipQuestion,
     continueFromCheckpoint,
     validateAnswer,
@@ -48,6 +50,9 @@ export default function WizardPage() {
   const [currentAnswer, setCurrentAnswer] = useState<unknown>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [showBackWarning, setShowBackWarning] = useState(false);
+  const [backLockedMessage, setBackLockedMessage] = useState<string | null>(
+    null
+  );
 
   /**
    * Update current answer when question changes (including when going back)
@@ -70,10 +75,21 @@ export default function WizardPage() {
   };
 
   /**
-   * Handle back button click (show warning modal first)
+   * Handle back button click - check if back is allowed first
    */
-  const handleBackClick = () => {
-    setShowBackWarning(true);
+  const handleBackClick = async () => {
+    // Check if back is possible before showing modal
+    const { canGoBack: backAllowed, warning } = await checkCanGoBack();
+
+    if (!backAllowed) {
+      // Show locked message instead of modal
+      setBackLockedMessage(warning || "Cannot go back at this time");
+      // Auto-hide after 5 seconds
+      setTimeout(() => setBackLockedMessage(null), 5000);
+    } else {
+      // Show warning modal
+      setShowBackWarning(true);
+    }
   };
 
   /**
@@ -148,8 +164,64 @@ export default function WizardPage() {
             </p>
           </div>
 
+          {/* Back Locked Alert Banner */}
+          <AnimatePresence>
+            {backLockedMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -20, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: -20, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="mx-5 mb-4 overflow-hidden"
+              >
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                        {backLockedMessage}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setBackLockedMessage(null)}
+                      className="flex-shrink-0 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Content */}
-          <div className="flex-1 px-5">
+          <motion.div layout className="flex-1 px-5">
             <AnimatePresence mode="wait">
               {/* Loading State */}
               {isLoading && (
@@ -207,49 +279,15 @@ export default function WizardPage() {
                 />
               )}
 
-              {/* Completion State */}
+              {/* Completion State - Results Generating */}
               {isComplete && !isLoading && (
                 <motion.div
                   key="complete"
-                  className="flex flex-col items-center justify-center py-20 text-center"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <motion.div
-                    className="w-20 h-20 rounded-full bg-purple-600/20 border-4 border-purple-600 flex items-center justify-center mb-6"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                  >
-                    <svg
-                      className="w-10 h-10 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </motion.div>
-                  <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-                    You&apos;re All Done!
-                  </h2>
-                  <p className="text-lg text-gray-600 dark:text-[#999999] mb-8 max-w-md">
-                    Thank you for completing the assessment. Your profile is
-                    being generated.
-                  </p>
-                  <a
-                    href="/"
-                    className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-full
-                      transition-all duration-200 hover:scale-105 active:scale-95 text-sm"
-                  >
-                    Return Home
-                  </a>
+                  <ResultsGeneratingLoader />
                 </motion.div>
               )}
 
@@ -311,7 +349,7 @@ export default function WizardPage() {
                   </motion.form>
                 )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         </div>
 
         {/* Footer - Fixed at bottom */}

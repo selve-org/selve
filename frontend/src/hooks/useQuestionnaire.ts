@@ -204,10 +204,10 @@ export function useQuestionnaire() {
           setIsComplete(true);
           setState((prev) => ({ ...prev, isLoading: false }));
 
-          // Redirect to results page after short delay
+          // Redirect to results page after showing all loading stages (~5.5 seconds)
           setTimeout(() => {
             window.location.href = `/results/${sessionId}`;
-          }, 1500);
+          }, 5500);
           return;
         }
 
@@ -269,6 +269,43 @@ export function useQuestionnaire() {
     },
     [sessionId, state.answers, currentQuestionIndex, questionQueue, isGoingBack]
   );
+
+  /**
+   * Check if user can go back to previous question
+   * Returns: { canGoBack: boolean, warning: string | null }
+   */
+  const checkCanGoBack = useCallback(async (): Promise<{
+    canGoBack: boolean;
+    warning: string | null;
+  }> => {
+    if (!sessionId) {
+      return { canGoBack: false, warning: "No active session" };
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/assessment/can-go-back`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to check back status");
+      }
+
+      const data = await response.json();
+      return {
+        canGoBack: data.can_go_back,
+        warning: data.warning,
+      };
+    } catch (error) {
+      console.error("Error checking back status:", error);
+      Sentry.captureException(error);
+      return { canGoBack: false, warning: "Unable to check back status" };
+    }
+  }, [sessionId]);
 
   /**
    * Go back to previous question (if supported)
@@ -490,6 +527,7 @@ export function useQuestionnaire() {
     // Actions
     submitAnswer,
     goBack,
+    checkCanGoBack,
     skipQuestion,
     continueFromCheckpoint,
     validateAnswer,

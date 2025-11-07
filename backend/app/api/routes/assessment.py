@@ -216,6 +216,7 @@ async def start_assessment(request: StartAssessmentRequest):
         "pending_questions": set(),  # Track questions sent to user to avoid duplicates
         "current_batch": [],  # Current batch of questions (for back navigation)
         "batch_history": [],  # History of all batches sent
+        "answer_history": [],  # Ordered list of question IDs as they were answered
         "back_navigation_count": 0,  # Track how many times user went back
         "back_navigation_log": [],  # Detailed log: [{question_id, from_value, to_value, timestamp}]
         "started_at": datetime.now().isoformat(),
@@ -273,6 +274,12 @@ async def submit_answer(request: SubmitAnswerRequest):
         # Store demographic info (keep full ID for consistency)
         demographics[request.question_id] = request.response
         
+        # Track demographic answer in history for back navigation
+        answer_history: List = session.get("answer_history", [])
+        if not request.is_going_back:
+            # New answer - add to history
+            answer_history.append(request.question_id)
+        
         # Check if ALL demographics are now complete
         all_demographics_complete = len(demographics) >= 7
         
@@ -295,28 +302,42 @@ async def submit_answer(request: SubmitAnswerRequest):
         skip_personality_storage = False
     
     # Check if user is updating after going back (track this behavior)
-    if not skip_personality_storage and request.is_going_back and request.question_id in responses:
-        # User went back and changed their answer
-        old_value = responses[request.question_id]
-        new_value = request.response
+    if request.is_going_back:
+        # Track back navigation for both demographics and personality questions
+        if request.question_id.startswith("demo_"):
+            # Demographic question
+            old_value = demographics.get(request.question_id)
+        else:
+            # Personality question
+            old_value = responses.get(request.question_id)
         
-        session["back_navigation_count"] += 1
-        session["back_navigation_log"].append({
-            "question_id": request.question_id,
-            "from_value": old_value,
-            "to_value": new_value,
-            "timestamp": datetime.now().isoformat(),
-        })
-        
-        print(f"\n🔄 BACK NAVIGATION - User changed answer")
-        print(f"   Question: {request.question_id}")
-        print(f"   Old: {old_value} → New: {new_value}")
-        print(f"   Total backs: {session['back_navigation_count']}")
+        if old_value is not None:
+            new_value = request.response
+            
+            session["back_navigation_count"] += 1
+            session["back_navigation_log"].append({
+                "question_id": request.question_id,
+                "from_value": old_value,
+                "to_value": new_value,
+                "timestamp": datetime.now().isoformat(),
+            })
+            
+            print(f"\n🔄 BACK NAVIGATION - User changed answer")
+            print(f"   Question: {request.question_id}")
+            print(f"   Old: {old_value} → New: {new_value}")
+            print(f"   Total backs: {session['back_navigation_count']}")
     
     # Store personality response (skip if this was the last demographic triggering first batch)
     if not skip_personality_storage:
         responses[request.question_id] = request.response
         pending_questions.discard(request.question_id)  # Remove from pending set
+        
+        # Track answer order for back navigation
+        answer_history: List = session.get("answer_history", [])
+        if not request.is_going_back:
+            # New answer - add to history
+            answer_history.append(request.question_id)
+        # If going back, the question is already in history, don't add again
         
         # Log adaptive decision-making
         print(f"\n{'='*70}")
@@ -691,13 +712,69 @@ async def submit_answer(request: SubmitAnswerRequest):
     )
 
 
+@router.post("/assessment/can-go-back", response_model=GetPreviousQuestionResponse)
+async def check_can_go_back(request: GetPreviousQuestionRequest):
+    """
+    Check if user can go back without actually going back.
+    
+    Returns:
+    - can_go_back: True if user can navigate back to previous question
+    - warning: Message explaining why they can't go back (if applicable)
+    
+    Users can edit their last 10 answers to prevent disrupting the adaptive flow too much.
+    """
+    # Get session
+    session = sessions.get(request.session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    responses: Dict = session["responses"]
+    demographics: Dict = session["demographics"]
+    answer_history: List = session.get("answer_history", [])
+    
+    print(f"\n🔍 CHECK CAN GO BACK:")
+    print(f"   Total responses: {len(responses)}")
+    print(f"   Total demographics: {len(demographics)}")
+    print(f"   Answer history length: {len(answer_history)}")
+    
+    # Need at least one answer to go back (either demographic or personality)
+    if not answer_history:
+        return GetPreviousQuestionResponse(
+            question=None,
+            current_answer=None,
+            can_go_back=False,
+            warning="No questions answered yet"
+        )
+    
+    # Allow going back to last 10 answers
+    MAX_BACK_DEPTH = 10
+    if len(answer_history) <= MAX_BACK_DEPTH:
+        # Can go back - still within the allowed window
+        print(f"   ✅ Can go back ({len(answer_history)} answers, within {MAX_BACK_DEPTH} limit)")
+        return GetPreviousQuestionResponse(
+            question=None,
+            current_answer=None,
+            can_go_back=True,
+            warning=None
+        )
+    else:
+        # Too many answers ago - locked
+        print(f"   ❌ Cannot go back ({len(answer_history)} answers, exceeds {MAX_BACK_DEPTH} limit)")
+        return GetPreviousQuestionResponse(
+            question=None,
+            current_answer=None,
+            can_go_back=False,
+            warning="You can only edit your last 10 answers. Continue forward with the assessment."
+        )
+
+
 @router.post("/assessment/back", response_model=GetPreviousQuestionResponse)
 async def go_back(request: GetPreviousQuestionRequest):
     """
-    Go back to previous question in current batch.
+    Go back to previous question.
     
-    Allows users to review and edit their most recent answer within the current batch.
-    Once they proceed to next batch, previous answers are locked.
+    Allows users to review and edit their most recent answer (up to last 10 answers).
+    This prevents disrupting the adaptive flow while still allowing minor corrections.
     
     ⚠️ Warning shown: Going back may affect results accuracy
     """
@@ -707,11 +784,11 @@ async def go_back(request: GetPreviousQuestionRequest):
         raise HTTPException(status_code=404, detail="Session not found")
     
     responses: Dict = session["responses"]
-    current_batch: List = session.get("current_batch", [])
+    answer_history: List = session.get("answer_history", [])
     tester: AdaptiveTester = session["tester"]
     
-    # Can only go back within current batch
-    if not responses:
+    # Need at least one answer to go back
+    if not answer_history:
         return GetPreviousQuestionResponse(
             question=None,
             current_answer=None,
@@ -719,59 +796,165 @@ async def go_back(request: GetPreviousQuestionRequest):
             warning="No questions answered yet"
         )
     
-    # Get the most recent answered question
-    # Sort by the order they appear in current_batch
-    answered_in_batch = [q_id for q_id in current_batch if q_id in responses]
-    
-    if not answered_in_batch:
-        # They've moved to a new batch - can't go back
+    # Check if within allowed depth (last 10 answers)
+    MAX_BACK_DEPTH = 10
+    if len(answer_history) > MAX_BACK_DEPTH:
         return GetPreviousQuestionResponse(
             question=None,
             current_answer=None,
             can_go_back=False,
-            warning="Previous batch locked. You can only edit questions in your current set."
+            warning="You can only edit your last 10 answers. Continue forward with the assessment."
         )
     
-    # Get last answered question
-    last_question_id = answered_in_batch[-1]
-    current_answer = responses[last_question_id]
+    # Get the last answered question from history
+    last_question_id = answer_history[-1]
+    
+    # Get current answer from appropriate storage
+    if last_question_id.startswith("demo_"):
+        # Demographic question - get from demographics
+        demographics: Dict = session["demographics"]
+        current_answer = demographics[last_question_id]
+    else:
+        # Personality question - get from responses
+        current_answer = responses[last_question_id]
+    
+    # Remove this question from history (will be re-added when they submit)
+    answer_history.pop()
     
     # Find the full question object
     question_obj = None
-    for dim in ['LUMEN', 'AETHER', 'ORPHEUS', 'ORIN', 'LYRA', 'VARA', 'CHRONOS', 'KAEL']:
-        dim_items = tester.scorer.get_items_by_dimension(dim)
-        for item in dim_items:
-            if item['item'] == last_question_id:
-                question_obj = {
-                    "id": item["item"],
-                    "text": item["text"],
-                    "dimension": item["dimension"],
-                    "type": "scale-slider",
-                    "isRequired": True,
-                    "renderConfig": {
-                        "min": 1,
-                        "max": 5,
-                        "step": 1,
-                        "labels": {
-                            "1": "Strongly Disagree",
-                            "2": "Disagree",
-                            "3": "Neutral",
-                            "4": "Agree",
-                            "5": "Strongly Agree"
+    
+    # Check if it's a demographic question first
+    if last_question_id.startswith("demo_"):
+        # Handle demographic questions - construct them manually
+        demographic_questions = {
+            "demo_name": {
+                "id": "demo_name",
+                "text": "What's your name?",
+                "type": "text-input",
+                "dimension": "demographics",
+                "isRequired": True,
+                "renderConfig": {
+                    "placeholder": "Enter your name",
+                    "helpText": "Used for personalization in your results"
+                }
+            },
+            "demo_age": {
+                "id": "demo_age",
+                "text": "How old are you?",
+                "type": "number-input",
+                "dimension": "demographics",
+                "isRequired": True,
+                "renderConfig": {
+                    "min": 13,
+                    "max": 120,
+                    "placeholder": "Enter your age",
+                    "helpText": "Must be 13 or older to take this assessment"
+                }
+            },
+            "demo_gender": {
+                "id": "demo_gender",
+                "text": "What's your gender?",
+                "type": "pill-select",
+                "dimension": "demographics",
+                "isRequired": False,
+                "renderConfig": {
+                    "options": [
+                        {"label": "Male", "value": "male"},
+                        {"label": "Female", "value": "female"},
+                        {"label": "Non-binary", "value": "non_binary"},
+                        {"label": "Prefer not to say", "value": "prefer_not_to_say"}
+                    ]
+                }
+            },
+            "demo_country": {
+                "id": "demo_country",
+                "text": "Which country do you live in?",
+                "type": "country-select",
+                "dimension": "demographics",
+                "isRequired": True,
+                "renderConfig": {
+                    "placeholder": "Start typing your country...",
+                    "helpText": "This helps us provide culturally relevant questions"
+                }
+            },
+            "demo_drives": {
+                "id": "demo_drives",
+                "text": "Do you drive a car regularly?",
+                "type": "radio",
+                "dimension": "demographics",
+                "isRequired": False,
+                "renderConfig": {
+                    "options": [
+                        {"value": "yes", "label": "Yes"},
+                        {"value": "no", "label": "No"}
+                    ]
+                }
+            },
+            "demo_credit_cards": {
+                "id": "demo_credit_cards",
+                "text": "Do you use credit cards?",
+                "type": "radio",
+                "dimension": "demographics",
+                "isRequired": False,
+                "renderConfig": {
+                    "options": [
+                        {"value": "yes", "label": "Yes"},
+                        {"value": "no", "label": "No"}
+                    ]
+                }
+            },
+            "demo_has_yard": {
+                "id": "demo_has_yard",
+                "text": "Do you have a yard or garden?",
+                "type": "radio",
+                "dimension": "demographics",
+                "isRequired": False,
+                "renderConfig": {
+                    "options": [
+                        {"value": "yes", "label": "Yes"},
+                        {"value": "no", "label": "No"}
+                    ]
+                }
+            }
+        }
+        question_obj = demographic_questions.get(last_question_id)
+    else:
+        # Personality question - look in the scorer's item pool
+        for dim in ['LUMEN', 'AETHER', 'ORPHEUS', 'ORIN', 'LYRA', 'VARA', 'CHRONOS', 'KAEL']:
+            dim_items = tester.scorer.get_items_by_dimension(dim)
+            for item in dim_items:
+                if item['item'] == last_question_id:
+                    question_obj = {
+                        "id": item["item"],
+                        "text": item["text"],
+                        "dimension": item.get("dimension", dim),  # Use item dimension or fall back to current dim
+                        "type": "scale-slider",
+                        "isRequired": True,
+                        "renderConfig": {
+                            "min": 1,
+                            "max": 5,
+                            "step": 1,
+                            "labels": {
+                                "1": "Strongly Disagree",
+                                "2": "Disagree",
+                                "3": "Neutral",
+                                "4": "Agree",
+                                "5": "Strongly Agree"
+                            }
                         }
                     }
-                }
+                    break
+            if question_obj:
                 break
-        if question_obj:
-            break
     
-    print(f"\n⬅️  BACK NAVIGATION - User reviewing question {last_question_id}")
+    print(f"\n⬅️  BACK NAVIGATION - User reviewing question {last_question_id} ({len(answer_history)} answers deep)")
     
     return GetPreviousQuestionResponse(
         question=question_obj,
         current_answer=current_answer,
-        can_go_back=True,
-        warning="⚠️ Changing previous answers may affect your results accuracy and consistency score."
+        can_go_back=len(answer_history) > 1,  # Can still go back if more than 1 answer
+        warning="Changing previous answers may affect your results accuracy and consistency score."
     )
 
 
