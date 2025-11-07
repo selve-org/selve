@@ -15,7 +15,7 @@ export function ProfileHeader({ pattern, description }: ProfileHeaderProps) {
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-pink-500/10 rounded-3xl blur-3xl" />
 
-      <div className="relative text-center p-12 rounded-3xl border border-purple-200/50 dark:border-purple-800/50 bg-white/50 dark:bg-[#1c1c1c]/50 backdrop-blur-sm">
+      <div className="relative text-center p-8 rounded-3xl border border-purple-200/50 dark:border-purple-800/50 bg-white/50 dark:bg-[#1c1c1c]/50 backdrop-blur-sm">
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -37,7 +37,7 @@ export function ProfileHeader({ pattern, description }: ProfileHeaderProps) {
           </svg>
         </motion.div>
 
-        <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
+        <h1 className="text-5xl md:text-6xl font-bold pb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
           {pattern || "Your Personality Profile"}
         </h1>
 

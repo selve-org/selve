@@ -297,22 +297,31 @@ export function useQuestionnaire() {
       }
 
       const data = await response.json();
-      const { previous_question, current_index, can_go_back, warning_message } =
-        data;
+      const { question, current_answer, can_go_back, warning } = data;
 
       // Update states
       setCanGoBack(can_go_back);
-      setWarningMessage(warning_message || null);
+      setWarningMessage(warning || null);
       setIsGoingBack(true); // Set flag so next submission knows it's a resubmission
+
+      // Check if we have a question to go back to
+      if (!question) {
+        setState((prev) => ({
+          ...prev,
+          error: warning || "Cannot go back",
+          isLoading: false,
+        }));
+        return;
+      }
 
       // Format the previous question
       const formattedQuestion: QuestionnaireQuestion = {
-        id: previous_question.id,
-        text: previous_question.text,
-        type: previous_question.type || "scale-slider",
-        sectionId: previous_question.dimension,
-        isRequired: previous_question.isRequired,
-        renderConfig: previous_question.renderConfig || {
+        id: question.id,
+        text: question.text,
+        type: question.type || "scale-slider",
+        sectionId: question.dimension,
+        isRequired: question.isRequired,
+        renderConfig: question.renderConfig || {
           min: 1,
           max: 5,
           step: 1,
@@ -326,8 +335,7 @@ export function useQuestionnaire() {
         },
       };
 
-      // Update current question and index
-      setCurrentQuestionIndex(current_index);
+      // Update current question
       setState((prev) => ({
         ...prev,
         currentQuestion: formattedQuestion,

@@ -1,7 +1,7 @@
 // src/app/(wizard)/assessment/wizard/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArtisticCanvas } from "@/components/wizard/ArtisticCanvas";
 import { QuestionRenderer } from "@/components/wizard/QuestionRenderer";
@@ -9,6 +9,7 @@ import { ProgressBar } from "@/components/wizard/ProgressBar";
 import { Checkpoint } from "@/components/wizard/Checkpoint";
 import { BackButton } from "@/components/wizard/BackButton";
 import { BackWarningModal } from "@/components/wizard/BackWarningModal";
+import { SoundWaveLoader } from "@/components/shared/SoundWaveLoader";
 import { useQuestionnaire } from "@/hooks/useQuestionnaire";
 
 /**
@@ -47,6 +48,18 @@ export default function WizardPage() {
   const [currentAnswer, setCurrentAnswer] = useState<unknown>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [showBackWarning, setShowBackWarning] = useState(false);
+
+  /**
+   * Update current answer when question changes (including when going back)
+   */
+  useEffect(() => {
+    if (currentQuestion) {
+      const existingAnswer = getAnswer(currentQuestion.id);
+      setCurrentAnswer(existingAnswer ?? null);
+      setValidationError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion?.id]);
 
   /**
    * Handle answer change from input components
@@ -147,10 +160,7 @@ export default function WizardPage() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
-                  <div className="w-12 h-12 border-2 border-gray-300 dark:border-[#2e2e2e] border-t-gray-900 dark:border-t-white rounded-full animate-spin mb-4" />
-                  <p className="text-gray-600 dark:text-[#999999] text-sm">
-                    Loading...
-                  </p>
+                  <SoundWaveLoader size="md" color="purple" text="Loading" />
                 </motion.div>
               )}
 

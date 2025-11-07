@@ -6,6 +6,9 @@ import {
   Poppins,
   Crimson_Text,
 } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { PostHogProvider } from "./providers";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,6 +42,25 @@ export const metadata: Metadata = {
   title: "SELVE - Discover Your True Self",
   description:
     "A comprehensive personality assessment that deciphers who you are from head to toe.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { rel: "icon", url: "favicons/icon.ico" },
+      { rel: "apple-touch-icon", url: "favicons/apple-touch-icon.png" },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "192x192",
+        url: "favicons/android-chrome-192x192.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "512x512",
+        url: "favicons/android-chrome-512x512.png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -51,7 +73,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${crimsonText.variable} antialiased`}
       >
-        {children}
+        <PostHogProvider>
+          <ClerkProvider>
+            <ThemeProvider>{children}</ThemeProvider>
+          </ClerkProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
