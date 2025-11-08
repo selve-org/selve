@@ -11,6 +11,7 @@ export { NarrativeSection } from "./NarrativeSection";
 export { ProfileHeader } from "./ProfileHeader";
 export { CoreIdentitySection } from "./CoreIdentitySection";
 export { OldFormatResults } from "./OldFormatResults";
+export { default as FeedbackWidget } from "./FeedbackWidget";
 export {
   DIMENSION_NAMES,
   DIMENSION_DETAILS,

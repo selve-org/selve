@@ -9,6 +9,7 @@ import {
 import { ClerkProvider } from "@clerk/nextjs";
 import { PostHogProvider } from "./providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AssessmentSessionProvider } from "@/contexts/AssessmentSessionContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -75,7 +76,11 @@ export default function RootLayout({
       >
         <PostHogProvider>
           <ClerkProvider>
-            <ThemeProvider>{children}</ThemeProvider>
+            <ThemeProvider>
+              <AssessmentSessionProvider>
+                {children}
+              </AssessmentSessionProvider>
+            </ThemeProvider>
           </ClerkProvider>
         </PostHogProvider>
       </body>

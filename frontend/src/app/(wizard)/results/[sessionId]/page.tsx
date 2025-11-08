@@ -11,6 +11,7 @@ import {
   ProfileHeader,
   CoreIdentitySection,
   OldFormatResults,
+  FeedbackWidget,
   DIMENSION_NAMES, 
   DIMENSION_DETAILS,
   type AssessmentResults 
@@ -241,6 +242,16 @@ export default function ResultsPage() {
             })}
           </div>
         </motion.section>
+
+        {/* Feedback Widget */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="mb-16"
+        >
+          <FeedbackWidget sessionId={sessionId} />
+        </motion.div>
 
         {/* Actions - Common for all formats */}
         <div className="mt-12 flex justify-center gap-4">

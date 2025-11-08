@@ -293,11 +293,18 @@ async def submit_answer(request: SubmitAnswerRequest):
                 total_questions=44,
             )
         
-        # All demographics complete! Generate first personality batch with cultural filtering
-        print(f"\n✅ All demographics complete! Generating first personality batch...")
-        # Skip the personality response storage - this is still a demographic
-        # Fall through to batch generation, but DON'T store this as a personality response
-        skip_personality_storage = True
+        # All demographics complete! Check if this is first time or going back
+        if responses or pending_questions:
+            # Personality questions already exist - user is going back through demographics
+            print(f"\n🔄 All demographics complete, but personality questions already exist (going back)")
+            # Don't regenerate - just continue with normal flow
+            skip_personality_storage = False  # Allow normal personality storage
+        else:
+            # First time completing demographics - generate personality questions
+            print(f"\n✅ All demographics complete! Generating first personality batch...")
+            # Skip the personality response storage - this is still a demographic
+            # Fall through to batch generation, but DON'T store this as a personality response
+            skip_personality_storage = True
     else:
         skip_personality_storage = False
     
@@ -329,20 +336,30 @@ async def submit_answer(request: SubmitAnswerRequest):
     
     # Store personality response (skip if this was the last demographic triggering first batch)
     if not skip_personality_storage:
-        responses[request.question_id] = request.response
-        pending_questions.discard(request.question_id)  # Remove from pending set
-        
-        # Track answer order for back navigation
-        answer_history: List = session.get("answer_history", [])
-        if not request.is_going_back:
-            # New answer - add to history
-            answer_history.append(request.question_id)
-        # If going back, the question is already in history, don't add again
-        
-        # Log adaptive decision-making
-        print(f"\n{'='*70}")
-        print(f"📊 ADAPTIVE TESTING - Question #{len(responses)} answered")
-        print(f"{'='*70}")
+        # Only store personality questions in responses, not demographics
+        if not request.question_id.startswith("demo_"):
+            try:
+                # Personality questions must be numeric (1-7 scale)
+                response_value = int(request.response) if isinstance(request.response, str) else request.response
+                responses[request.question_id] = response_value
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=400, detail=f"Personality question responses must be numeric (1-7). Got: {request.response}")
+            
+            pending_questions.discard(request.question_id)  # Remove from pending set
+            
+            # Track answer order for back navigation
+            answer_history: List = session.get("answer_history", [])
+            if not request.is_going_back:
+                # New answer - add to history
+                answer_history.append(request.question_id)
+            # If going back, the question is already in history, don't add again
+            
+            # Log adaptive decision-making
+            print(f"\n{'='*70}")
+            print(f"📊 ADAPTIVE TESTING - Question #{len(responses)} answered")
+            print(f"{'='*70}")
+        # If it's a demographic question and skip_personality_storage = False,
+        # it means we're going back through demographics - they're already stored in demographics dict
     else:
         # Demographics just completed - this is the first personality batch
         print(f"\n{'='*70}")

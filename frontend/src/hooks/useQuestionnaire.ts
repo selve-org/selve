@@ -1,8 +1,9 @@
 // src/hooks/useQuestionnaire.ts
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { useAssessmentProgress } from "@/contexts/AssessmentSessionContext";
 import type {
   QuestionnaireSession,
   QuestionnaireQuestion,
@@ -29,6 +30,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
  * - Adaptive testing automatically selects next questions
  */
 export function useQuestionnaire() {
+  const { updateProgress, currentProgress } = useAssessmentProgress();
+  
+  // Extract only the sessionId to prevent infinite re-renders
+  const existingSessionId = currentProgress.sessionId;
+  
+  // Track initialization to prevent multiple calls
+  const initializationAttempted = useRef(false);
+  
   const [state, setState] = useState<WizardState>({
     session: null,
     currentQuestion: null,
@@ -46,6 +55,7 @@ export function useQuestionnaire() {
   const [showCheckpoint, setShowCheckpoint] =
     useState<QuestionnaireCheckpoint | null>(null);
   const [isComplete, setIsComplete] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [questionQueue, setQuestionQueue] = useState<QuestionnaireQuestion[]>(
     []
@@ -59,8 +69,27 @@ export function useQuestionnaire() {
    * Initialize session and fetch first questions from SELVE backend
    */
   const initializeSession = useCallback(async () => {
+    // Prevent multiple initialization attempts
+    if (initializationAttempted.current) {
+      return;
+    }
+    initializationAttempted.current = true;
+
     try {
+      setIsInitializing(true);
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      // Minimum loading time to prevent flash
+      const minLoadingTime = new Promise(resolve => setTimeout(resolve, 800));
+
+      // Check if we have existing session to restore
+      if (existingSessionId) {
+        console.log("📦 Restoring existing session:", existingSessionId);
+        setSessionId(existingSessionId);
+        
+        // TODO: Add API endpoint to restore session state from backend
+        // For now, we'll continue with existing session ID and let the frontend rebuild state
+      }
 
       // Start assessment with SELVE backend
       const response = await fetch(`${API_BASE}/api/assessment/start`, {
@@ -68,7 +97,7 @@ export function useQuestionnaire() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: null, // Could be set from auth context
-          metadata: { source: "web" },
+          metadata: { source: "web", restored_session: !!existingSessionId },
         }),
       });
 
@@ -79,8 +108,14 @@ export function useQuestionnaire() {
       const data = await response.json();
       const { session_id, questions, total_questions, progress } = data;
 
-      // Store session ID
-      setSessionId(session_id);
+      // Store session ID (use existing one if we're restoring, or new one)
+      const finalSessionId = existingSessionId || session_id;
+      setSessionId(finalSessionId);
+      
+      // Update progress with session ID if it's new
+      if (!existingSessionId) {
+        updateProgress({ sessionId: finalSessionId });
+      }
 
       // Convert backend questions to frontend format
       const formattedQuestions: QuestionnaireQuestion[] = questions.map(
@@ -122,7 +157,17 @@ export function useQuestionnaire() {
           percentage: progress,
         },
       }));
+      
+      // Wait for minimum loading time before clearing initializing state
+      await minLoadingTime;
+      
+      // Clear initializing state
+      setIsInitializing(false);
     } catch (error) {
+      // Ensure minimum loading time even on error
+      const minLoadingTime = new Promise(resolve => setTimeout(resolve, 800));
+      await minLoadingTime;
+      
       const errorMessage =
         error instanceof Error ? error.message : "Failed to initialize";
       Sentry.captureException(error);
@@ -131,8 +176,12 @@ export function useQuestionnaire() {
         error: errorMessage,
         isLoading: false,
       }));
+      // Clear initializing state on error
+      setIsInitializing(false);
+      // Reset initialization flag on error to allow retry
+      initializationAttempted.current = false;
     }
-  }, []);
+  }, [existingSessionId, updateProgress]);
 
   /**
    * Submit an answer and get next adaptive questions from backend
@@ -188,6 +237,14 @@ export function useQuestionnaire() {
         // Update local answers map
         const newAnswers = new Map(state.answers);
         newAnswers.set(questionId, answer);
+
+        // Save progress to session context
+        updateProgress({
+          sessionId: sessionId,
+          lastQuestionIndex: currentQuestionIndex,
+          // Convert Map to object for storage
+          responses: Object.fromEntries(newAnswers),
+        });
 
         setState((prev) => ({
           ...prev,
@@ -517,6 +574,7 @@ export function useQuestionnaire() {
     currentQuestion: state.currentQuestion,
     answers: state.answers,
     isLoading: state.isLoading,
+    isInitializing,
     error: state.error,
     progress: state.progress,
     showCheckpoint,

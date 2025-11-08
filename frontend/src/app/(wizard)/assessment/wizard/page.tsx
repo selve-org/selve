@@ -11,6 +11,7 @@ import { BackButton } from "@/components/wizard/BackButton";
 import { BackWarningModal } from "@/components/wizard/BackWarningModal";
 import { ResultsGeneratingLoader } from "@/components/wizard/ResultsGeneratingLoader";
 import { SoundWaveLoader } from "@/components/shared/SoundWaveLoader";
+import AssessmentLoader from "@/components/wizard/AssessmentLoader";
 import { useQuestionnaire } from "@/hooks/useQuestionnaire";
 
 /**
@@ -32,6 +33,7 @@ export default function WizardPage() {
   const {
     currentQuestion,
     isLoading,
+    isInitializing,
     error,
     progress,
     showCheckpoint,
@@ -144,7 +146,15 @@ export default function WizardPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#1c1c1c] dark:bg-[#1c1c1c] bg-white text-foreground">
+    <>
+      {/* Initialization Loading Screen */}
+      {isInitializing && (
+        <AssessmentLoader message="Checking for saved progress..." />
+      )}
+      
+      {/* Main Assessment Interface - Only show when not initializing */}
+      {!isInitializing && (
+        <div className="flex min-h-screen bg-[#1c1c1c] dark:bg-[#1c1c1c] bg-white text-foreground">
       {/* Left Side: Artistic Canvas (hidden on mobile/tablet) */}
       <div className="hidden lg:block lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:h-screen">
         <ArtisticCanvas />
@@ -367,6 +377,8 @@ export default function WizardPage() {
         onCancel={handleBackCancel}
         warningMessage={warningMessage}
       />
-    </div>
+        </div>
+      )}
+    </>
   );
 }
