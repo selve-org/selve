@@ -10,7 +10,7 @@ Handles the complete assessment flow:
 
 import os
 from dotenv import load_dotenv
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Any
 from datetime import datetime
@@ -23,6 +23,7 @@ from app.scoring import SelveScorer
 from app.narratives import generate_narrative
 from app.narratives.integrated_generator import generate_integrated_narrative
 from app.response_validator import ResponseValidator
+from app.auth import get_current_user
 
 router = APIRouter()
 
@@ -94,9 +95,15 @@ class GetResultsResponse(BaseModel):
 # ============================================================================
 
 @router.post("/assessment/start", response_model=StartAssessmentResponse)
-async def start_assessment(request: StartAssessmentRequest):
+async def start_assessment(
+    request: StartAssessmentRequest,
+    user: Optional[dict] = Depends(get_current_user)
+):
     """
     Start a new adaptive assessment.
+    
+    Supports both authenticated and anonymous users.
+    If user is authenticated, session will be linked to their Clerk ID.
     
     Returns:
     - session_id: Unique session identifier
@@ -106,6 +113,13 @@ async def start_assessment(request: StartAssessmentRequest):
     """
     # Generate session ID
     session_id = f"session_{datetime.now().timestamp()}"
+    
+    # Get user ID from authentication or request
+    user_id = None
+    if user:
+        user_id = user.get("sub")  # Clerk user ID (e.g., "user_xxx")
+    elif request.user_id:
+        user_id = request.user_id
     
     # Initialize adaptive tester
     tester = AdaptiveTester()
@@ -220,7 +234,8 @@ async def start_assessment(request: StartAssessmentRequest):
         "back_navigation_count": 0,  # Track how many times user went back
         "back_navigation_log": [],  # Detailed log: [{question_id, from_value, to_value, timestamp}]
         "started_at": datetime.now().isoformat(),
-        "user_id": request.user_id,
+        "user_id": user_id,  # Will be Clerk ID if authenticated, None if anonymous
+        "clerk_user": user,  # Store full Clerk user data if authenticated
         "metadata": request.metadata or {},
     }
     
@@ -1169,6 +1184,69 @@ async def get_progress(session_id: str):
         "completion_reason": reason if not should_continue else None,
         "dimension_progress": dimension_counts,
         "started_at": session["started_at"],
+    }
+
+
+class TransferSessionRequest(BaseModel):
+    """Request to transfer anonymous session to authenticated user"""
+    session_id: str
+    
+
+@router.post("/assessment/transfer-session")
+async def transfer_session(
+    request: TransferSessionRequest,
+    user: dict = Depends(get_current_user)
+):
+    """
+    Transfer an anonymous session to an authenticated user.
+    
+    This endpoint is called when a user signs in after starting
+    an assessment anonymously. It links the session to their Clerk ID
+    so results are saved to their account.
+    
+    Security:
+    - Requires authentication (user must be signed in)
+    - Only works on sessions that don't already have a user_id
+    - Cannot steal other users' sessions
+    """
+    if not user:
+        raise HTTPException(
+            status_code=401, 
+            detail="Authentication required to transfer session"
+        )
+    
+    # Get session
+    session = sessions.get(request.session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Check if session is already owned
+    if session.get("user_id"):
+        # Session already has a user - check if it's the same user
+        if session["user_id"] == user.get("sub"):
+            return {
+                "success": True,
+                "message": "Session already belongs to this user",
+                "session_id": request.session_id,
+            }
+        else:
+            raise HTTPException(
+                status_code=403,
+                detail="Session already belongs to another user"
+            )
+    
+    # Transfer ownership
+    session["user_id"] = user.get("sub")
+    session["clerk_user"] = user
+    session["transferred_at"] = datetime.now().isoformat()
+    
+    print(f"✅ Session {request.session_id} transferred to user {user.get('sub')}")
+    
+    return {
+        "success": True,
+        "message": "Session transferred successfully",
+        "session_id": request.session_id,
+        "user_id": user.get("sub"),
     }
 
 
