@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 
-// TODO: Future database integration for logged-in users
-// - Store session state in database for authenticated users
-// - Sync local storage with user account
-// - Handle session migration when user logs in mid-assessment
-// - Implement session cleanup/expiry policies
+// Session state will be stored in:
+// - localStorage for anonymous users (temporary, 24hr expiry)
+// - Database for authenticated users (permanent, linked to Clerk ID)
+// - When user signs in, anonymous session is transferred to their account
 
 interface AssessmentSession {
   sessionId: string | null;
@@ -88,6 +89,32 @@ function saveSessionToStorage(session: AssessmentSession) {
   }
 }
 
+async function transferSessionToUser(
+  sessionId: string, 
+  userId: string,
+  getToken: () => Promise<string | null>
+): Promise<void> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  
+  const token = await getToken();
+  
+  const response = await fetch(`${API_BASE}/api/assessment/transfer-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { "Authorization": `Bearer ${token}` }),
+    },
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to transfer session: ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  return data;
+}
+
 interface AssessmentSessionProviderProps {
   children: ReactNode;
 }
@@ -95,14 +122,79 @@ interface AssessmentSessionProviderProps {
 export function AssessmentSessionProvider({ children }: AssessmentSessionProviderProps) {
   const [session, setSession] = useState<AssessmentSession>(getDefaultSession);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [hasTransferredSession, setHasTransferredSession] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { user, isLoaded: isUserLoaded } = useUser();
+  const { getToken } = useAuth();
 
   // Hydrate from localStorage on mount (client-side only)
   useEffect(() => {
     setSession(getStoredSession());
     setIsHydrated(true);
   }, []);
+
+  // Save to localStorage whenever session changes
+  useEffect(() => {
+    if (isHydrated) {
+      saveSessionToStorage(session);
+    }
+  }, [session, isHydrated]);
+
+  // Define state-updating functions (before they're used in effects)
+  const startAssessment = useCallback(() => {
+    setSession(prev => ({
+      ...prev,
+      hasStartedAssessment: true,
+      startedAt: prev.startedAt || new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+    }));
+  }, []);
+
+  const saveProgress = useCallback((data: Partial<AssessmentSession>) => {
+    setSession(prev => ({
+      ...prev,
+      ...data,
+      lastActiveAt: new Date().toISOString(),
+    }));
+  }, []);
+
+  const clearSession = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    setSession(getDefaultSession());
+  }, []);
+
+  // Transfer anonymous session when user signs in
+  useEffect(() => {
+    if (!isHydrated || !isUserLoaded || hasTransferredSession) return;
+    
+    // User just signed in and has an active anonymous session
+    if (user && session.sessionId && !session.sessionId.includes(user.id)) {
+      console.log("🔄 Transferring anonymous session to authenticated user...");
+      
+      transferSessionToUser(session.sessionId, user.id, getToken)
+        .then(() => {
+          console.log("✅ Session transferred successfully");
+          toast.success("Your progress has been saved to your account!", {
+            description: "You can now continue from any device",
+          });
+          setHasTransferredSession(true);
+          
+          // Update session with user info
+          saveProgress({ 
+            lastActiveAt: new Date().toISOString() 
+          });
+        })
+        .catch((error: Error) => {
+          console.error("❌ Failed to transfer session:", error);
+          toast.error("Failed to save progress to your account", {
+            description: "Your progress is still saved locally",
+          });
+        });
+    }
+  }, [user, isUserLoaded, session.sessionId, isHydrated, hasTransferredSession, saveProgress]);
 
   // Save to localStorage whenever session changes
   useEffect(() => {
@@ -160,31 +252,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [session, isHydrated]);
-
-  const startAssessment = useCallback(() => {
-    setSession(prev => ({
-      ...prev,
-      hasStartedAssessment: true,
-      startedAt: prev.startedAt || new Date().toISOString(),
-      lastActiveAt: new Date().toISOString(),
-    }));
-  }, []);
-
-  const saveProgress = useCallback((data: Partial<AssessmentSession>) => {
-    setSession(prev => ({
-      ...prev,
-      ...data,
-      lastActiveAt: new Date().toISOString(),
-    }));
-  }, []);
-
-  const clearSession = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-    setSession(getDefaultSession());
-  }, []);
+  }, [session, isHydrated, saveProgress]);
 
   const canAccessWizard = session.hasStartedAssessment;
 

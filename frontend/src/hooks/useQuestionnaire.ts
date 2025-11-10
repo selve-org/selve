@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useAssessmentProgress } from "@/contexts/AssessmentSessionContext";
 import type {
   QuestionnaireSession,
@@ -31,6 +32,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
  */
 export function useQuestionnaire() {
   const { updateProgress, currentProgress } = useAssessmentProgress();
+  const { getToken } = useAuth();
   
   // Extract only the sessionId to prevent infinite re-renders
   const existingSessionId = currentProgress.sessionId;
@@ -92,11 +94,22 @@ export function useQuestionnaire() {
       }
 
       // Start assessment with SELVE backend
+      // Get auth token if user is signed in
+      const token = await getToken();
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_BASE}/api/assessment/start`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
-          user_id: null, // Could be set from auth context
+          user_id: null, // Clerk ID will be extracted from token on backend
           metadata: { source: "web", restored_session: !!existingSessionId },
         }),
       });
@@ -196,10 +209,21 @@ export function useQuestionnaire() {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
+        // Get auth token if user is signed in
+        const token = await getToken();
+        
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         // Submit answer to SELVE backend
         const response = await fetch(`${API_BASE}/api/assessment/answer`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             session_id: sessionId,
             question_id: questionId,

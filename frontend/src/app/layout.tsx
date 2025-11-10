@@ -7,6 +7,7 @@ import {
   Crimson_Text,
 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "sonner";
 import { PostHogProvider } from "./providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AssessmentSessionProvider } from "@/contexts/AssessmentSessionContext";
@@ -79,6 +80,7 @@ export default function RootLayout({
             <ThemeProvider>
               <AssessmentSessionProvider>
                 {children}
+                <Toaster position="top-right" richColors closeButton />
               </AssessmentSessionProvider>
             </ThemeProvider>
           </ClerkProvider>
