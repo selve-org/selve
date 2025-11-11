@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FaceUnhappy, FaceSad, FaceSmile, FaceHappy } from "@/components/emojis";
 
 // TODO: Future database integration
 // - Store feedback with user ID (if logged in) or anonymously with IP/location
@@ -20,35 +21,35 @@ type RatingValue = 1 | 2 | 3 | 4;
 
 const RATING_OPTIONS: Array<{
   value: RatingValue;
-  emoji: string;
+  icon: React.ComponentType<{ size?: number; color?: string; className?: string }>;
   label: string;
   hoverColor: string;
   activeColor: string;
 }> = [
   { 
     value: 1, 
-    emoji: "😞", 
+    icon: FaceSad, 
     label: "Not helpful", 
     hoverColor: "hover:bg-red-50 dark:hover:bg-red-900/20",
     activeColor: "bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700"
   },
   { 
     value: 2, 
-    emoji: "😐", 
+    icon: FaceUnhappy, 
     label: "Somewhat helpful", 
     hoverColor: "hover:bg-orange-50 dark:hover:bg-orange-900/20",
     activeColor: "bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700"
   },
   { 
     value: 3, 
-    emoji: "😊", 
+    icon: FaceHappy, 
     label: "Helpful", 
     hoverColor: "hover:bg-blue-50 dark:hover:bg-blue-900/20",
     activeColor: "bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700"
   },
   { 
     value: 4, 
-    emoji: "😍", 
+    icon: FaceSmile, 
     label: "Very helpful", 
     hoverColor: "hover:bg-green-50 dark:hover:bg-green-900/20",
     activeColor: "bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700"
@@ -156,26 +157,29 @@ export default function FeedbackWidget({ sessionId, className = "" }: FeedbackWi
             </div>
             
             <div className="flex gap-2 justify-center">
-              {RATING_OPTIONS.map((option) => (
-                <motion.button
-                  key={option.value}
-                  onClick={() => handleRatingClick(option.value)}
-                  className={`
-                    w-12 h-12 rounded-full border-2 border-gray-200 dark:border-[#3e3e3e] 
-                    flex items-center justify-center text-xl
-                    transition-all duration-200 transform
-                    ${option.hoverColor}
-                    hover:border-gray-300 dark:hover:border-[#4e4e4e]
-                    hover:scale-110 active:scale-95
-                    focus:outline-none focus:ring-2 focus:ring-purple-500/50
-                  `}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  title={option.label}
-                >
-                  {option.emoji}
-                </motion.button>
-              ))}
+              {RATING_OPTIONS.map((option) => {
+                const IconComponent = option.icon;
+                return (
+                  <motion.button
+                    key={option.value}
+                    onClick={() => handleRatingClick(option.value)}
+                    className={`
+                      w-12 h-12 rounded-full border-2 border-gray-200 dark:border-[#3e3e3e] 
+                      flex items-center justify-center
+                      transition-all duration-200 transform
+                      ${option.hoverColor}
+                      hover:border-gray-300 dark:hover:border-[#4e4e4e]
+                      hover:scale-110 active:scale-95
+                      focus:outline-none focus:ring-2 focus:ring-purple-500/50
+                    `}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    title={option.label}
+                  >
+                    <IconComponent size={20} className="text-gray-600 dark:text-gray-300" />
+                  </motion.button>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -195,19 +199,22 @@ export default function FeedbackWidget({ sessionId, className = "" }: FeedbackWi
               {/* Selected Rating Display */}
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Rating:</span>
-                {selectedRating && (
-                  <div className={`
-                    flex items-center gap-2 px-3 py-1 rounded-full border-2
-                    ${RATING_OPTIONS.find(opt => opt.value === selectedRating)?.activeColor}
-                  `}>
-                    <span className="text-lg">
-                      {RATING_OPTIONS.find(opt => opt.value === selectedRating)?.emoji}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {RATING_OPTIONS.find(opt => opt.value === selectedRating)?.label}
-                    </span>
-                  </div>
-                )}
+                {selectedRating && (() => {
+                  const selectedOption = RATING_OPTIONS.find(opt => opt.value === selectedRating);
+                  if (!selectedOption) return null;
+                  const SelectedIcon = selectedOption.icon;
+                  return (
+                    <div className={`
+                      flex items-center gap-2 px-3 py-1 rounded-full border-2
+                      ${selectedOption.activeColor}
+                    `}>
+                      <SelectedIcon size={18} className="text-gray-700 dark:text-gray-200" />
+                      <span className="text-sm font-medium">
+                        {selectedOption.label}
+                      </span>
+                    </div>
+                  );
+                })()}
                 <button
                   onClick={handleCollapse}
                   className="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -251,13 +258,6 @@ export default function FeedbackWidget({ sessionId, className = "" }: FeedbackWi
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">
                     {feedbackText.length}/500 characters
-                  </span>
-                  
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 0C5.374 0 0 5.373 0 12s5.374 12 12 12 12-5.373 12-12S18.626 0 12 0zm-.568 16.334c-.568 0-.853-.378-.853-.853s.285-.853.853-.853.853.378.853.853-.285.853-.853.853zm1.659-6.278c-.568.853-1.136 1.136-1.136 2.272h-1.136c0-1.704.568-2.272 1.136-3.125.568-.853.568-1.136.568-1.42 0-.568-.285-.853-.853-.853s-.853.285-.853.853H8.545c0-1.42 1.136-2.272 2.272-2.272s2.272.853 2.272 2.272c0 .853-.284 1.42-.998 2.273z"/>
-                    </svg>
-                    supported
                   </span>
                 </div>
               </motion.div>

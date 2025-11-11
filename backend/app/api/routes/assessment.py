@@ -24,10 +24,14 @@ from app.narratives import generate_narrative
 from app.narratives.integrated_generator import generate_integrated_narrative
 from app.response_validator import ResponseValidator
 from app.auth import get_current_user
+from app.database import get_db
+from app.services.assessment_service import AssessmentService, session_to_state_dict, update_session_from_state
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 
-# In-memory session storage (replace with Redis/DB in production)
+# In-memory session cache (for backward compatibility - will be synced to DB)
+# TODO: Remove this once all endpoints are fully database-backed
 sessions: Dict[str, Dict] = {}
 
 
@@ -97,7 +101,8 @@ class GetResultsResponse(BaseModel):
 @router.post("/assessment/start", response_model=StartAssessmentResponse)
 async def start_assessment(
     request: StartAssessmentRequest,
-    user: Optional[dict] = Depends(get_current_user)
+    user: Optional[dict] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Start a new adaptive assessment.
@@ -111,15 +116,24 @@ async def start_assessment(
     - total_questions: Estimated total (30-54 items including demographics)
     - progress: Initial progress (0.0)
     """
-    # Generate session ID
-    session_id = f"session_{datetime.now().timestamp()}"
-    
     # Get user ID from authentication or request
     user_id = None
+    clerk_user_id = None
     if user:
-        user_id = user.get("sub")  # Clerk user ID (e.g., "user_xxx")
+        clerk_user_id = user.get("sub")  # Clerk user ID (e.g., "user_xxx")
+        user_id = clerk_user_id
     elif request.user_id:
         user_id = request.user_id
+    
+    # Create database session
+    service = AssessmentService(db)
+    db_session = await service.create_session(
+        user_id=user_id,
+        clerk_user_id=clerk_user_id,
+        metadata=request.metadata
+    )
+    
+    session_id = db_session.id
     
     # Initialize adaptive tester
     tester = AdaptiveTester()
@@ -220,7 +234,8 @@ async def start_assessment(
         }
     ]
     
-    # Store session
+    # Create in-memory cache for this session (will be synced to DB after each operation)
+    # This maintains backward compatibility with existing code structure
     sessions[session_id] = {
         "tester": tester,
         "scorer": SelveScorer(),
@@ -234,9 +249,10 @@ async def start_assessment(
         "back_navigation_count": 0,  # Track how many times user went back
         "back_navigation_log": [],  # Detailed log: [{question_id, from_value, to_value, timestamp}]
         "started_at": datetime.now().isoformat(),
-        "user_id": user_id,  # Will be Clerk ID if authenticated, None if anonymous
+        "user_id": clerk_user_id,  # Clerk ID if authenticated, None if anonymous
         "clerk_user": user,  # Store full Clerk user data if authenticated
         "metadata": request.metadata or {},
+        "db_session_id": session_id,  # Link to database session
     }
     
     # DON'T send personality questions initially!
@@ -252,7 +268,10 @@ async def start_assessment(
 
 
 @router.post("/assessment/answer", response_model=SubmitAnswerResponse)
-async def submit_answer(request: SubmitAnswerRequest):
+async def submit_answer(
+    request: SubmitAnswerRequest,
+    db: AsyncSession = Depends(get_db)
+):
     """
     Submit an answer and get next question(s).
     
@@ -266,10 +285,18 @@ async def submit_answer(request: SubmitAnswerRequest):
     - is_complete: Whether assessment is finished
     - progress: Current progress (0.0 - 1.0)
     """
-    # Get session
+    # Get session from memory first (faster)
     session = sessions.get(request.session_id)
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        # Try to load from database if not in memory
+        service = AssessmentService(db)
+        db_session = await service.get_session(request.session_id)
+        if not db_session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Reconstruct in-memory session from database
+        session = session_to_state_dict(db_session)
+        sessions[request.session_id] = session
     
     # Debug: Log session state at start
     pending_questions = session["pending_questions"]
@@ -734,6 +761,10 @@ async def submit_answer(request: SubmitAnswerRequest):
     estimated_total = 44  # 4 demographics + ~40 personality average
     progress = min(questions_answered / estimated_total, 0.95)  # Cap at 95% until done
     
+    # 💾 Persist session state to database
+    service = AssessmentService(db)
+    await update_session_from_state(service, request.session_id, session)
+    
     return SubmitAnswerResponse(
         next_questions=next_questions if next_questions else None,
         is_complete=len(next_questions) == 0,
@@ -991,7 +1022,7 @@ async def go_back(request: GetPreviousQuestionRequest):
 
 
 @router.get("/assessment/{session_id}/results", response_model=GetResultsResponse)
-async def get_results(session_id: str):
+async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
     """
     Get complete assessment results with narrative.
     
@@ -1002,6 +1033,46 @@ async def get_results(session_id: str):
       - dimensions: Detailed dimension narratives
       - summary: Executive summary
     """
+    # Check database first for existing results
+    service = AssessmentService(db)
+    existing_result = await service.get_result(session_id)
+    
+    if existing_result:
+        # Results already generated - return from database
+        print(f"\n📊 Returning existing results from database for session {session_id}")
+        
+        # Load session for demographics
+        db_session = await service.get_session(session_id)
+        demographics = db_session.demographics if db_session else {}
+        
+        # Build validation data if available
+        validation_data = None
+        if existing_result.consistencyScore is not None:
+            validation_data = {
+                "consistency_score": existing_result.consistencyScore,
+                "attention_score": existing_result.attentionScore,
+                "flags": existing_result.validationFlags or [],
+            }
+        
+        return GetResultsResponse(
+            session_id=session_id,
+            scores={
+                "LUMEN": existing_result.scoreLumen,
+                "AETHER": existing_result.scoreAether,
+                "ORPHEUS": existing_result.scoreOrpheus,
+                "ORIN": existing_result.scoreOrin,
+                "LYRA": existing_result.scoreLyra,
+                "VARA": existing_result.scoreVara,
+                "CHRONOS": existing_result.scoreChronos,
+                "KAEL": existing_result.scoreKael,
+            },
+            narrative=existing_result.narrative,
+            completed_at=existing_result.createdAt.isoformat(),
+            demographics=demographics,
+            validation=validation_data,
+        )
+    
+    # No existing results - generate new ones
     # Get session
     session = sessions.get(session_id)
     if not session:
@@ -1104,6 +1175,31 @@ async def get_results(session_id: str):
     # Mark session as completed
     session["completed_at"] = datetime.now().isoformat()
     
+    # 💾 Save results to database
+    archetype_name = None
+    profile_pattern = None
+    if 'sections' in narrative_dict and 'archetype' in narrative_dict['sections']:
+        archetype_name = narrative_dict['sections']['archetype'].get('name')
+    if 'profile_pattern' in narrative_dict:
+        profile_pattern = narrative_dict['profile_pattern'].get('pattern')
+    
+    validation_flags = validation_result.get('flags', []) if validation_result else None
+    
+    await service.save_result(
+        session_id=session_id,
+        scores=profile.dimension_scores,
+        narrative=narrative_dict,
+        archetype=archetype_name,
+        profile_pattern=profile_pattern,
+        consistency_score=validation_result.get('consistency_score') if validation_result else None,
+        attention_score=validation_result.get('attention_score') if validation_result else None,
+        validation_flags=validation_flags,
+        generation_cost=narrative_dict.get('generation_cost', 0.0),
+        generation_model=narrative_dict.get('metadata', {}).get('model'),
+    )
+    
+    print(f"\n💾 Results saved to database for session {session_id}")
+    
     # Prepare response
     response_data = {
         "session_id": session_id,
@@ -1195,7 +1291,8 @@ class TransferSessionRequest(BaseModel):
 @router.post("/assessment/transfer-session")
 async def transfer_session(
     request: TransferSessionRequest,
-    user: dict = Depends(get_current_user)
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Transfer an anonymous session to an authenticated user.
@@ -1215,43 +1312,40 @@ async def transfer_session(
             detail="Authentication required to transfer session"
         )
     
-    # Get session
-    session = sessions.get(request.session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    clerk_user_id = user.get("sub")
     
-    # Check if session is already owned
-    if session.get("user_id"):
-        # Session already has a user - check if it's the same user
-        if session["user_id"] == user.get("sub"):
-            return {
-                "success": True,
-                "message": "Session already belongs to this user",
-                "session_id": request.session_id,
-            }
-        else:
-            raise HTTPException(
-                status_code=403,
-                detail="Session already belongs to another user"
-            )
-    
-    # Transfer ownership
-    session["user_id"] = user.get("sub")
-    session["clerk_user"] = user
-    session["transferred_at"] = datetime.now().isoformat()
-    
-    print(f"✅ Session {request.session_id} transferred to user {user.get('sub')}")
-    
-    return {
-        "success": True,
-        "message": "Session transferred successfully",
-        "session_id": request.session_id,
-        "user_id": user.get("sub"),
-    }
+    # Transfer in database
+    service = AssessmentService(db)
+    try:
+        db_session = await service.transfer_session_to_user(
+            session_id=request.session_id,
+            clerk_user_id=clerk_user_id
+        )
+        
+        if not db_session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Update in-memory cache if exists
+        if request.session_id in sessions:
+            sessions[request.session_id]["user_id"] = clerk_user_id
+            sessions[request.session_id]["clerk_user"] = user
+        
+        print(f"✅ Session {request.session_id} transferred to user {clerk_user_id}")
+        
+        return {
+            "success": True,
+            "message": "Session transferred successfully",
+            "session_id": request.session_id,
+            "user_id": clerk_user_id,
+        }
+        
+    except ValueError as e:
+        # Session already owned by another user
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 @router.delete("/assessment/{session_id}")
-async def delete_session(session_id: str):
+async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
     """
     Delete assessment session.
     
@@ -1260,8 +1354,61 @@ async def delete_session(session_id: str):
     - Session expires
     - User wants to restart
     """
+    service = AssessmentService(db)
+    deleted = await service.delete_session(session_id)
+    
+    # Also remove from memory cache
     if session_id in sessions:
         del sessions[session_id]
-        return {"message": "Session deleted"}
     
-    raise HTTPException(status_code=404, detail="Session not found")
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    return {"message": "Session deleted"}
+
+
+@router.get("/assessment/session/{session_id}")
+async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Get current session state for recovery/resumption.
+    
+    Allows users to resume incomplete assessments after:
+    - Page refresh
+    - Browser restart  
+    - Backend restart
+    
+    Returns:
+    - session_id: Session identifier
+    - status: "in-progress", "completed", or "abandoned"
+    - progress: Current progress (0.0 - 1.0)
+    - questions_answered: Number of questions answered
+    - can_resume: Whether session can be resumed
+    """
+    service = AssessmentService(db)
+    db_session = await service.get_session(session_id)
+    
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Calculate progress
+    responses = db_session.responses or {}
+    demographics = db_session.demographics or {}
+    questions_answered = len(demographics) + len(responses)
+    estimated_total = 44
+    progress = min(questions_answered / estimated_total, 0.95)
+    
+    # Load into memory cache if not already there
+    if session_id not in sessions:
+        sessions[session_id] = session_to_state_dict(db_session)
+        print(f"♻️  Restored session {session_id} from database to memory")
+    
+    return {
+        "session_id": session_id,
+        "status": db_session.status,
+        "progress": progress,
+        "questions_answered": questions_answered,
+        "total_questions": estimated_total,
+        "can_resume": db_session.status == "in-progress",
+        "created_at": db_session.createdAt.isoformat(),
+        "updated_at": db_session.updatedAt.isoformat() if db_session.updatedAt else None,
+    }

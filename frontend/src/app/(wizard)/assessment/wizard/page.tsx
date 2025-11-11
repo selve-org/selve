@@ -231,13 +231,13 @@ export default function WizardPage() {
           </AnimatePresence>
 
           {/* Content */}
-          <motion.div layout className="flex-1 px-5">
+          <motion.div layout className="flex-1 px-5 overflow-hidden">
             <AnimatePresence mode="wait">
               {/* Loading State */}
               {isLoading && (
                 <motion.div
                   key="loading"
-                  className="flex flex-col items-center justify-center py-20"
+                  className="flex flex-col items-center justify-center h-full"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

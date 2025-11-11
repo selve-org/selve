@@ -63,6 +63,21 @@ export type QuestionnaireAnswer = $Result.DefaultSelection<Prisma.$Questionnaire
  * 
  */
 export type QuestionnaireCheckpoint = $Result.DefaultSelection<Prisma.$QuestionnaireCheckpointPayload>
+/**
+ * Model AssessmentSession
+ * 
+ */
+export type AssessmentSession = $Result.DefaultSelection<Prisma.$AssessmentSessionPayload>
+/**
+ * Model AssessmentResult
+ * 
+ */
+export type AssessmentResult = $Result.DefaultSelection<Prisma.$AssessmentResultPayload>
+/**
+ * Model AssessmentTemplate
+ * 
+ */
+export type AssessmentTemplate = $Result.DefaultSelection<Prisma.$AssessmentTemplatePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -288,6 +303,36 @@ export class PrismaClient<
     * ```
     */
   get questionnaireCheckpoint(): Prisma.QuestionnaireCheckpointDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.assessmentSession`: Exposes CRUD operations for the **AssessmentSession** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AssessmentSessions
+    * const assessmentSessions = await prisma.assessmentSession.findMany()
+    * ```
+    */
+  get assessmentSession(): Prisma.AssessmentSessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.assessmentResult`: Exposes CRUD operations for the **AssessmentResult** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AssessmentResults
+    * const assessmentResults = await prisma.assessmentResult.findMany()
+    * ```
+    */
+  get assessmentResult(): Prisma.AssessmentResultDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.assessmentTemplate`: Exposes CRUD operations for the **AssessmentTemplate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AssessmentTemplates
+    * const assessmentTemplates = await prisma.assessmentTemplate.findMany()
+    * ```
+    */
+  get assessmentTemplate(): Prisma.AssessmentTemplateDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -737,7 +782,10 @@ export namespace Prisma {
     QuestionnaireQuestion: 'QuestionnaireQuestion',
     QuestionnaireSession: 'QuestionnaireSession',
     QuestionnaireAnswer: 'QuestionnaireAnswer',
-    QuestionnaireCheckpoint: 'QuestionnaireCheckpoint'
+    QuestionnaireCheckpoint: 'QuestionnaireCheckpoint',
+    AssessmentSession: 'AssessmentSession',
+    AssessmentResult: 'AssessmentResult',
+    AssessmentTemplate: 'AssessmentTemplate'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -756,7 +804,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "profile" | "question" | "response" | "inviteLink" | "questionnaireSection" | "questionnaireQuestion" | "questionnaireSession" | "questionnaireAnswer" | "questionnaireCheckpoint"
+      modelProps: "user" | "profile" | "question" | "response" | "inviteLink" | "questionnaireSection" | "questionnaireQuestion" | "questionnaireSession" | "questionnaireAnswer" | "questionnaireCheckpoint" | "assessmentSession" | "assessmentResult" | "assessmentTemplate"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1500,6 +1548,228 @@ export namespace Prisma {
           }
         }
       }
+      AssessmentSession: {
+        payload: Prisma.$AssessmentSessionPayload<ExtArgs>
+        fields: Prisma.AssessmentSessionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AssessmentSessionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AssessmentSessionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>
+          }
+          findFirst: {
+            args: Prisma.AssessmentSessionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AssessmentSessionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>
+          }
+          findMany: {
+            args: Prisma.AssessmentSessionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>[]
+          }
+          create: {
+            args: Prisma.AssessmentSessionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>
+          }
+          createMany: {
+            args: Prisma.AssessmentSessionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AssessmentSessionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>[]
+          }
+          delete: {
+            args: Prisma.AssessmentSessionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>
+          }
+          update: {
+            args: Prisma.AssessmentSessionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>
+          }
+          deleteMany: {
+            args: Prisma.AssessmentSessionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AssessmentSessionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AssessmentSessionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>[]
+          }
+          upsert: {
+            args: Prisma.AssessmentSessionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentSessionPayload>
+          }
+          aggregate: {
+            args: Prisma.AssessmentSessionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAssessmentSession>
+          }
+          groupBy: {
+            args: Prisma.AssessmentSessionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AssessmentSessionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AssessmentSessionCountArgs<ExtArgs>
+            result: $Utils.Optional<AssessmentSessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      AssessmentResult: {
+        payload: Prisma.$AssessmentResultPayload<ExtArgs>
+        fields: Prisma.AssessmentResultFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AssessmentResultFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AssessmentResultFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>
+          }
+          findFirst: {
+            args: Prisma.AssessmentResultFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AssessmentResultFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>
+          }
+          findMany: {
+            args: Prisma.AssessmentResultFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>[]
+          }
+          create: {
+            args: Prisma.AssessmentResultCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>
+          }
+          createMany: {
+            args: Prisma.AssessmentResultCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AssessmentResultCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>[]
+          }
+          delete: {
+            args: Prisma.AssessmentResultDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>
+          }
+          update: {
+            args: Prisma.AssessmentResultUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>
+          }
+          deleteMany: {
+            args: Prisma.AssessmentResultDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AssessmentResultUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AssessmentResultUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>[]
+          }
+          upsert: {
+            args: Prisma.AssessmentResultUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentResultPayload>
+          }
+          aggregate: {
+            args: Prisma.AssessmentResultAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAssessmentResult>
+          }
+          groupBy: {
+            args: Prisma.AssessmentResultGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AssessmentResultGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AssessmentResultCountArgs<ExtArgs>
+            result: $Utils.Optional<AssessmentResultCountAggregateOutputType> | number
+          }
+        }
+      }
+      AssessmentTemplate: {
+        payload: Prisma.$AssessmentTemplatePayload<ExtArgs>
+        fields: Prisma.AssessmentTemplateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AssessmentTemplateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AssessmentTemplateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+          }
+          findFirst: {
+            args: Prisma.AssessmentTemplateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AssessmentTemplateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+          }
+          findMany: {
+            args: Prisma.AssessmentTemplateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>[]
+          }
+          create: {
+            args: Prisma.AssessmentTemplateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+          }
+          createMany: {
+            args: Prisma.AssessmentTemplateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AssessmentTemplateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>[]
+          }
+          delete: {
+            args: Prisma.AssessmentTemplateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+          }
+          update: {
+            args: Prisma.AssessmentTemplateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+          }
+          deleteMany: {
+            args: Prisma.AssessmentTemplateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AssessmentTemplateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AssessmentTemplateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>[]
+          }
+          upsert: {
+            args: Prisma.AssessmentTemplateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AssessmentTemplatePayload>
+          }
+          aggregate: {
+            args: Prisma.AssessmentTemplateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAssessmentTemplate>
+          }
+          groupBy: {
+            args: Prisma.AssessmentTemplateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AssessmentTemplateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AssessmentTemplateCountArgs<ExtArgs>
+            result: $Utils.Optional<AssessmentTemplateCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1594,6 +1864,9 @@ export namespace Prisma {
     questionnaireSession?: QuestionnaireSessionOmit
     questionnaireAnswer?: QuestionnaireAnswerOmit
     questionnaireCheckpoint?: QuestionnaireCheckpointOmit
+    assessmentSession?: AssessmentSessionOmit
+    assessmentResult?: AssessmentResultOmit
+    assessmentTemplate?: AssessmentTemplateOmit
   }
 
   /* Types for Logging */
@@ -12969,6 +13242,3661 @@ export namespace Prisma {
 
 
   /**
+   * Model AssessmentSession
+   */
+
+  export type AggregateAssessmentSession = {
+    _count: AssessmentSessionCountAggregateOutputType | null
+    _avg: AssessmentSessionAvgAggregateOutputType | null
+    _sum: AssessmentSessionSumAggregateOutputType | null
+    _min: AssessmentSessionMinAggregateOutputType | null
+    _max: AssessmentSessionMaxAggregateOutputType | null
+  }
+
+  export type AssessmentSessionAvgAggregateOutputType = {
+    backNavigationCount: number | null
+  }
+
+  export type AssessmentSessionSumAggregateOutputType = {
+    backNavigationCount: number | null
+  }
+
+  export type AssessmentSessionMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    clerkUserId: string | null
+    status: string | null
+    backNavigationCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    completedAt: Date | null
+  }
+
+  export type AssessmentSessionMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    clerkUserId: string | null
+    status: string | null
+    backNavigationCount: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    completedAt: Date | null
+  }
+
+  export type AssessmentSessionCountAggregateOutputType = {
+    id: number
+    userId: number
+    clerkUserId: number
+    status: number
+    responses: number
+    demographics: number
+    pendingQuestions: number
+    answerHistory: number
+    backNavigationCount: number
+    backNavigationLog: number
+    metadata: number
+    createdAt: number
+    updatedAt: number
+    completedAt: number
+    _all: number
+  }
+
+
+  export type AssessmentSessionAvgAggregateInputType = {
+    backNavigationCount?: true
+  }
+
+  export type AssessmentSessionSumAggregateInputType = {
+    backNavigationCount?: true
+  }
+
+  export type AssessmentSessionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    clerkUserId?: true
+    status?: true
+    backNavigationCount?: true
+    createdAt?: true
+    updatedAt?: true
+    completedAt?: true
+  }
+
+  export type AssessmentSessionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    clerkUserId?: true
+    status?: true
+    backNavigationCount?: true
+    createdAt?: true
+    updatedAt?: true
+    completedAt?: true
+  }
+
+  export type AssessmentSessionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    clerkUserId?: true
+    status?: true
+    responses?: true
+    demographics?: true
+    pendingQuestions?: true
+    answerHistory?: true
+    backNavigationCount?: true
+    backNavigationLog?: true
+    metadata?: true
+    createdAt?: true
+    updatedAt?: true
+    completedAt?: true
+    _all?: true
+  }
+
+  export type AssessmentSessionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AssessmentSession to aggregate.
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentSessions to fetch.
+     */
+    orderBy?: AssessmentSessionOrderByWithRelationInput | AssessmentSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AssessmentSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AssessmentSessions
+    **/
+    _count?: true | AssessmentSessionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AssessmentSessionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AssessmentSessionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AssessmentSessionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AssessmentSessionMaxAggregateInputType
+  }
+
+  export type GetAssessmentSessionAggregateType<T extends AssessmentSessionAggregateArgs> = {
+        [P in keyof T & keyof AggregateAssessmentSession]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAssessmentSession[P]>
+      : GetScalarType<T[P], AggregateAssessmentSession[P]>
+  }
+
+
+
+
+  export type AssessmentSessionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AssessmentSessionWhereInput
+    orderBy?: AssessmentSessionOrderByWithAggregationInput | AssessmentSessionOrderByWithAggregationInput[]
+    by: AssessmentSessionScalarFieldEnum[] | AssessmentSessionScalarFieldEnum
+    having?: AssessmentSessionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AssessmentSessionCountAggregateInputType | true
+    _avg?: AssessmentSessionAvgAggregateInputType
+    _sum?: AssessmentSessionSumAggregateInputType
+    _min?: AssessmentSessionMinAggregateInputType
+    _max?: AssessmentSessionMaxAggregateInputType
+  }
+
+  export type AssessmentSessionGroupByOutputType = {
+    id: string
+    userId: string | null
+    clerkUserId: string | null
+    status: string
+    responses: JsonValue
+    demographics: JsonValue | null
+    pendingQuestions: JsonValue | null
+    answerHistory: JsonValue | null
+    backNavigationCount: number
+    backNavigationLog: JsonValue | null
+    metadata: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    completedAt: Date | null
+    _count: AssessmentSessionCountAggregateOutputType | null
+    _avg: AssessmentSessionAvgAggregateOutputType | null
+    _sum: AssessmentSessionSumAggregateOutputType | null
+    _min: AssessmentSessionMinAggregateOutputType | null
+    _max: AssessmentSessionMaxAggregateOutputType | null
+  }
+
+  type GetAssessmentSessionGroupByPayload<T extends AssessmentSessionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AssessmentSessionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AssessmentSessionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AssessmentSessionGroupByOutputType[P]>
+            : GetScalarType<T[P], AssessmentSessionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AssessmentSessionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    status?: boolean
+    responses?: boolean
+    demographics?: boolean
+    pendingQuestions?: boolean
+    answerHistory?: boolean
+    backNavigationCount?: boolean
+    backNavigationLog?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    completedAt?: boolean
+    result?: boolean | AssessmentSession$resultArgs<ExtArgs>
+  }, ExtArgs["result"]["assessmentSession"]>
+
+  export type AssessmentSessionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    status?: boolean
+    responses?: boolean
+    demographics?: boolean
+    pendingQuestions?: boolean
+    answerHistory?: boolean
+    backNavigationCount?: boolean
+    backNavigationLog?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    completedAt?: boolean
+  }, ExtArgs["result"]["assessmentSession"]>
+
+  export type AssessmentSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    status?: boolean
+    responses?: boolean
+    demographics?: boolean
+    pendingQuestions?: boolean
+    answerHistory?: boolean
+    backNavigationCount?: boolean
+    backNavigationLog?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    completedAt?: boolean
+  }, ExtArgs["result"]["assessmentSession"]>
+
+  export type AssessmentSessionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    status?: boolean
+    responses?: boolean
+    demographics?: boolean
+    pendingQuestions?: boolean
+    answerHistory?: boolean
+    backNavigationCount?: boolean
+    backNavigationLog?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    completedAt?: boolean
+  }
+
+  export type AssessmentSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "clerkUserId" | "status" | "responses" | "demographics" | "pendingQuestions" | "answerHistory" | "backNavigationCount" | "backNavigationLog" | "metadata" | "createdAt" | "updatedAt" | "completedAt", ExtArgs["result"]["assessmentSession"]>
+  export type AssessmentSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    result?: boolean | AssessmentSession$resultArgs<ExtArgs>
+  }
+  export type AssessmentSessionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type AssessmentSessionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $AssessmentSessionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AssessmentSession"
+    objects: {
+      result: Prisma.$AssessmentResultPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string | null
+      clerkUserId: string | null
+      status: string
+      responses: Prisma.JsonValue
+      demographics: Prisma.JsonValue | null
+      pendingQuestions: Prisma.JsonValue | null
+      answerHistory: Prisma.JsonValue | null
+      backNavigationCount: number
+      backNavigationLog: Prisma.JsonValue | null
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+      completedAt: Date | null
+    }, ExtArgs["result"]["assessmentSession"]>
+    composites: {}
+  }
+
+  type AssessmentSessionGetPayload<S extends boolean | null | undefined | AssessmentSessionDefaultArgs> = $Result.GetResult<Prisma.$AssessmentSessionPayload, S>
+
+  type AssessmentSessionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AssessmentSessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AssessmentSessionCountAggregateInputType | true
+    }
+
+  export interface AssessmentSessionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AssessmentSession'], meta: { name: 'AssessmentSession' } }
+    /**
+     * Find zero or one AssessmentSession that matches the filter.
+     * @param {AssessmentSessionFindUniqueArgs} args - Arguments to find a AssessmentSession
+     * @example
+     * // Get one AssessmentSession
+     * const assessmentSession = await prisma.assessmentSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AssessmentSessionFindUniqueArgs>(args: SelectSubset<T, AssessmentSessionFindUniqueArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AssessmentSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AssessmentSessionFindUniqueOrThrowArgs} args - Arguments to find a AssessmentSession
+     * @example
+     * // Get one AssessmentSession
+     * const assessmentSession = await prisma.assessmentSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AssessmentSessionFindUniqueOrThrowArgs>(args: SelectSubset<T, AssessmentSessionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AssessmentSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionFindFirstArgs} args - Arguments to find a AssessmentSession
+     * @example
+     * // Get one AssessmentSession
+     * const assessmentSession = await prisma.assessmentSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AssessmentSessionFindFirstArgs>(args?: SelectSubset<T, AssessmentSessionFindFirstArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AssessmentSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionFindFirstOrThrowArgs} args - Arguments to find a AssessmentSession
+     * @example
+     * // Get one AssessmentSession
+     * const assessmentSession = await prisma.assessmentSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AssessmentSessionFindFirstOrThrowArgs>(args?: SelectSubset<T, AssessmentSessionFindFirstOrThrowArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AssessmentSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AssessmentSessions
+     * const assessmentSessions = await prisma.assessmentSession.findMany()
+     * 
+     * // Get first 10 AssessmentSessions
+     * const assessmentSessions = await prisma.assessmentSession.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const assessmentSessionWithIdOnly = await prisma.assessmentSession.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AssessmentSessionFindManyArgs>(args?: SelectSubset<T, AssessmentSessionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AssessmentSession.
+     * @param {AssessmentSessionCreateArgs} args - Arguments to create a AssessmentSession.
+     * @example
+     * // Create one AssessmentSession
+     * const AssessmentSession = await prisma.assessmentSession.create({
+     *   data: {
+     *     // ... data to create a AssessmentSession
+     *   }
+     * })
+     * 
+     */
+    create<T extends AssessmentSessionCreateArgs>(args: SelectSubset<T, AssessmentSessionCreateArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AssessmentSessions.
+     * @param {AssessmentSessionCreateManyArgs} args - Arguments to create many AssessmentSessions.
+     * @example
+     * // Create many AssessmentSessions
+     * const assessmentSession = await prisma.assessmentSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AssessmentSessionCreateManyArgs>(args?: SelectSubset<T, AssessmentSessionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AssessmentSessions and returns the data saved in the database.
+     * @param {AssessmentSessionCreateManyAndReturnArgs} args - Arguments to create many AssessmentSessions.
+     * @example
+     * // Create many AssessmentSessions
+     * const assessmentSession = await prisma.assessmentSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AssessmentSessions and only return the `id`
+     * const assessmentSessionWithIdOnly = await prisma.assessmentSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AssessmentSessionCreateManyAndReturnArgs>(args?: SelectSubset<T, AssessmentSessionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AssessmentSession.
+     * @param {AssessmentSessionDeleteArgs} args - Arguments to delete one AssessmentSession.
+     * @example
+     * // Delete one AssessmentSession
+     * const AssessmentSession = await prisma.assessmentSession.delete({
+     *   where: {
+     *     // ... filter to delete one AssessmentSession
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AssessmentSessionDeleteArgs>(args: SelectSubset<T, AssessmentSessionDeleteArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AssessmentSession.
+     * @param {AssessmentSessionUpdateArgs} args - Arguments to update one AssessmentSession.
+     * @example
+     * // Update one AssessmentSession
+     * const assessmentSession = await prisma.assessmentSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AssessmentSessionUpdateArgs>(args: SelectSubset<T, AssessmentSessionUpdateArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AssessmentSessions.
+     * @param {AssessmentSessionDeleteManyArgs} args - Arguments to filter AssessmentSessions to delete.
+     * @example
+     * // Delete a few AssessmentSessions
+     * const { count } = await prisma.assessmentSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AssessmentSessionDeleteManyArgs>(args?: SelectSubset<T, AssessmentSessionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AssessmentSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AssessmentSessions
+     * const assessmentSession = await prisma.assessmentSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AssessmentSessionUpdateManyArgs>(args: SelectSubset<T, AssessmentSessionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AssessmentSessions and returns the data updated in the database.
+     * @param {AssessmentSessionUpdateManyAndReturnArgs} args - Arguments to update many AssessmentSessions.
+     * @example
+     * // Update many AssessmentSessions
+     * const assessmentSession = await prisma.assessmentSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AssessmentSessions and only return the `id`
+     * const assessmentSessionWithIdOnly = await prisma.assessmentSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AssessmentSessionUpdateManyAndReturnArgs>(args: SelectSubset<T, AssessmentSessionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AssessmentSession.
+     * @param {AssessmentSessionUpsertArgs} args - Arguments to update or create a AssessmentSession.
+     * @example
+     * // Update or create a AssessmentSession
+     * const assessmentSession = await prisma.assessmentSession.upsert({
+     *   create: {
+     *     // ... data to create a AssessmentSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AssessmentSession we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AssessmentSessionUpsertArgs>(args: SelectSubset<T, AssessmentSessionUpsertArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AssessmentSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionCountArgs} args - Arguments to filter AssessmentSessions to count.
+     * @example
+     * // Count the number of AssessmentSessions
+     * const count = await prisma.assessmentSession.count({
+     *   where: {
+     *     // ... the filter for the AssessmentSessions we want to count
+     *   }
+     * })
+    **/
+    count<T extends AssessmentSessionCountArgs>(
+      args?: Subset<T, AssessmentSessionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AssessmentSessionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AssessmentSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AssessmentSessionAggregateArgs>(args: Subset<T, AssessmentSessionAggregateArgs>): Prisma.PrismaPromise<GetAssessmentSessionAggregateType<T>>
+
+    /**
+     * Group by AssessmentSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AssessmentSessionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AssessmentSessionGroupByArgs['orderBy'] }
+        : { orderBy?: AssessmentSessionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AssessmentSessionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAssessmentSessionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AssessmentSession model
+   */
+  readonly fields: AssessmentSessionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AssessmentSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AssessmentSessionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    result<T extends AssessmentSession$resultArgs<ExtArgs> = {}>(args?: Subset<T, AssessmentSession$resultArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AssessmentSession model
+   */
+  interface AssessmentSessionFieldRefs {
+    readonly id: FieldRef<"AssessmentSession", 'String'>
+    readonly userId: FieldRef<"AssessmentSession", 'String'>
+    readonly clerkUserId: FieldRef<"AssessmentSession", 'String'>
+    readonly status: FieldRef<"AssessmentSession", 'String'>
+    readonly responses: FieldRef<"AssessmentSession", 'Json'>
+    readonly demographics: FieldRef<"AssessmentSession", 'Json'>
+    readonly pendingQuestions: FieldRef<"AssessmentSession", 'Json'>
+    readonly answerHistory: FieldRef<"AssessmentSession", 'Json'>
+    readonly backNavigationCount: FieldRef<"AssessmentSession", 'Int'>
+    readonly backNavigationLog: FieldRef<"AssessmentSession", 'Json'>
+    readonly metadata: FieldRef<"AssessmentSession", 'Json'>
+    readonly createdAt: FieldRef<"AssessmentSession", 'DateTime'>
+    readonly updatedAt: FieldRef<"AssessmentSession", 'DateTime'>
+    readonly completedAt: FieldRef<"AssessmentSession", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AssessmentSession findUnique
+   */
+  export type AssessmentSessionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentSession to fetch.
+     */
+    where: AssessmentSessionWhereUniqueInput
+  }
+
+  /**
+   * AssessmentSession findUniqueOrThrow
+   */
+  export type AssessmentSessionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentSession to fetch.
+     */
+    where: AssessmentSessionWhereUniqueInput
+  }
+
+  /**
+   * AssessmentSession findFirst
+   */
+  export type AssessmentSessionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentSession to fetch.
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentSessions to fetch.
+     */
+    orderBy?: AssessmentSessionOrderByWithRelationInput | AssessmentSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AssessmentSessions.
+     */
+    cursor?: AssessmentSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AssessmentSessions.
+     */
+    distinct?: AssessmentSessionScalarFieldEnum | AssessmentSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentSession findFirstOrThrow
+   */
+  export type AssessmentSessionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentSession to fetch.
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentSessions to fetch.
+     */
+    orderBy?: AssessmentSessionOrderByWithRelationInput | AssessmentSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AssessmentSessions.
+     */
+    cursor?: AssessmentSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentSessions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AssessmentSessions.
+     */
+    distinct?: AssessmentSessionScalarFieldEnum | AssessmentSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentSession findMany
+   */
+  export type AssessmentSessionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentSessions to fetch.
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentSessions to fetch.
+     */
+    orderBy?: AssessmentSessionOrderByWithRelationInput | AssessmentSessionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AssessmentSessions.
+     */
+    cursor?: AssessmentSessionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentSessions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentSessions.
+     */
+    skip?: number
+    distinct?: AssessmentSessionScalarFieldEnum | AssessmentSessionScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentSession create
+   */
+  export type AssessmentSessionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AssessmentSession.
+     */
+    data: XOR<AssessmentSessionCreateInput, AssessmentSessionUncheckedCreateInput>
+  }
+
+  /**
+   * AssessmentSession createMany
+   */
+  export type AssessmentSessionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AssessmentSessions.
+     */
+    data: AssessmentSessionCreateManyInput | AssessmentSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AssessmentSession createManyAndReturn
+   */
+  export type AssessmentSessionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * The data used to create many AssessmentSessions.
+     */
+    data: AssessmentSessionCreateManyInput | AssessmentSessionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AssessmentSession update
+   */
+  export type AssessmentSessionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AssessmentSession.
+     */
+    data: XOR<AssessmentSessionUpdateInput, AssessmentSessionUncheckedUpdateInput>
+    /**
+     * Choose, which AssessmentSession to update.
+     */
+    where: AssessmentSessionWhereUniqueInput
+  }
+
+  /**
+   * AssessmentSession updateMany
+   */
+  export type AssessmentSessionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AssessmentSessions.
+     */
+    data: XOR<AssessmentSessionUpdateManyMutationInput, AssessmentSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which AssessmentSessions to update
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * Limit how many AssessmentSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentSession updateManyAndReturn
+   */
+  export type AssessmentSessionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * The data used to update AssessmentSessions.
+     */
+    data: XOR<AssessmentSessionUpdateManyMutationInput, AssessmentSessionUncheckedUpdateManyInput>
+    /**
+     * Filter which AssessmentSessions to update
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * Limit how many AssessmentSessions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentSession upsert
+   */
+  export type AssessmentSessionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AssessmentSession to update in case it exists.
+     */
+    where: AssessmentSessionWhereUniqueInput
+    /**
+     * In case the AssessmentSession found by the `where` argument doesn't exist, create a new AssessmentSession with this data.
+     */
+    create: XOR<AssessmentSessionCreateInput, AssessmentSessionUncheckedCreateInput>
+    /**
+     * In case the AssessmentSession was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AssessmentSessionUpdateInput, AssessmentSessionUncheckedUpdateInput>
+  }
+
+  /**
+   * AssessmentSession delete
+   */
+  export type AssessmentSessionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+    /**
+     * Filter which AssessmentSession to delete.
+     */
+    where: AssessmentSessionWhereUniqueInput
+  }
+
+  /**
+   * AssessmentSession deleteMany
+   */
+  export type AssessmentSessionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AssessmentSessions to delete
+     */
+    where?: AssessmentSessionWhereInput
+    /**
+     * Limit how many AssessmentSessions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentSession.result
+   */
+  export type AssessmentSession$resultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    where?: AssessmentResultWhereInput
+  }
+
+  /**
+   * AssessmentSession without action
+   */
+  export type AssessmentSessionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentSession
+     */
+    select?: AssessmentSessionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentSession
+     */
+    omit?: AssessmentSessionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentSessionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AssessmentResult
+   */
+
+  export type AggregateAssessmentResult = {
+    _count: AssessmentResultCountAggregateOutputType | null
+    _avg: AssessmentResultAvgAggregateOutputType | null
+    _sum: AssessmentResultSumAggregateOutputType | null
+    _min: AssessmentResultMinAggregateOutputType | null
+    _max: AssessmentResultMaxAggregateOutputType | null
+  }
+
+  export type AssessmentResultAvgAggregateOutputType = {
+    scoreLumen: number | null
+    scoreAether: number | null
+    scoreOrpheus: number | null
+    scoreOrin: number | null
+    scoreLyra: number | null
+    scoreVara: number | null
+    scoreChronos: number | null
+    scoreKael: number | null
+    consistencyScore: number | null
+    attentionScore: number | null
+    generationCost: number | null
+  }
+
+  export type AssessmentResultSumAggregateOutputType = {
+    scoreLumen: number | null
+    scoreAether: number | null
+    scoreOrpheus: number | null
+    scoreOrin: number | null
+    scoreLyra: number | null
+    scoreVara: number | null
+    scoreChronos: number | null
+    scoreKael: number | null
+    consistencyScore: number | null
+    attentionScore: number | null
+    generationCost: number | null
+  }
+
+  export type AssessmentResultMinAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    userId: string | null
+    clerkUserId: string | null
+    scoreLumen: number | null
+    scoreAether: number | null
+    scoreOrpheus: number | null
+    scoreOrin: number | null
+    scoreLyra: number | null
+    scoreVara: number | null
+    scoreChronos: number | null
+    scoreKael: number | null
+    archetype: string | null
+    profilePattern: string | null
+    consistencyScore: number | null
+    attentionScore: number | null
+    generationCost: number | null
+    generationModel: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AssessmentResultMaxAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    userId: string | null
+    clerkUserId: string | null
+    scoreLumen: number | null
+    scoreAether: number | null
+    scoreOrpheus: number | null
+    scoreOrin: number | null
+    scoreLyra: number | null
+    scoreVara: number | null
+    scoreChronos: number | null
+    scoreKael: number | null
+    archetype: string | null
+    profilePattern: string | null
+    consistencyScore: number | null
+    attentionScore: number | null
+    generationCost: number | null
+    generationModel: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AssessmentResultCountAggregateOutputType = {
+    id: number
+    sessionId: number
+    userId: number
+    clerkUserId: number
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: number
+    archetype: number
+    profilePattern: number
+    consistencyScore: number
+    attentionScore: number
+    validationFlags: number
+    generationCost: number
+    generationModel: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AssessmentResultAvgAggregateInputType = {
+    scoreLumen?: true
+    scoreAether?: true
+    scoreOrpheus?: true
+    scoreOrin?: true
+    scoreLyra?: true
+    scoreVara?: true
+    scoreChronos?: true
+    scoreKael?: true
+    consistencyScore?: true
+    attentionScore?: true
+    generationCost?: true
+  }
+
+  export type AssessmentResultSumAggregateInputType = {
+    scoreLumen?: true
+    scoreAether?: true
+    scoreOrpheus?: true
+    scoreOrin?: true
+    scoreLyra?: true
+    scoreVara?: true
+    scoreChronos?: true
+    scoreKael?: true
+    consistencyScore?: true
+    attentionScore?: true
+    generationCost?: true
+  }
+
+  export type AssessmentResultMinAggregateInputType = {
+    id?: true
+    sessionId?: true
+    userId?: true
+    clerkUserId?: true
+    scoreLumen?: true
+    scoreAether?: true
+    scoreOrpheus?: true
+    scoreOrin?: true
+    scoreLyra?: true
+    scoreVara?: true
+    scoreChronos?: true
+    scoreKael?: true
+    archetype?: true
+    profilePattern?: true
+    consistencyScore?: true
+    attentionScore?: true
+    generationCost?: true
+    generationModel?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AssessmentResultMaxAggregateInputType = {
+    id?: true
+    sessionId?: true
+    userId?: true
+    clerkUserId?: true
+    scoreLumen?: true
+    scoreAether?: true
+    scoreOrpheus?: true
+    scoreOrin?: true
+    scoreLyra?: true
+    scoreVara?: true
+    scoreChronos?: true
+    scoreKael?: true
+    archetype?: true
+    profilePattern?: true
+    consistencyScore?: true
+    attentionScore?: true
+    generationCost?: true
+    generationModel?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AssessmentResultCountAggregateInputType = {
+    id?: true
+    sessionId?: true
+    userId?: true
+    clerkUserId?: true
+    scoreLumen?: true
+    scoreAether?: true
+    scoreOrpheus?: true
+    scoreOrin?: true
+    scoreLyra?: true
+    scoreVara?: true
+    scoreChronos?: true
+    scoreKael?: true
+    narrative?: true
+    archetype?: true
+    profilePattern?: true
+    consistencyScore?: true
+    attentionScore?: true
+    validationFlags?: true
+    generationCost?: true
+    generationModel?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AssessmentResultAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AssessmentResult to aggregate.
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentResults to fetch.
+     */
+    orderBy?: AssessmentResultOrderByWithRelationInput | AssessmentResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AssessmentResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentResults.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AssessmentResults
+    **/
+    _count?: true | AssessmentResultCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AssessmentResultAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AssessmentResultSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AssessmentResultMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AssessmentResultMaxAggregateInputType
+  }
+
+  export type GetAssessmentResultAggregateType<T extends AssessmentResultAggregateArgs> = {
+        [P in keyof T & keyof AggregateAssessmentResult]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAssessmentResult[P]>
+      : GetScalarType<T[P], AggregateAssessmentResult[P]>
+  }
+
+
+
+
+  export type AssessmentResultGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AssessmentResultWhereInput
+    orderBy?: AssessmentResultOrderByWithAggregationInput | AssessmentResultOrderByWithAggregationInput[]
+    by: AssessmentResultScalarFieldEnum[] | AssessmentResultScalarFieldEnum
+    having?: AssessmentResultScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AssessmentResultCountAggregateInputType | true
+    _avg?: AssessmentResultAvgAggregateInputType
+    _sum?: AssessmentResultSumAggregateInputType
+    _min?: AssessmentResultMinAggregateInputType
+    _max?: AssessmentResultMaxAggregateInputType
+  }
+
+  export type AssessmentResultGroupByOutputType = {
+    id: string
+    sessionId: string
+    userId: string | null
+    clerkUserId: string | null
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: JsonValue
+    archetype: string | null
+    profilePattern: string | null
+    consistencyScore: number | null
+    attentionScore: number | null
+    validationFlags: JsonValue | null
+    generationCost: number | null
+    generationModel: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: AssessmentResultCountAggregateOutputType | null
+    _avg: AssessmentResultAvgAggregateOutputType | null
+    _sum: AssessmentResultSumAggregateOutputType | null
+    _min: AssessmentResultMinAggregateOutputType | null
+    _max: AssessmentResultMaxAggregateOutputType | null
+  }
+
+  type GetAssessmentResultGroupByPayload<T extends AssessmentResultGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AssessmentResultGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AssessmentResultGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AssessmentResultGroupByOutputType[P]>
+            : GetScalarType<T[P], AssessmentResultGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AssessmentResultSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    scoreLumen?: boolean
+    scoreAether?: boolean
+    scoreOrpheus?: boolean
+    scoreOrin?: boolean
+    scoreLyra?: boolean
+    scoreVara?: boolean
+    scoreChronos?: boolean
+    scoreKael?: boolean
+    narrative?: boolean
+    archetype?: boolean
+    profilePattern?: boolean
+    consistencyScore?: boolean
+    attentionScore?: boolean
+    validationFlags?: boolean
+    generationCost?: boolean
+    generationModel?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["assessmentResult"]>
+
+  export type AssessmentResultSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    scoreLumen?: boolean
+    scoreAether?: boolean
+    scoreOrpheus?: boolean
+    scoreOrin?: boolean
+    scoreLyra?: boolean
+    scoreVara?: boolean
+    scoreChronos?: boolean
+    scoreKael?: boolean
+    narrative?: boolean
+    archetype?: boolean
+    profilePattern?: boolean
+    consistencyScore?: boolean
+    attentionScore?: boolean
+    validationFlags?: boolean
+    generationCost?: boolean
+    generationModel?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["assessmentResult"]>
+
+  export type AssessmentResultSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    scoreLumen?: boolean
+    scoreAether?: boolean
+    scoreOrpheus?: boolean
+    scoreOrin?: boolean
+    scoreLyra?: boolean
+    scoreVara?: boolean
+    scoreChronos?: boolean
+    scoreKael?: boolean
+    narrative?: boolean
+    archetype?: boolean
+    profilePattern?: boolean
+    consistencyScore?: boolean
+    attentionScore?: boolean
+    validationFlags?: boolean
+    generationCost?: boolean
+    generationModel?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["assessmentResult"]>
+
+  export type AssessmentResultSelectScalar = {
+    id?: boolean
+    sessionId?: boolean
+    userId?: boolean
+    clerkUserId?: boolean
+    scoreLumen?: boolean
+    scoreAether?: boolean
+    scoreOrpheus?: boolean
+    scoreOrin?: boolean
+    scoreLyra?: boolean
+    scoreVara?: boolean
+    scoreChronos?: boolean
+    scoreKael?: boolean
+    narrative?: boolean
+    archetype?: boolean
+    profilePattern?: boolean
+    consistencyScore?: boolean
+    attentionScore?: boolean
+    validationFlags?: boolean
+    generationCost?: boolean
+    generationModel?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AssessmentResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "userId" | "clerkUserId" | "scoreLumen" | "scoreAether" | "scoreOrpheus" | "scoreOrin" | "scoreLyra" | "scoreVara" | "scoreChronos" | "scoreKael" | "narrative" | "archetype" | "profilePattern" | "consistencyScore" | "attentionScore" | "validationFlags" | "generationCost" | "generationModel" | "createdAt" | "updatedAt", ExtArgs["result"]["assessmentResult"]>
+  export type AssessmentResultInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
+  }
+  export type AssessmentResultIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
+  }
+  export type AssessmentResultIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
+  }
+
+  export type $AssessmentResultPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AssessmentResult"
+    objects: {
+      session: Prisma.$AssessmentSessionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sessionId: string
+      userId: string | null
+      clerkUserId: string | null
+      scoreLumen: number
+      scoreAether: number
+      scoreOrpheus: number
+      scoreOrin: number
+      scoreLyra: number
+      scoreVara: number
+      scoreChronos: number
+      scoreKael: number
+      narrative: Prisma.JsonValue
+      archetype: string | null
+      profilePattern: string | null
+      consistencyScore: number | null
+      attentionScore: number | null
+      validationFlags: Prisma.JsonValue | null
+      generationCost: number | null
+      generationModel: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["assessmentResult"]>
+    composites: {}
+  }
+
+  type AssessmentResultGetPayload<S extends boolean | null | undefined | AssessmentResultDefaultArgs> = $Result.GetResult<Prisma.$AssessmentResultPayload, S>
+
+  type AssessmentResultCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AssessmentResultFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AssessmentResultCountAggregateInputType | true
+    }
+
+  export interface AssessmentResultDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AssessmentResult'], meta: { name: 'AssessmentResult' } }
+    /**
+     * Find zero or one AssessmentResult that matches the filter.
+     * @param {AssessmentResultFindUniqueArgs} args - Arguments to find a AssessmentResult
+     * @example
+     * // Get one AssessmentResult
+     * const assessmentResult = await prisma.assessmentResult.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AssessmentResultFindUniqueArgs>(args: SelectSubset<T, AssessmentResultFindUniqueArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AssessmentResult that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AssessmentResultFindUniqueOrThrowArgs} args - Arguments to find a AssessmentResult
+     * @example
+     * // Get one AssessmentResult
+     * const assessmentResult = await prisma.assessmentResult.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AssessmentResultFindUniqueOrThrowArgs>(args: SelectSubset<T, AssessmentResultFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AssessmentResult that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultFindFirstArgs} args - Arguments to find a AssessmentResult
+     * @example
+     * // Get one AssessmentResult
+     * const assessmentResult = await prisma.assessmentResult.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AssessmentResultFindFirstArgs>(args?: SelectSubset<T, AssessmentResultFindFirstArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AssessmentResult that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultFindFirstOrThrowArgs} args - Arguments to find a AssessmentResult
+     * @example
+     * // Get one AssessmentResult
+     * const assessmentResult = await prisma.assessmentResult.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AssessmentResultFindFirstOrThrowArgs>(args?: SelectSubset<T, AssessmentResultFindFirstOrThrowArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AssessmentResults that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AssessmentResults
+     * const assessmentResults = await prisma.assessmentResult.findMany()
+     * 
+     * // Get first 10 AssessmentResults
+     * const assessmentResults = await prisma.assessmentResult.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const assessmentResultWithIdOnly = await prisma.assessmentResult.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AssessmentResultFindManyArgs>(args?: SelectSubset<T, AssessmentResultFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AssessmentResult.
+     * @param {AssessmentResultCreateArgs} args - Arguments to create a AssessmentResult.
+     * @example
+     * // Create one AssessmentResult
+     * const AssessmentResult = await prisma.assessmentResult.create({
+     *   data: {
+     *     // ... data to create a AssessmentResult
+     *   }
+     * })
+     * 
+     */
+    create<T extends AssessmentResultCreateArgs>(args: SelectSubset<T, AssessmentResultCreateArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AssessmentResults.
+     * @param {AssessmentResultCreateManyArgs} args - Arguments to create many AssessmentResults.
+     * @example
+     * // Create many AssessmentResults
+     * const assessmentResult = await prisma.assessmentResult.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AssessmentResultCreateManyArgs>(args?: SelectSubset<T, AssessmentResultCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AssessmentResults and returns the data saved in the database.
+     * @param {AssessmentResultCreateManyAndReturnArgs} args - Arguments to create many AssessmentResults.
+     * @example
+     * // Create many AssessmentResults
+     * const assessmentResult = await prisma.assessmentResult.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AssessmentResults and only return the `id`
+     * const assessmentResultWithIdOnly = await prisma.assessmentResult.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AssessmentResultCreateManyAndReturnArgs>(args?: SelectSubset<T, AssessmentResultCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AssessmentResult.
+     * @param {AssessmentResultDeleteArgs} args - Arguments to delete one AssessmentResult.
+     * @example
+     * // Delete one AssessmentResult
+     * const AssessmentResult = await prisma.assessmentResult.delete({
+     *   where: {
+     *     // ... filter to delete one AssessmentResult
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AssessmentResultDeleteArgs>(args: SelectSubset<T, AssessmentResultDeleteArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AssessmentResult.
+     * @param {AssessmentResultUpdateArgs} args - Arguments to update one AssessmentResult.
+     * @example
+     * // Update one AssessmentResult
+     * const assessmentResult = await prisma.assessmentResult.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AssessmentResultUpdateArgs>(args: SelectSubset<T, AssessmentResultUpdateArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AssessmentResults.
+     * @param {AssessmentResultDeleteManyArgs} args - Arguments to filter AssessmentResults to delete.
+     * @example
+     * // Delete a few AssessmentResults
+     * const { count } = await prisma.assessmentResult.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AssessmentResultDeleteManyArgs>(args?: SelectSubset<T, AssessmentResultDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AssessmentResults.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AssessmentResults
+     * const assessmentResult = await prisma.assessmentResult.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AssessmentResultUpdateManyArgs>(args: SelectSubset<T, AssessmentResultUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AssessmentResults and returns the data updated in the database.
+     * @param {AssessmentResultUpdateManyAndReturnArgs} args - Arguments to update many AssessmentResults.
+     * @example
+     * // Update many AssessmentResults
+     * const assessmentResult = await prisma.assessmentResult.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AssessmentResults and only return the `id`
+     * const assessmentResultWithIdOnly = await prisma.assessmentResult.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AssessmentResultUpdateManyAndReturnArgs>(args: SelectSubset<T, AssessmentResultUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AssessmentResult.
+     * @param {AssessmentResultUpsertArgs} args - Arguments to update or create a AssessmentResult.
+     * @example
+     * // Update or create a AssessmentResult
+     * const assessmentResult = await prisma.assessmentResult.upsert({
+     *   create: {
+     *     // ... data to create a AssessmentResult
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AssessmentResult we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AssessmentResultUpsertArgs>(args: SelectSubset<T, AssessmentResultUpsertArgs<ExtArgs>>): Prisma__AssessmentResultClient<$Result.GetResult<Prisma.$AssessmentResultPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AssessmentResults.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultCountArgs} args - Arguments to filter AssessmentResults to count.
+     * @example
+     * // Count the number of AssessmentResults
+     * const count = await prisma.assessmentResult.count({
+     *   where: {
+     *     // ... the filter for the AssessmentResults we want to count
+     *   }
+     * })
+    **/
+    count<T extends AssessmentResultCountArgs>(
+      args?: Subset<T, AssessmentResultCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AssessmentResultCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AssessmentResult.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AssessmentResultAggregateArgs>(args: Subset<T, AssessmentResultAggregateArgs>): Prisma.PrismaPromise<GetAssessmentResultAggregateType<T>>
+
+    /**
+     * Group by AssessmentResult.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentResultGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AssessmentResultGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AssessmentResultGroupByArgs['orderBy'] }
+        : { orderBy?: AssessmentResultGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AssessmentResultGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAssessmentResultGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AssessmentResult model
+   */
+  readonly fields: AssessmentResultFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AssessmentResult.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AssessmentResultClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    session<T extends AssessmentSessionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AssessmentSessionDefaultArgs<ExtArgs>>): Prisma__AssessmentSessionClient<$Result.GetResult<Prisma.$AssessmentSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AssessmentResult model
+   */
+  interface AssessmentResultFieldRefs {
+    readonly id: FieldRef<"AssessmentResult", 'String'>
+    readonly sessionId: FieldRef<"AssessmentResult", 'String'>
+    readonly userId: FieldRef<"AssessmentResult", 'String'>
+    readonly clerkUserId: FieldRef<"AssessmentResult", 'String'>
+    readonly scoreLumen: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreAether: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreOrpheus: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreOrin: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreLyra: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreVara: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreChronos: FieldRef<"AssessmentResult", 'Float'>
+    readonly scoreKael: FieldRef<"AssessmentResult", 'Float'>
+    readonly narrative: FieldRef<"AssessmentResult", 'Json'>
+    readonly archetype: FieldRef<"AssessmentResult", 'String'>
+    readonly profilePattern: FieldRef<"AssessmentResult", 'String'>
+    readonly consistencyScore: FieldRef<"AssessmentResult", 'Float'>
+    readonly attentionScore: FieldRef<"AssessmentResult", 'Float'>
+    readonly validationFlags: FieldRef<"AssessmentResult", 'Json'>
+    readonly generationCost: FieldRef<"AssessmentResult", 'Float'>
+    readonly generationModel: FieldRef<"AssessmentResult", 'String'>
+    readonly createdAt: FieldRef<"AssessmentResult", 'DateTime'>
+    readonly updatedAt: FieldRef<"AssessmentResult", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AssessmentResult findUnique
+   */
+  export type AssessmentResultFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentResult to fetch.
+     */
+    where: AssessmentResultWhereUniqueInput
+  }
+
+  /**
+   * AssessmentResult findUniqueOrThrow
+   */
+  export type AssessmentResultFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentResult to fetch.
+     */
+    where: AssessmentResultWhereUniqueInput
+  }
+
+  /**
+   * AssessmentResult findFirst
+   */
+  export type AssessmentResultFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentResult to fetch.
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentResults to fetch.
+     */
+    orderBy?: AssessmentResultOrderByWithRelationInput | AssessmentResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AssessmentResults.
+     */
+    cursor?: AssessmentResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentResults.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AssessmentResults.
+     */
+    distinct?: AssessmentResultScalarFieldEnum | AssessmentResultScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentResult findFirstOrThrow
+   */
+  export type AssessmentResultFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentResult to fetch.
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentResults to fetch.
+     */
+    orderBy?: AssessmentResultOrderByWithRelationInput | AssessmentResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AssessmentResults.
+     */
+    cursor?: AssessmentResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentResults.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AssessmentResults.
+     */
+    distinct?: AssessmentResultScalarFieldEnum | AssessmentResultScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentResult findMany
+   */
+  export type AssessmentResultFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * Filter, which AssessmentResults to fetch.
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentResults to fetch.
+     */
+    orderBy?: AssessmentResultOrderByWithRelationInput | AssessmentResultOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AssessmentResults.
+     */
+    cursor?: AssessmentResultWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentResults from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentResults.
+     */
+    skip?: number
+    distinct?: AssessmentResultScalarFieldEnum | AssessmentResultScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentResult create
+   */
+  export type AssessmentResultCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AssessmentResult.
+     */
+    data: XOR<AssessmentResultCreateInput, AssessmentResultUncheckedCreateInput>
+  }
+
+  /**
+   * AssessmentResult createMany
+   */
+  export type AssessmentResultCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AssessmentResults.
+     */
+    data: AssessmentResultCreateManyInput | AssessmentResultCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AssessmentResult createManyAndReturn
+   */
+  export type AssessmentResultCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * The data used to create many AssessmentResults.
+     */
+    data: AssessmentResultCreateManyInput | AssessmentResultCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AssessmentResult update
+   */
+  export type AssessmentResultUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AssessmentResult.
+     */
+    data: XOR<AssessmentResultUpdateInput, AssessmentResultUncheckedUpdateInput>
+    /**
+     * Choose, which AssessmentResult to update.
+     */
+    where: AssessmentResultWhereUniqueInput
+  }
+
+  /**
+   * AssessmentResult updateMany
+   */
+  export type AssessmentResultUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AssessmentResults.
+     */
+    data: XOR<AssessmentResultUpdateManyMutationInput, AssessmentResultUncheckedUpdateManyInput>
+    /**
+     * Filter which AssessmentResults to update
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * Limit how many AssessmentResults to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentResult updateManyAndReturn
+   */
+  export type AssessmentResultUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * The data used to update AssessmentResults.
+     */
+    data: XOR<AssessmentResultUpdateManyMutationInput, AssessmentResultUncheckedUpdateManyInput>
+    /**
+     * Filter which AssessmentResults to update
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * Limit how many AssessmentResults to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AssessmentResult upsert
+   */
+  export type AssessmentResultUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AssessmentResult to update in case it exists.
+     */
+    where: AssessmentResultWhereUniqueInput
+    /**
+     * In case the AssessmentResult found by the `where` argument doesn't exist, create a new AssessmentResult with this data.
+     */
+    create: XOR<AssessmentResultCreateInput, AssessmentResultUncheckedCreateInput>
+    /**
+     * In case the AssessmentResult was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AssessmentResultUpdateInput, AssessmentResultUncheckedUpdateInput>
+  }
+
+  /**
+   * AssessmentResult delete
+   */
+  export type AssessmentResultDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+    /**
+     * Filter which AssessmentResult to delete.
+     */
+    where: AssessmentResultWhereUniqueInput
+  }
+
+  /**
+   * AssessmentResult deleteMany
+   */
+  export type AssessmentResultDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AssessmentResults to delete
+     */
+    where?: AssessmentResultWhereInput
+    /**
+     * Limit how many AssessmentResults to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentResult without action
+   */
+  export type AssessmentResultDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentResult
+     */
+    select?: AssessmentResultSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentResult
+     */
+    omit?: AssessmentResultOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AssessmentResultInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AssessmentTemplate
+   */
+
+  export type AggregateAssessmentTemplate = {
+    _count: AssessmentTemplateCountAggregateOutputType | null
+    _avg: AssessmentTemplateAvgAggregateOutputType | null
+    _sum: AssessmentTemplateSumAggregateOutputType | null
+    _min: AssessmentTemplateMinAggregateOutputType | null
+    _max: AssessmentTemplateMaxAggregateOutputType | null
+  }
+
+  export type AssessmentTemplateAvgAggregateOutputType = {
+    minItemsPerDimension: number | null
+    maxTotalItems: number | null
+    uncertaintyThreshold: number | null
+  }
+
+  export type AssessmentTemplateSumAggregateOutputType = {
+    minItemsPerDimension: number | null
+    maxTotalItems: number | null
+    uncertaintyThreshold: number | null
+  }
+
+  export type AssessmentTemplateMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    description: string | null
+    version: string | null
+    minItemsPerDimension: number | null
+    maxTotalItems: number | null
+    uncertaintyThreshold: number | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AssessmentTemplateMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    description: string | null
+    version: string | null
+    minItemsPerDimension: number | null
+    maxTotalItems: number | null
+    uncertaintyThreshold: number | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AssessmentTemplateCountAggregateOutputType = {
+    id: number
+    name: number
+    description: number
+    version: number
+    items: number
+    dimensions: number
+    minItemsPerDimension: number
+    maxTotalItems: number
+    uncertaintyThreshold: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AssessmentTemplateAvgAggregateInputType = {
+    minItemsPerDimension?: true
+    maxTotalItems?: true
+    uncertaintyThreshold?: true
+  }
+
+  export type AssessmentTemplateSumAggregateInputType = {
+    minItemsPerDimension?: true
+    maxTotalItems?: true
+    uncertaintyThreshold?: true
+  }
+
+  export type AssessmentTemplateMinAggregateInputType = {
+    id?: true
+    name?: true
+    description?: true
+    version?: true
+    minItemsPerDimension?: true
+    maxTotalItems?: true
+    uncertaintyThreshold?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AssessmentTemplateMaxAggregateInputType = {
+    id?: true
+    name?: true
+    description?: true
+    version?: true
+    minItemsPerDimension?: true
+    maxTotalItems?: true
+    uncertaintyThreshold?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AssessmentTemplateCountAggregateInputType = {
+    id?: true
+    name?: true
+    description?: true
+    version?: true
+    items?: true
+    dimensions?: true
+    minItemsPerDimension?: true
+    maxTotalItems?: true
+    uncertaintyThreshold?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AssessmentTemplateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AssessmentTemplate to aggregate.
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentTemplates to fetch.
+     */
+    orderBy?: AssessmentTemplateOrderByWithRelationInput | AssessmentTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AssessmentTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AssessmentTemplates
+    **/
+    _count?: true | AssessmentTemplateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AssessmentTemplateAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AssessmentTemplateSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AssessmentTemplateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AssessmentTemplateMaxAggregateInputType
+  }
+
+  export type GetAssessmentTemplateAggregateType<T extends AssessmentTemplateAggregateArgs> = {
+        [P in keyof T & keyof AggregateAssessmentTemplate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAssessmentTemplate[P]>
+      : GetScalarType<T[P], AggregateAssessmentTemplate[P]>
+  }
+
+
+
+
+  export type AssessmentTemplateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AssessmentTemplateWhereInput
+    orderBy?: AssessmentTemplateOrderByWithAggregationInput | AssessmentTemplateOrderByWithAggregationInput[]
+    by: AssessmentTemplateScalarFieldEnum[] | AssessmentTemplateScalarFieldEnum
+    having?: AssessmentTemplateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AssessmentTemplateCountAggregateInputType | true
+    _avg?: AssessmentTemplateAvgAggregateInputType
+    _sum?: AssessmentTemplateSumAggregateInputType
+    _min?: AssessmentTemplateMinAggregateInputType
+    _max?: AssessmentTemplateMaxAggregateInputType
+  }
+
+  export type AssessmentTemplateGroupByOutputType = {
+    id: string
+    name: string
+    description: string | null
+    version: string
+    items: JsonValue
+    dimensions: JsonValue
+    minItemsPerDimension: number
+    maxTotalItems: number
+    uncertaintyThreshold: number
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: AssessmentTemplateCountAggregateOutputType | null
+    _avg: AssessmentTemplateAvgAggregateOutputType | null
+    _sum: AssessmentTemplateSumAggregateOutputType | null
+    _min: AssessmentTemplateMinAggregateOutputType | null
+    _max: AssessmentTemplateMaxAggregateOutputType | null
+  }
+
+  type GetAssessmentTemplateGroupByPayload<T extends AssessmentTemplateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AssessmentTemplateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AssessmentTemplateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AssessmentTemplateGroupByOutputType[P]>
+            : GetScalarType<T[P], AssessmentTemplateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AssessmentTemplateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    version?: boolean
+    items?: boolean
+    dimensions?: boolean
+    minItemsPerDimension?: boolean
+    maxTotalItems?: boolean
+    uncertaintyThreshold?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["assessmentTemplate"]>
+
+  export type AssessmentTemplateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    version?: boolean
+    items?: boolean
+    dimensions?: boolean
+    minItemsPerDimension?: boolean
+    maxTotalItems?: boolean
+    uncertaintyThreshold?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["assessmentTemplate"]>
+
+  export type AssessmentTemplateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    version?: boolean
+    items?: boolean
+    dimensions?: boolean
+    minItemsPerDimension?: boolean
+    maxTotalItems?: boolean
+    uncertaintyThreshold?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["assessmentTemplate"]>
+
+  export type AssessmentTemplateSelectScalar = {
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    version?: boolean
+    items?: boolean
+    dimensions?: boolean
+    minItemsPerDimension?: boolean
+    maxTotalItems?: boolean
+    uncertaintyThreshold?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AssessmentTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "version" | "items" | "dimensions" | "minItemsPerDimension" | "maxTotalItems" | "uncertaintyThreshold" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["assessmentTemplate"]>
+
+  export type $AssessmentTemplatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AssessmentTemplate"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      description: string | null
+      version: string
+      items: Prisma.JsonValue
+      dimensions: Prisma.JsonValue
+      minItemsPerDimension: number
+      maxTotalItems: number
+      uncertaintyThreshold: number
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["assessmentTemplate"]>
+    composites: {}
+  }
+
+  type AssessmentTemplateGetPayload<S extends boolean | null | undefined | AssessmentTemplateDefaultArgs> = $Result.GetResult<Prisma.$AssessmentTemplatePayload, S>
+
+  type AssessmentTemplateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AssessmentTemplateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AssessmentTemplateCountAggregateInputType | true
+    }
+
+  export interface AssessmentTemplateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AssessmentTemplate'], meta: { name: 'AssessmentTemplate' } }
+    /**
+     * Find zero or one AssessmentTemplate that matches the filter.
+     * @param {AssessmentTemplateFindUniqueArgs} args - Arguments to find a AssessmentTemplate
+     * @example
+     * // Get one AssessmentTemplate
+     * const assessmentTemplate = await prisma.assessmentTemplate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AssessmentTemplateFindUniqueArgs>(args: SelectSubset<T, AssessmentTemplateFindUniqueArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AssessmentTemplate that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AssessmentTemplateFindUniqueOrThrowArgs} args - Arguments to find a AssessmentTemplate
+     * @example
+     * // Get one AssessmentTemplate
+     * const assessmentTemplate = await prisma.assessmentTemplate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AssessmentTemplateFindUniqueOrThrowArgs>(args: SelectSubset<T, AssessmentTemplateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AssessmentTemplate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateFindFirstArgs} args - Arguments to find a AssessmentTemplate
+     * @example
+     * // Get one AssessmentTemplate
+     * const assessmentTemplate = await prisma.assessmentTemplate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AssessmentTemplateFindFirstArgs>(args?: SelectSubset<T, AssessmentTemplateFindFirstArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AssessmentTemplate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateFindFirstOrThrowArgs} args - Arguments to find a AssessmentTemplate
+     * @example
+     * // Get one AssessmentTemplate
+     * const assessmentTemplate = await prisma.assessmentTemplate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AssessmentTemplateFindFirstOrThrowArgs>(args?: SelectSubset<T, AssessmentTemplateFindFirstOrThrowArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AssessmentTemplates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AssessmentTemplates
+     * const assessmentTemplates = await prisma.assessmentTemplate.findMany()
+     * 
+     * // Get first 10 AssessmentTemplates
+     * const assessmentTemplates = await prisma.assessmentTemplate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const assessmentTemplateWithIdOnly = await prisma.assessmentTemplate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AssessmentTemplateFindManyArgs>(args?: SelectSubset<T, AssessmentTemplateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AssessmentTemplate.
+     * @param {AssessmentTemplateCreateArgs} args - Arguments to create a AssessmentTemplate.
+     * @example
+     * // Create one AssessmentTemplate
+     * const AssessmentTemplate = await prisma.assessmentTemplate.create({
+     *   data: {
+     *     // ... data to create a AssessmentTemplate
+     *   }
+     * })
+     * 
+     */
+    create<T extends AssessmentTemplateCreateArgs>(args: SelectSubset<T, AssessmentTemplateCreateArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AssessmentTemplates.
+     * @param {AssessmentTemplateCreateManyArgs} args - Arguments to create many AssessmentTemplates.
+     * @example
+     * // Create many AssessmentTemplates
+     * const assessmentTemplate = await prisma.assessmentTemplate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AssessmentTemplateCreateManyArgs>(args?: SelectSubset<T, AssessmentTemplateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AssessmentTemplates and returns the data saved in the database.
+     * @param {AssessmentTemplateCreateManyAndReturnArgs} args - Arguments to create many AssessmentTemplates.
+     * @example
+     * // Create many AssessmentTemplates
+     * const assessmentTemplate = await prisma.assessmentTemplate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AssessmentTemplates and only return the `id`
+     * const assessmentTemplateWithIdOnly = await prisma.assessmentTemplate.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AssessmentTemplateCreateManyAndReturnArgs>(args?: SelectSubset<T, AssessmentTemplateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AssessmentTemplate.
+     * @param {AssessmentTemplateDeleteArgs} args - Arguments to delete one AssessmentTemplate.
+     * @example
+     * // Delete one AssessmentTemplate
+     * const AssessmentTemplate = await prisma.assessmentTemplate.delete({
+     *   where: {
+     *     // ... filter to delete one AssessmentTemplate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AssessmentTemplateDeleteArgs>(args: SelectSubset<T, AssessmentTemplateDeleteArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AssessmentTemplate.
+     * @param {AssessmentTemplateUpdateArgs} args - Arguments to update one AssessmentTemplate.
+     * @example
+     * // Update one AssessmentTemplate
+     * const assessmentTemplate = await prisma.assessmentTemplate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AssessmentTemplateUpdateArgs>(args: SelectSubset<T, AssessmentTemplateUpdateArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AssessmentTemplates.
+     * @param {AssessmentTemplateDeleteManyArgs} args - Arguments to filter AssessmentTemplates to delete.
+     * @example
+     * // Delete a few AssessmentTemplates
+     * const { count } = await prisma.assessmentTemplate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AssessmentTemplateDeleteManyArgs>(args?: SelectSubset<T, AssessmentTemplateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AssessmentTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AssessmentTemplates
+     * const assessmentTemplate = await prisma.assessmentTemplate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AssessmentTemplateUpdateManyArgs>(args: SelectSubset<T, AssessmentTemplateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AssessmentTemplates and returns the data updated in the database.
+     * @param {AssessmentTemplateUpdateManyAndReturnArgs} args - Arguments to update many AssessmentTemplates.
+     * @example
+     * // Update many AssessmentTemplates
+     * const assessmentTemplate = await prisma.assessmentTemplate.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AssessmentTemplates and only return the `id`
+     * const assessmentTemplateWithIdOnly = await prisma.assessmentTemplate.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AssessmentTemplateUpdateManyAndReturnArgs>(args: SelectSubset<T, AssessmentTemplateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AssessmentTemplate.
+     * @param {AssessmentTemplateUpsertArgs} args - Arguments to update or create a AssessmentTemplate.
+     * @example
+     * // Update or create a AssessmentTemplate
+     * const assessmentTemplate = await prisma.assessmentTemplate.upsert({
+     *   create: {
+     *     // ... data to create a AssessmentTemplate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AssessmentTemplate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AssessmentTemplateUpsertArgs>(args: SelectSubset<T, AssessmentTemplateUpsertArgs<ExtArgs>>): Prisma__AssessmentTemplateClient<$Result.GetResult<Prisma.$AssessmentTemplatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AssessmentTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateCountArgs} args - Arguments to filter AssessmentTemplates to count.
+     * @example
+     * // Count the number of AssessmentTemplates
+     * const count = await prisma.assessmentTemplate.count({
+     *   where: {
+     *     // ... the filter for the AssessmentTemplates we want to count
+     *   }
+     * })
+    **/
+    count<T extends AssessmentTemplateCountArgs>(
+      args?: Subset<T, AssessmentTemplateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AssessmentTemplateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AssessmentTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AssessmentTemplateAggregateArgs>(args: Subset<T, AssessmentTemplateAggregateArgs>): Prisma.PrismaPromise<GetAssessmentTemplateAggregateType<T>>
+
+    /**
+     * Group by AssessmentTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AssessmentTemplateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AssessmentTemplateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AssessmentTemplateGroupByArgs['orderBy'] }
+        : { orderBy?: AssessmentTemplateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AssessmentTemplateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAssessmentTemplateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AssessmentTemplate model
+   */
+  readonly fields: AssessmentTemplateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AssessmentTemplate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AssessmentTemplateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AssessmentTemplate model
+   */
+  interface AssessmentTemplateFieldRefs {
+    readonly id: FieldRef<"AssessmentTemplate", 'String'>
+    readonly name: FieldRef<"AssessmentTemplate", 'String'>
+    readonly description: FieldRef<"AssessmentTemplate", 'String'>
+    readonly version: FieldRef<"AssessmentTemplate", 'String'>
+    readonly items: FieldRef<"AssessmentTemplate", 'Json'>
+    readonly dimensions: FieldRef<"AssessmentTemplate", 'Json'>
+    readonly minItemsPerDimension: FieldRef<"AssessmentTemplate", 'Int'>
+    readonly maxTotalItems: FieldRef<"AssessmentTemplate", 'Int'>
+    readonly uncertaintyThreshold: FieldRef<"AssessmentTemplate", 'Float'>
+    readonly isActive: FieldRef<"AssessmentTemplate", 'Boolean'>
+    readonly createdAt: FieldRef<"AssessmentTemplate", 'DateTime'>
+    readonly updatedAt: FieldRef<"AssessmentTemplate", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AssessmentTemplate findUnique
+   */
+  export type AssessmentTemplateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * Filter, which AssessmentTemplate to fetch.
+     */
+    where: AssessmentTemplateWhereUniqueInput
+  }
+
+  /**
+   * AssessmentTemplate findUniqueOrThrow
+   */
+  export type AssessmentTemplateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * Filter, which AssessmentTemplate to fetch.
+     */
+    where: AssessmentTemplateWhereUniqueInput
+  }
+
+  /**
+   * AssessmentTemplate findFirst
+   */
+  export type AssessmentTemplateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * Filter, which AssessmentTemplate to fetch.
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentTemplates to fetch.
+     */
+    orderBy?: AssessmentTemplateOrderByWithRelationInput | AssessmentTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AssessmentTemplates.
+     */
+    cursor?: AssessmentTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AssessmentTemplates.
+     */
+    distinct?: AssessmentTemplateScalarFieldEnum | AssessmentTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentTemplate findFirstOrThrow
+   */
+  export type AssessmentTemplateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * Filter, which AssessmentTemplate to fetch.
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentTemplates to fetch.
+     */
+    orderBy?: AssessmentTemplateOrderByWithRelationInput | AssessmentTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AssessmentTemplates.
+     */
+    cursor?: AssessmentTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AssessmentTemplates.
+     */
+    distinct?: AssessmentTemplateScalarFieldEnum | AssessmentTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentTemplate findMany
+   */
+  export type AssessmentTemplateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * Filter, which AssessmentTemplates to fetch.
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AssessmentTemplates to fetch.
+     */
+    orderBy?: AssessmentTemplateOrderByWithRelationInput | AssessmentTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AssessmentTemplates.
+     */
+    cursor?: AssessmentTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AssessmentTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AssessmentTemplates.
+     */
+    skip?: number
+    distinct?: AssessmentTemplateScalarFieldEnum | AssessmentTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * AssessmentTemplate create
+   */
+  export type AssessmentTemplateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * The data needed to create a AssessmentTemplate.
+     */
+    data: XOR<AssessmentTemplateCreateInput, AssessmentTemplateUncheckedCreateInput>
+  }
+
+  /**
+   * AssessmentTemplate createMany
+   */
+  export type AssessmentTemplateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AssessmentTemplates.
+     */
+    data: AssessmentTemplateCreateManyInput | AssessmentTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AssessmentTemplate createManyAndReturn
+   */
+  export type AssessmentTemplateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to create many AssessmentTemplates.
+     */
+    data: AssessmentTemplateCreateManyInput | AssessmentTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AssessmentTemplate update
+   */
+  export type AssessmentTemplateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * The data needed to update a AssessmentTemplate.
+     */
+    data: XOR<AssessmentTemplateUpdateInput, AssessmentTemplateUncheckedUpdateInput>
+    /**
+     * Choose, which AssessmentTemplate to update.
+     */
+    where: AssessmentTemplateWhereUniqueInput
+  }
+
+  /**
+   * AssessmentTemplate updateMany
+   */
+  export type AssessmentTemplateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AssessmentTemplates.
+     */
+    data: XOR<AssessmentTemplateUpdateManyMutationInput, AssessmentTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which AssessmentTemplates to update
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * Limit how many AssessmentTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentTemplate updateManyAndReturn
+   */
+  export type AssessmentTemplateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to update AssessmentTemplates.
+     */
+    data: XOR<AssessmentTemplateUpdateManyMutationInput, AssessmentTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which AssessmentTemplates to update
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * Limit how many AssessmentTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentTemplate upsert
+   */
+  export type AssessmentTemplateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * The filter to search for the AssessmentTemplate to update in case it exists.
+     */
+    where: AssessmentTemplateWhereUniqueInput
+    /**
+     * In case the AssessmentTemplate found by the `where` argument doesn't exist, create a new AssessmentTemplate with this data.
+     */
+    create: XOR<AssessmentTemplateCreateInput, AssessmentTemplateUncheckedCreateInput>
+    /**
+     * In case the AssessmentTemplate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AssessmentTemplateUpdateInput, AssessmentTemplateUncheckedUpdateInput>
+  }
+
+  /**
+   * AssessmentTemplate delete
+   */
+  export type AssessmentTemplateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+    /**
+     * Filter which AssessmentTemplate to delete.
+     */
+    where: AssessmentTemplateWhereUniqueInput
+  }
+
+  /**
+   * AssessmentTemplate deleteMany
+   */
+  export type AssessmentTemplateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AssessmentTemplates to delete
+     */
+    where?: AssessmentTemplateWhereInput
+    /**
+     * Limit how many AssessmentTemplates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AssessmentTemplate without action
+   */
+  export type AssessmentTemplateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AssessmentTemplate
+     */
+    select?: AssessmentTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AssessmentTemplate
+     */
+    omit?: AssessmentTemplateOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -13105,6 +17033,72 @@ export namespace Prisma {
   };
 
   export type QuestionnaireCheckpointScalarFieldEnum = (typeof QuestionnaireCheckpointScalarFieldEnum)[keyof typeof QuestionnaireCheckpointScalarFieldEnum]
+
+
+  export const AssessmentSessionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    clerkUserId: 'clerkUserId',
+    status: 'status',
+    responses: 'responses',
+    demographics: 'demographics',
+    pendingQuestions: 'pendingQuestions',
+    answerHistory: 'answerHistory',
+    backNavigationCount: 'backNavigationCount',
+    backNavigationLog: 'backNavigationLog',
+    metadata: 'metadata',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    completedAt: 'completedAt'
+  };
+
+  export type AssessmentSessionScalarFieldEnum = (typeof AssessmentSessionScalarFieldEnum)[keyof typeof AssessmentSessionScalarFieldEnum]
+
+
+  export const AssessmentResultScalarFieldEnum: {
+    id: 'id',
+    sessionId: 'sessionId',
+    userId: 'userId',
+    clerkUserId: 'clerkUserId',
+    scoreLumen: 'scoreLumen',
+    scoreAether: 'scoreAether',
+    scoreOrpheus: 'scoreOrpheus',
+    scoreOrin: 'scoreOrin',
+    scoreLyra: 'scoreLyra',
+    scoreVara: 'scoreVara',
+    scoreChronos: 'scoreChronos',
+    scoreKael: 'scoreKael',
+    narrative: 'narrative',
+    archetype: 'archetype',
+    profilePattern: 'profilePattern',
+    consistencyScore: 'consistencyScore',
+    attentionScore: 'attentionScore',
+    validationFlags: 'validationFlags',
+    generationCost: 'generationCost',
+    generationModel: 'generationModel',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AssessmentResultScalarFieldEnum = (typeof AssessmentResultScalarFieldEnum)[keyof typeof AssessmentResultScalarFieldEnum]
+
+
+  export const AssessmentTemplateScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    description: 'description',
+    version: 'version',
+    items: 'items',
+    dimensions: 'dimensions',
+    minItemsPerDimension: 'minItemsPerDimension',
+    maxTotalItems: 'maxTotalItems',
+    uncertaintyThreshold: 'uncertaintyThreshold',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AssessmentTemplateScalarFieldEnum = (typeof AssessmentTemplateScalarFieldEnum)[keyof typeof AssessmentTemplateScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -13898,6 +17892,339 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"QuestionnaireCheckpoint"> | Date | string
   }
 
+  export type AssessmentSessionWhereInput = {
+    AND?: AssessmentSessionWhereInput | AssessmentSessionWhereInput[]
+    OR?: AssessmentSessionWhereInput[]
+    NOT?: AssessmentSessionWhereInput | AssessmentSessionWhereInput[]
+    id?: StringFilter<"AssessmentSession"> | string
+    userId?: StringNullableFilter<"AssessmentSession"> | string | null
+    clerkUserId?: StringNullableFilter<"AssessmentSession"> | string | null
+    status?: StringFilter<"AssessmentSession"> | string
+    responses?: JsonFilter<"AssessmentSession">
+    demographics?: JsonNullableFilter<"AssessmentSession">
+    pendingQuestions?: JsonNullableFilter<"AssessmentSession">
+    answerHistory?: JsonNullableFilter<"AssessmentSession">
+    backNavigationCount?: IntFilter<"AssessmentSession"> | number
+    backNavigationLog?: JsonNullableFilter<"AssessmentSession">
+    metadata?: JsonNullableFilter<"AssessmentSession">
+    createdAt?: DateTimeFilter<"AssessmentSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AssessmentSession"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AssessmentSession"> | Date | string | null
+    result?: XOR<AssessmentResultNullableScalarRelationFilter, AssessmentResultWhereInput> | null
+  }
+
+  export type AssessmentSessionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    clerkUserId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    responses?: SortOrder
+    demographics?: SortOrderInput | SortOrder
+    pendingQuestions?: SortOrderInput | SortOrder
+    answerHistory?: SortOrderInput | SortOrder
+    backNavigationCount?: SortOrder
+    backNavigationLog?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    result?: AssessmentResultOrderByWithRelationInput
+  }
+
+  export type AssessmentSessionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AssessmentSessionWhereInput | AssessmentSessionWhereInput[]
+    OR?: AssessmentSessionWhereInput[]
+    NOT?: AssessmentSessionWhereInput | AssessmentSessionWhereInput[]
+    userId?: StringNullableFilter<"AssessmentSession"> | string | null
+    clerkUserId?: StringNullableFilter<"AssessmentSession"> | string | null
+    status?: StringFilter<"AssessmentSession"> | string
+    responses?: JsonFilter<"AssessmentSession">
+    demographics?: JsonNullableFilter<"AssessmentSession">
+    pendingQuestions?: JsonNullableFilter<"AssessmentSession">
+    answerHistory?: JsonNullableFilter<"AssessmentSession">
+    backNavigationCount?: IntFilter<"AssessmentSession"> | number
+    backNavigationLog?: JsonNullableFilter<"AssessmentSession">
+    metadata?: JsonNullableFilter<"AssessmentSession">
+    createdAt?: DateTimeFilter<"AssessmentSession"> | Date | string
+    updatedAt?: DateTimeFilter<"AssessmentSession"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AssessmentSession"> | Date | string | null
+    result?: XOR<AssessmentResultNullableScalarRelationFilter, AssessmentResultWhereInput> | null
+  }, "id">
+
+  export type AssessmentSessionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    clerkUserId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    responses?: SortOrder
+    demographics?: SortOrderInput | SortOrder
+    pendingQuestions?: SortOrderInput | SortOrder
+    answerHistory?: SortOrderInput | SortOrder
+    backNavigationCount?: SortOrder
+    backNavigationLog?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    _count?: AssessmentSessionCountOrderByAggregateInput
+    _avg?: AssessmentSessionAvgOrderByAggregateInput
+    _max?: AssessmentSessionMaxOrderByAggregateInput
+    _min?: AssessmentSessionMinOrderByAggregateInput
+    _sum?: AssessmentSessionSumOrderByAggregateInput
+  }
+
+  export type AssessmentSessionScalarWhereWithAggregatesInput = {
+    AND?: AssessmentSessionScalarWhereWithAggregatesInput | AssessmentSessionScalarWhereWithAggregatesInput[]
+    OR?: AssessmentSessionScalarWhereWithAggregatesInput[]
+    NOT?: AssessmentSessionScalarWhereWithAggregatesInput | AssessmentSessionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AssessmentSession"> | string
+    userId?: StringNullableWithAggregatesFilter<"AssessmentSession"> | string | null
+    clerkUserId?: StringNullableWithAggregatesFilter<"AssessmentSession"> | string | null
+    status?: StringWithAggregatesFilter<"AssessmentSession"> | string
+    responses?: JsonWithAggregatesFilter<"AssessmentSession">
+    demographics?: JsonNullableWithAggregatesFilter<"AssessmentSession">
+    pendingQuestions?: JsonNullableWithAggregatesFilter<"AssessmentSession">
+    answerHistory?: JsonNullableWithAggregatesFilter<"AssessmentSession">
+    backNavigationCount?: IntWithAggregatesFilter<"AssessmentSession"> | number
+    backNavigationLog?: JsonNullableWithAggregatesFilter<"AssessmentSession">
+    metadata?: JsonNullableWithAggregatesFilter<"AssessmentSession">
+    createdAt?: DateTimeWithAggregatesFilter<"AssessmentSession"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AssessmentSession"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"AssessmentSession"> | Date | string | null
+  }
+
+  export type AssessmentResultWhereInput = {
+    AND?: AssessmentResultWhereInput | AssessmentResultWhereInput[]
+    OR?: AssessmentResultWhereInput[]
+    NOT?: AssessmentResultWhereInput | AssessmentResultWhereInput[]
+    id?: StringFilter<"AssessmentResult"> | string
+    sessionId?: StringFilter<"AssessmentResult"> | string
+    userId?: StringNullableFilter<"AssessmentResult"> | string | null
+    clerkUserId?: StringNullableFilter<"AssessmentResult"> | string | null
+    scoreLumen?: FloatFilter<"AssessmentResult"> | number
+    scoreAether?: FloatFilter<"AssessmentResult"> | number
+    scoreOrpheus?: FloatFilter<"AssessmentResult"> | number
+    scoreOrin?: FloatFilter<"AssessmentResult"> | number
+    scoreLyra?: FloatFilter<"AssessmentResult"> | number
+    scoreVara?: FloatFilter<"AssessmentResult"> | number
+    scoreChronos?: FloatFilter<"AssessmentResult"> | number
+    scoreKael?: FloatFilter<"AssessmentResult"> | number
+    narrative?: JsonFilter<"AssessmentResult">
+    archetype?: StringNullableFilter<"AssessmentResult"> | string | null
+    profilePattern?: StringNullableFilter<"AssessmentResult"> | string | null
+    consistencyScore?: FloatNullableFilter<"AssessmentResult"> | number | null
+    attentionScore?: FloatNullableFilter<"AssessmentResult"> | number | null
+    validationFlags?: JsonNullableFilter<"AssessmentResult">
+    generationCost?: FloatNullableFilter<"AssessmentResult"> | number | null
+    generationModel?: StringNullableFilter<"AssessmentResult"> | string | null
+    createdAt?: DateTimeFilter<"AssessmentResult"> | Date | string
+    updatedAt?: DateTimeFilter<"AssessmentResult"> | Date | string
+    session?: XOR<AssessmentSessionScalarRelationFilter, AssessmentSessionWhereInput>
+  }
+
+  export type AssessmentResultOrderByWithRelationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    clerkUserId?: SortOrderInput | SortOrder
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    narrative?: SortOrder
+    archetype?: SortOrderInput | SortOrder
+    profilePattern?: SortOrderInput | SortOrder
+    consistencyScore?: SortOrderInput | SortOrder
+    attentionScore?: SortOrderInput | SortOrder
+    validationFlags?: SortOrderInput | SortOrder
+    generationCost?: SortOrderInput | SortOrder
+    generationModel?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    session?: AssessmentSessionOrderByWithRelationInput
+  }
+
+  export type AssessmentResultWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    sessionId?: string
+    AND?: AssessmentResultWhereInput | AssessmentResultWhereInput[]
+    OR?: AssessmentResultWhereInput[]
+    NOT?: AssessmentResultWhereInput | AssessmentResultWhereInput[]
+    userId?: StringNullableFilter<"AssessmentResult"> | string | null
+    clerkUserId?: StringNullableFilter<"AssessmentResult"> | string | null
+    scoreLumen?: FloatFilter<"AssessmentResult"> | number
+    scoreAether?: FloatFilter<"AssessmentResult"> | number
+    scoreOrpheus?: FloatFilter<"AssessmentResult"> | number
+    scoreOrin?: FloatFilter<"AssessmentResult"> | number
+    scoreLyra?: FloatFilter<"AssessmentResult"> | number
+    scoreVara?: FloatFilter<"AssessmentResult"> | number
+    scoreChronos?: FloatFilter<"AssessmentResult"> | number
+    scoreKael?: FloatFilter<"AssessmentResult"> | number
+    narrative?: JsonFilter<"AssessmentResult">
+    archetype?: StringNullableFilter<"AssessmentResult"> | string | null
+    profilePattern?: StringNullableFilter<"AssessmentResult"> | string | null
+    consistencyScore?: FloatNullableFilter<"AssessmentResult"> | number | null
+    attentionScore?: FloatNullableFilter<"AssessmentResult"> | number | null
+    validationFlags?: JsonNullableFilter<"AssessmentResult">
+    generationCost?: FloatNullableFilter<"AssessmentResult"> | number | null
+    generationModel?: StringNullableFilter<"AssessmentResult"> | string | null
+    createdAt?: DateTimeFilter<"AssessmentResult"> | Date | string
+    updatedAt?: DateTimeFilter<"AssessmentResult"> | Date | string
+    session?: XOR<AssessmentSessionScalarRelationFilter, AssessmentSessionWhereInput>
+  }, "id" | "sessionId">
+
+  export type AssessmentResultOrderByWithAggregationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    clerkUserId?: SortOrderInput | SortOrder
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    narrative?: SortOrder
+    archetype?: SortOrderInput | SortOrder
+    profilePattern?: SortOrderInput | SortOrder
+    consistencyScore?: SortOrderInput | SortOrder
+    attentionScore?: SortOrderInput | SortOrder
+    validationFlags?: SortOrderInput | SortOrder
+    generationCost?: SortOrderInput | SortOrder
+    generationModel?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AssessmentResultCountOrderByAggregateInput
+    _avg?: AssessmentResultAvgOrderByAggregateInput
+    _max?: AssessmentResultMaxOrderByAggregateInput
+    _min?: AssessmentResultMinOrderByAggregateInput
+    _sum?: AssessmentResultSumOrderByAggregateInput
+  }
+
+  export type AssessmentResultScalarWhereWithAggregatesInput = {
+    AND?: AssessmentResultScalarWhereWithAggregatesInput | AssessmentResultScalarWhereWithAggregatesInput[]
+    OR?: AssessmentResultScalarWhereWithAggregatesInput[]
+    NOT?: AssessmentResultScalarWhereWithAggregatesInput | AssessmentResultScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AssessmentResult"> | string
+    sessionId?: StringWithAggregatesFilter<"AssessmentResult"> | string
+    userId?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
+    clerkUserId?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
+    scoreLumen?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreAether?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreOrpheus?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreOrin?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreLyra?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreVara?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreChronos?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    scoreKael?: FloatWithAggregatesFilter<"AssessmentResult"> | number
+    narrative?: JsonWithAggregatesFilter<"AssessmentResult">
+    archetype?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
+    profilePattern?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
+    consistencyScore?: FloatNullableWithAggregatesFilter<"AssessmentResult"> | number | null
+    attentionScore?: FloatNullableWithAggregatesFilter<"AssessmentResult"> | number | null
+    validationFlags?: JsonNullableWithAggregatesFilter<"AssessmentResult">
+    generationCost?: FloatNullableWithAggregatesFilter<"AssessmentResult"> | number | null
+    generationModel?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AssessmentResult"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AssessmentResult"> | Date | string
+  }
+
+  export type AssessmentTemplateWhereInput = {
+    AND?: AssessmentTemplateWhereInput | AssessmentTemplateWhereInput[]
+    OR?: AssessmentTemplateWhereInput[]
+    NOT?: AssessmentTemplateWhereInput | AssessmentTemplateWhereInput[]
+    id?: StringFilter<"AssessmentTemplate"> | string
+    name?: StringFilter<"AssessmentTemplate"> | string
+    description?: StringNullableFilter<"AssessmentTemplate"> | string | null
+    version?: StringFilter<"AssessmentTemplate"> | string
+    items?: JsonFilter<"AssessmentTemplate">
+    dimensions?: JsonFilter<"AssessmentTemplate">
+    minItemsPerDimension?: IntFilter<"AssessmentTemplate"> | number
+    maxTotalItems?: IntFilter<"AssessmentTemplate"> | number
+    uncertaintyThreshold?: FloatFilter<"AssessmentTemplate"> | number
+    isActive?: BoolFilter<"AssessmentTemplate"> | boolean
+    createdAt?: DateTimeFilter<"AssessmentTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"AssessmentTemplate"> | Date | string
+  }
+
+  export type AssessmentTemplateOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    version?: SortOrder
+    items?: SortOrder
+    dimensions?: SortOrder
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentTemplateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name?: string
+    AND?: AssessmentTemplateWhereInput | AssessmentTemplateWhereInput[]
+    OR?: AssessmentTemplateWhereInput[]
+    NOT?: AssessmentTemplateWhereInput | AssessmentTemplateWhereInput[]
+    description?: StringNullableFilter<"AssessmentTemplate"> | string | null
+    version?: StringFilter<"AssessmentTemplate"> | string
+    items?: JsonFilter<"AssessmentTemplate">
+    dimensions?: JsonFilter<"AssessmentTemplate">
+    minItemsPerDimension?: IntFilter<"AssessmentTemplate"> | number
+    maxTotalItems?: IntFilter<"AssessmentTemplate"> | number
+    uncertaintyThreshold?: FloatFilter<"AssessmentTemplate"> | number
+    isActive?: BoolFilter<"AssessmentTemplate"> | boolean
+    createdAt?: DateTimeFilter<"AssessmentTemplate"> | Date | string
+    updatedAt?: DateTimeFilter<"AssessmentTemplate"> | Date | string
+  }, "id" | "name">
+
+  export type AssessmentTemplateOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    version?: SortOrder
+    items?: SortOrder
+    dimensions?: SortOrder
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AssessmentTemplateCountOrderByAggregateInput
+    _avg?: AssessmentTemplateAvgOrderByAggregateInput
+    _max?: AssessmentTemplateMaxOrderByAggregateInput
+    _min?: AssessmentTemplateMinOrderByAggregateInput
+    _sum?: AssessmentTemplateSumOrderByAggregateInput
+  }
+
+  export type AssessmentTemplateScalarWhereWithAggregatesInput = {
+    AND?: AssessmentTemplateScalarWhereWithAggregatesInput | AssessmentTemplateScalarWhereWithAggregatesInput[]
+    OR?: AssessmentTemplateScalarWhereWithAggregatesInput[]
+    NOT?: AssessmentTemplateScalarWhereWithAggregatesInput | AssessmentTemplateScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AssessmentTemplate"> | string
+    name?: StringWithAggregatesFilter<"AssessmentTemplate"> | string
+    description?: StringNullableWithAggregatesFilter<"AssessmentTemplate"> | string | null
+    version?: StringWithAggregatesFilter<"AssessmentTemplate"> | string
+    items?: JsonWithAggregatesFilter<"AssessmentTemplate">
+    dimensions?: JsonWithAggregatesFilter<"AssessmentTemplate">
+    minItemsPerDimension?: IntWithAggregatesFilter<"AssessmentTemplate"> | number
+    maxTotalItems?: IntWithAggregatesFilter<"AssessmentTemplate"> | number
+    uncertaintyThreshold?: FloatWithAggregatesFilter<"AssessmentTemplate"> | number
+    isActive?: BoolWithAggregatesFilter<"AssessmentTemplate"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"AssessmentTemplate"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AssessmentTemplate"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -14590,6 +18917,408 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AssessmentSessionCreateInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    status?: string
+    responses: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    completedAt?: Date | string | null
+    result?: AssessmentResultCreateNestedOneWithoutSessionInput
+  }
+
+  export type AssessmentSessionUncheckedCreateInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    status?: string
+    responses: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    completedAt?: Date | string | null
+    result?: AssessmentResultUncheckedCreateNestedOneWithoutSessionInput
+  }
+
+  export type AssessmentSessionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    responses?: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: IntFieldUpdateOperationsInput | number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    result?: AssessmentResultUpdateOneWithoutSessionNestedInput
+  }
+
+  export type AssessmentSessionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    responses?: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: IntFieldUpdateOperationsInput | number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    result?: AssessmentResultUncheckedUpdateOneWithoutSessionNestedInput
+  }
+
+  export type AssessmentSessionCreateManyInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    status?: string
+    responses: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AssessmentSessionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    responses?: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: IntFieldUpdateOperationsInput | number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AssessmentSessionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    responses?: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: IntFieldUpdateOperationsInput | number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AssessmentResultCreateInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: JsonNullValueInput | InputJsonValue
+    archetype?: string | null
+    profilePattern?: string | null
+    consistencyScore?: number | null
+    attentionScore?: number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: number | null
+    generationModel?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    session: AssessmentSessionCreateNestedOneWithoutResultInput
+  }
+
+  export type AssessmentResultUncheckedCreateInput = {
+    id?: string
+    sessionId: string
+    userId?: string | null
+    clerkUserId?: string | null
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: JsonNullValueInput | InputJsonValue
+    archetype?: string | null
+    profilePattern?: string | null
+    consistencyScore?: number | null
+    attentionScore?: number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: number | null
+    generationModel?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentResultUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    scoreLumen?: FloatFieldUpdateOperationsInput | number
+    scoreAether?: FloatFieldUpdateOperationsInput | number
+    scoreOrpheus?: FloatFieldUpdateOperationsInput | number
+    scoreOrin?: FloatFieldUpdateOperationsInput | number
+    scoreLyra?: FloatFieldUpdateOperationsInput | number
+    scoreVara?: FloatFieldUpdateOperationsInput | number
+    scoreChronos?: FloatFieldUpdateOperationsInput | number
+    scoreKael?: FloatFieldUpdateOperationsInput | number
+    narrative?: JsonNullValueInput | InputJsonValue
+    archetype?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePattern?: NullableStringFieldUpdateOperationsInput | string | null
+    consistencyScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    attentionScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    generationModel?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    session?: AssessmentSessionUpdateOneRequiredWithoutResultNestedInput
+  }
+
+  export type AssessmentResultUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    scoreLumen?: FloatFieldUpdateOperationsInput | number
+    scoreAether?: FloatFieldUpdateOperationsInput | number
+    scoreOrpheus?: FloatFieldUpdateOperationsInput | number
+    scoreOrin?: FloatFieldUpdateOperationsInput | number
+    scoreLyra?: FloatFieldUpdateOperationsInput | number
+    scoreVara?: FloatFieldUpdateOperationsInput | number
+    scoreChronos?: FloatFieldUpdateOperationsInput | number
+    scoreKael?: FloatFieldUpdateOperationsInput | number
+    narrative?: JsonNullValueInput | InputJsonValue
+    archetype?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePattern?: NullableStringFieldUpdateOperationsInput | string | null
+    consistencyScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    attentionScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    generationModel?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentResultCreateManyInput = {
+    id?: string
+    sessionId: string
+    userId?: string | null
+    clerkUserId?: string | null
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: JsonNullValueInput | InputJsonValue
+    archetype?: string | null
+    profilePattern?: string | null
+    consistencyScore?: number | null
+    attentionScore?: number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: number | null
+    generationModel?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentResultUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    scoreLumen?: FloatFieldUpdateOperationsInput | number
+    scoreAether?: FloatFieldUpdateOperationsInput | number
+    scoreOrpheus?: FloatFieldUpdateOperationsInput | number
+    scoreOrin?: FloatFieldUpdateOperationsInput | number
+    scoreLyra?: FloatFieldUpdateOperationsInput | number
+    scoreVara?: FloatFieldUpdateOperationsInput | number
+    scoreChronos?: FloatFieldUpdateOperationsInput | number
+    scoreKael?: FloatFieldUpdateOperationsInput | number
+    narrative?: JsonNullValueInput | InputJsonValue
+    archetype?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePattern?: NullableStringFieldUpdateOperationsInput | string | null
+    consistencyScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    attentionScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    generationModel?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentResultUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    scoreLumen?: FloatFieldUpdateOperationsInput | number
+    scoreAether?: FloatFieldUpdateOperationsInput | number
+    scoreOrpheus?: FloatFieldUpdateOperationsInput | number
+    scoreOrin?: FloatFieldUpdateOperationsInput | number
+    scoreLyra?: FloatFieldUpdateOperationsInput | number
+    scoreVara?: FloatFieldUpdateOperationsInput | number
+    scoreChronos?: FloatFieldUpdateOperationsInput | number
+    scoreKael?: FloatFieldUpdateOperationsInput | number
+    narrative?: JsonNullValueInput | InputJsonValue
+    archetype?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePattern?: NullableStringFieldUpdateOperationsInput | string | null
+    consistencyScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    attentionScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    generationModel?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentTemplateCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    version?: string
+    items: JsonNullValueInput | InputJsonValue
+    dimensions: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: number
+    maxTotalItems?: number
+    uncertaintyThreshold?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentTemplateUncheckedCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    version?: string
+    items: JsonNullValueInput | InputJsonValue
+    dimensions: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: number
+    maxTotalItems?: number
+    uncertaintyThreshold?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentTemplateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: StringFieldUpdateOperationsInput | string
+    items?: JsonNullValueInput | InputJsonValue
+    dimensions?: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: IntFieldUpdateOperationsInput | number
+    maxTotalItems?: IntFieldUpdateOperationsInput | number
+    uncertaintyThreshold?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentTemplateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: StringFieldUpdateOperationsInput | string
+    items?: JsonNullValueInput | InputJsonValue
+    dimensions?: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: IntFieldUpdateOperationsInput | number
+    maxTotalItems?: IntFieldUpdateOperationsInput | number
+    uncertaintyThreshold?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentTemplateCreateManyInput = {
+    id?: string
+    name: string
+    description?: string | null
+    version?: string
+    items: JsonNullValueInput | InputJsonValue
+    dimensions: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: number
+    maxTotalItems?: number
+    uncertaintyThreshold?: number
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentTemplateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: StringFieldUpdateOperationsInput | string
+    items?: JsonNullValueInput | InputJsonValue
+    dimensions?: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: IntFieldUpdateOperationsInput | number
+    maxTotalItems?: IntFieldUpdateOperationsInput | number
+    uncertaintyThreshold?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentTemplateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: StringFieldUpdateOperationsInput | string
+    items?: JsonNullValueInput | InputJsonValue
+    dimensions?: JsonNullValueInput | InputJsonValue
+    minItemsPerDimension?: IntFieldUpdateOperationsInput | number
+    maxTotalItems?: IntFieldUpdateOperationsInput | number
+    uncertaintyThreshold?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -15270,6 +19999,269 @@ export namespace Prisma {
     order?: SortOrder
   }
 
+  export type AssessmentResultNullableScalarRelationFilter = {
+    is?: AssessmentResultWhereInput | null
+    isNot?: AssessmentResultWhereInput | null
+  }
+
+  export type AssessmentSessionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    clerkUserId?: SortOrder
+    status?: SortOrder
+    responses?: SortOrder
+    demographics?: SortOrder
+    pendingQuestions?: SortOrder
+    answerHistory?: SortOrder
+    backNavigationCount?: SortOrder
+    backNavigationLog?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AssessmentSessionAvgOrderByAggregateInput = {
+    backNavigationCount?: SortOrder
+  }
+
+  export type AssessmentSessionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    clerkUserId?: SortOrder
+    status?: SortOrder
+    backNavigationCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AssessmentSessionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    clerkUserId?: SortOrder
+    status?: SortOrder
+    backNavigationCount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AssessmentSessionSumOrderByAggregateInput = {
+    backNavigationCount?: SortOrder
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type AssessmentSessionScalarRelationFilter = {
+    is?: AssessmentSessionWhereInput
+    isNot?: AssessmentSessionWhereInput
+  }
+
+  export type AssessmentResultCountOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    userId?: SortOrder
+    clerkUserId?: SortOrder
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    narrative?: SortOrder
+    archetype?: SortOrder
+    profilePattern?: SortOrder
+    consistencyScore?: SortOrder
+    attentionScore?: SortOrder
+    validationFlags?: SortOrder
+    generationCost?: SortOrder
+    generationModel?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentResultAvgOrderByAggregateInput = {
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    consistencyScore?: SortOrder
+    attentionScore?: SortOrder
+    generationCost?: SortOrder
+  }
+
+  export type AssessmentResultMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    userId?: SortOrder
+    clerkUserId?: SortOrder
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    archetype?: SortOrder
+    profilePattern?: SortOrder
+    consistencyScore?: SortOrder
+    attentionScore?: SortOrder
+    generationCost?: SortOrder
+    generationModel?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentResultMinOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    userId?: SortOrder
+    clerkUserId?: SortOrder
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    archetype?: SortOrder
+    profilePattern?: SortOrder
+    consistencyScore?: SortOrder
+    attentionScore?: SortOrder
+    generationCost?: SortOrder
+    generationModel?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentResultSumOrderByAggregateInput = {
+    scoreLumen?: SortOrder
+    scoreAether?: SortOrder
+    scoreOrpheus?: SortOrder
+    scoreOrin?: SortOrder
+    scoreLyra?: SortOrder
+    scoreVara?: SortOrder
+    scoreChronos?: SortOrder
+    scoreKael?: SortOrder
+    consistencyScore?: SortOrder
+    attentionScore?: SortOrder
+    generationCost?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type AssessmentTemplateCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    version?: SortOrder
+    items?: SortOrder
+    dimensions?: SortOrder
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentTemplateAvgOrderByAggregateInput = {
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+  }
+
+  export type AssessmentTemplateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    version?: SortOrder
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentTemplateMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    version?: SortOrder
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AssessmentTemplateSumOrderByAggregateInput = {
+    minItemsPerDimension?: SortOrder
+    maxTotalItems?: SortOrder
+    uncertaintyThreshold?: SortOrder
+  }
+
   export type InviteLinkCreateNestedManyWithoutInviterInput = {
     create?: XOR<InviteLinkCreateWithoutInviterInput, InviteLinkUncheckedCreateWithoutInviterInput> | InviteLinkCreateWithoutInviterInput[] | InviteLinkUncheckedCreateWithoutInviterInput[]
     connectOrCreate?: InviteLinkCreateOrConnectWithoutInviterInput | InviteLinkCreateOrConnectWithoutInviterInput[]
@@ -15802,6 +20794,68 @@ export namespace Prisma {
     update?: XOR<XOR<QuestionnaireSectionUpdateToOneWithWhereWithoutCheckpointsInput, QuestionnaireSectionUpdateWithoutCheckpointsInput>, QuestionnaireSectionUncheckedUpdateWithoutCheckpointsInput>
   }
 
+  export type AssessmentResultCreateNestedOneWithoutSessionInput = {
+    create?: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
+    connectOrCreate?: AssessmentResultCreateOrConnectWithoutSessionInput
+    connect?: AssessmentResultWhereUniqueInput
+  }
+
+  export type AssessmentResultUncheckedCreateNestedOneWithoutSessionInput = {
+    create?: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
+    connectOrCreate?: AssessmentResultCreateOrConnectWithoutSessionInput
+    connect?: AssessmentResultWhereUniqueInput
+  }
+
+  export type AssessmentResultUpdateOneWithoutSessionNestedInput = {
+    create?: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
+    connectOrCreate?: AssessmentResultCreateOrConnectWithoutSessionInput
+    upsert?: AssessmentResultUpsertWithoutSessionInput
+    disconnect?: AssessmentResultWhereInput | boolean
+    delete?: AssessmentResultWhereInput | boolean
+    connect?: AssessmentResultWhereUniqueInput
+    update?: XOR<XOR<AssessmentResultUpdateToOneWithWhereWithoutSessionInput, AssessmentResultUpdateWithoutSessionInput>, AssessmentResultUncheckedUpdateWithoutSessionInput>
+  }
+
+  export type AssessmentResultUncheckedUpdateOneWithoutSessionNestedInput = {
+    create?: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
+    connectOrCreate?: AssessmentResultCreateOrConnectWithoutSessionInput
+    upsert?: AssessmentResultUpsertWithoutSessionInput
+    disconnect?: AssessmentResultWhereInput | boolean
+    delete?: AssessmentResultWhereInput | boolean
+    connect?: AssessmentResultWhereUniqueInput
+    update?: XOR<XOR<AssessmentResultUpdateToOneWithWhereWithoutSessionInput, AssessmentResultUpdateWithoutSessionInput>, AssessmentResultUncheckedUpdateWithoutSessionInput>
+  }
+
+  export type AssessmentSessionCreateNestedOneWithoutResultInput = {
+    create?: XOR<AssessmentSessionCreateWithoutResultInput, AssessmentSessionUncheckedCreateWithoutResultInput>
+    connectOrCreate?: AssessmentSessionCreateOrConnectWithoutResultInput
+    connect?: AssessmentSessionWhereUniqueInput
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type AssessmentSessionUpdateOneRequiredWithoutResultNestedInput = {
+    create?: XOR<AssessmentSessionCreateWithoutResultInput, AssessmentSessionUncheckedCreateWithoutResultInput>
+    connectOrCreate?: AssessmentSessionCreateOrConnectWithoutResultInput
+    upsert?: AssessmentSessionUpsertWithoutResultInput
+    connect?: AssessmentSessionWhereUniqueInput
+    update?: XOR<XOR<AssessmentSessionUpdateToOneWithWhereWithoutResultInput, AssessmentSessionUpdateWithoutResultInput>, AssessmentSessionUncheckedUpdateWithoutResultInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -16047,6 +21101,38 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type InviteLinkCreateWithoutInviterInput = {
@@ -17058,6 +22144,202 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     questions?: QuestionnaireQuestionUncheckedUpdateManyWithoutSectionNestedInput
+  }
+
+  export type AssessmentResultCreateWithoutSessionInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: JsonNullValueInput | InputJsonValue
+    archetype?: string | null
+    profilePattern?: string | null
+    consistencyScore?: number | null
+    attentionScore?: number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: number | null
+    generationModel?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentResultUncheckedCreateWithoutSessionInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    scoreLumen: number
+    scoreAether: number
+    scoreOrpheus: number
+    scoreOrin: number
+    scoreLyra: number
+    scoreVara: number
+    scoreChronos: number
+    scoreKael: number
+    narrative: JsonNullValueInput | InputJsonValue
+    archetype?: string | null
+    profilePattern?: string | null
+    consistencyScore?: number | null
+    attentionScore?: number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: number | null
+    generationModel?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AssessmentResultCreateOrConnectWithoutSessionInput = {
+    where: AssessmentResultWhereUniqueInput
+    create: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
+  }
+
+  export type AssessmentResultUpsertWithoutSessionInput = {
+    update: XOR<AssessmentResultUpdateWithoutSessionInput, AssessmentResultUncheckedUpdateWithoutSessionInput>
+    create: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
+    where?: AssessmentResultWhereInput
+  }
+
+  export type AssessmentResultUpdateToOneWithWhereWithoutSessionInput = {
+    where?: AssessmentResultWhereInput
+    data: XOR<AssessmentResultUpdateWithoutSessionInput, AssessmentResultUncheckedUpdateWithoutSessionInput>
+  }
+
+  export type AssessmentResultUpdateWithoutSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    scoreLumen?: FloatFieldUpdateOperationsInput | number
+    scoreAether?: FloatFieldUpdateOperationsInput | number
+    scoreOrpheus?: FloatFieldUpdateOperationsInput | number
+    scoreOrin?: FloatFieldUpdateOperationsInput | number
+    scoreLyra?: FloatFieldUpdateOperationsInput | number
+    scoreVara?: FloatFieldUpdateOperationsInput | number
+    scoreChronos?: FloatFieldUpdateOperationsInput | number
+    scoreKael?: FloatFieldUpdateOperationsInput | number
+    narrative?: JsonNullValueInput | InputJsonValue
+    archetype?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePattern?: NullableStringFieldUpdateOperationsInput | string | null
+    consistencyScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    attentionScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    generationModel?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentResultUncheckedUpdateWithoutSessionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    scoreLumen?: FloatFieldUpdateOperationsInput | number
+    scoreAether?: FloatFieldUpdateOperationsInput | number
+    scoreOrpheus?: FloatFieldUpdateOperationsInput | number
+    scoreOrin?: FloatFieldUpdateOperationsInput | number
+    scoreLyra?: FloatFieldUpdateOperationsInput | number
+    scoreVara?: FloatFieldUpdateOperationsInput | number
+    scoreChronos?: FloatFieldUpdateOperationsInput | number
+    scoreKael?: FloatFieldUpdateOperationsInput | number
+    narrative?: JsonNullValueInput | InputJsonValue
+    archetype?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePattern?: NullableStringFieldUpdateOperationsInput | string | null
+    consistencyScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    attentionScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    validationFlags?: NullableJsonNullValueInput | InputJsonValue
+    generationCost?: NullableFloatFieldUpdateOperationsInput | number | null
+    generationModel?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AssessmentSessionCreateWithoutResultInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    status?: string
+    responses: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AssessmentSessionUncheckedCreateWithoutResultInput = {
+    id?: string
+    userId?: string | null
+    clerkUserId?: string | null
+    status?: string
+    responses: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AssessmentSessionCreateOrConnectWithoutResultInput = {
+    where: AssessmentSessionWhereUniqueInput
+    create: XOR<AssessmentSessionCreateWithoutResultInput, AssessmentSessionUncheckedCreateWithoutResultInput>
+  }
+
+  export type AssessmentSessionUpsertWithoutResultInput = {
+    update: XOR<AssessmentSessionUpdateWithoutResultInput, AssessmentSessionUncheckedUpdateWithoutResultInput>
+    create: XOR<AssessmentSessionCreateWithoutResultInput, AssessmentSessionUncheckedCreateWithoutResultInput>
+    where?: AssessmentSessionWhereInput
+  }
+
+  export type AssessmentSessionUpdateToOneWithWhereWithoutResultInput = {
+    where?: AssessmentSessionWhereInput
+    data: XOR<AssessmentSessionUpdateWithoutResultInput, AssessmentSessionUncheckedUpdateWithoutResultInput>
+  }
+
+  export type AssessmentSessionUpdateWithoutResultInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    responses?: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: IntFieldUpdateOperationsInput | number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AssessmentSessionUncheckedUpdateWithoutResultInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    responses?: JsonNullValueInput | InputJsonValue
+    demographics?: NullableJsonNullValueInput | InputJsonValue
+    pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
+    answerHistory?: NullableJsonNullValueInput | InputJsonValue
+    backNavigationCount?: IntFieldUpdateOperationsInput | number
+    backNavigationLog?: NullableJsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type InviteLinkCreateManyInviterInput = {

@@ -215,6 +215,63 @@ exports.Prisma.QuestionnaireCheckpointScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AssessmentSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  clerkUserId: 'clerkUserId',
+  status: 'status',
+  responses: 'responses',
+  demographics: 'demographics',
+  pendingQuestions: 'pendingQuestions',
+  answerHistory: 'answerHistory',
+  backNavigationCount: 'backNavigationCount',
+  backNavigationLog: 'backNavigationLog',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.AssessmentResultScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  clerkUserId: 'clerkUserId',
+  scoreLumen: 'scoreLumen',
+  scoreAether: 'scoreAether',
+  scoreOrpheus: 'scoreOrpheus',
+  scoreOrin: 'scoreOrin',
+  scoreLyra: 'scoreLyra',
+  scoreVara: 'scoreVara',
+  scoreChronos: 'scoreChronos',
+  scoreKael: 'scoreKael',
+  narrative: 'narrative',
+  archetype: 'archetype',
+  profilePattern: 'profilePattern',
+  consistencyScore: 'consistencyScore',
+  attentionScore: 'attentionScore',
+  validationFlags: 'validationFlags',
+  generationCost: 'generationCost',
+  generationModel: 'generationModel',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AssessmentTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  version: 'version',
+  items: 'items',
+  dimensions: 'dimensions',
+  minItemsPerDimension: 'minItemsPerDimension',
+  maxTotalItems: 'maxTotalItems',
+  uncertaintyThreshold: 'uncertaintyThreshold',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -256,7 +313,10 @@ exports.Prisma.ModelName = {
   QuestionnaireQuestion: 'QuestionnaireQuestion',
   QuestionnaireSession: 'QuestionnaireSession',
   QuestionnaireAnswer: 'QuestionnaireAnswer',
-  QuestionnaireCheckpoint: 'QuestionnaireCheckpoint'
+  QuestionnaireCheckpoint: 'QuestionnaireCheckpoint',
+  AssessmentSession: 'AssessmentSession',
+  AssessmentResult: 'AssessmentResult',
+  AssessmentTemplate: 'AssessmentTemplate'
 };
 
 /**

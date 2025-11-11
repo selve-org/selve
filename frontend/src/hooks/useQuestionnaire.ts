@@ -86,14 +86,67 @@ export function useQuestionnaire() {
 
       // Check if we have existing session to restore
       if (existingSessionId) {
-        console.log("📦 Restoring existing session:", existingSessionId);
-        setSessionId(existingSessionId);
+        console.log("📦 Attempting to restore session:", existingSessionId);
         
-        // TODO: Add API endpoint to restore session state from backend
-        // For now, we'll continue with existing session ID and let the frontend rebuild state
+        try {
+          // Get auth token if user is signed in
+          const token = await getToken();
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+          };
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+          
+          // Try to restore session from backend
+          const restoreResponse = await fetch(
+            `${API_BASE}/api/assessment/session/${existingSessionId}`,
+            { headers }
+          );
+
+          if (restoreResponse.ok) {
+            const sessionData = await restoreResponse.json();
+            
+            // Check if session can be resumed
+            if (sessionData.can_resume && sessionData.status === "in-progress") {
+              console.log("✅ Session restored successfully:", {
+                progress: sessionData.progress,
+                questionsAnswered: sessionData.questions_answered,
+              });
+              
+              setSessionId(existingSessionId);
+              
+              // Session exists and is in progress - user can continue where they left off
+              // For now, we'll restart the session (they'll skip through answered questions)
+              // TODO: Restore exact state including current question and queue
+              
+              // Continue with normal initialization using existing session
+              setState((prev) => ({
+                ...prev,
+                progress: {
+                  current: sessionData.questions_answered || 0,
+                  total: sessionData.total_questions || 44,
+                  percentage: sessionData.progress || 0,
+                },
+              }));
+            } else {
+              console.log("⚠️ Session exists but is completed or abandoned, starting new session");
+              // Session is complete/abandoned - start a new one
+              updateProgress({ sessionId: undefined });
+            }
+          } else {
+            console.log("⚠️ Session not found in database, starting new session");
+            // Session doesn't exist - start new one
+            updateProgress({ sessionId: undefined });
+          }
+        } catch (restoreError) {
+          console.warn("Failed to restore session, starting new:", restoreError);
+          // If restore fails, proceed with new session
+          updateProgress({ sessionId: undefined });
+        }
       }
 
-      // Start assessment with SELVE backend
+      // Start assessment with SELVE backend (new or existing session)
       // Get auth token if user is signed in
       const token = await getToken();
       

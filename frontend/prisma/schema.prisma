@@ -130,3 +130,86 @@ model QuestionnaireCheckpoint {
   createdAt   DateTime             @default(now())
   section     QuestionnaireSection @relation(fields: [sectionId], references: [id])
 }
+
+// ============================================================================
+// SELVE Assessment Models - Psychology Profiling System
+// ============================================================================
+
+model AssessmentSession {
+  id                   String              @id @default(cuid())
+  userId               String?
+  clerkUserId          String?             // Clerk user ID for authenticated users
+  status               String              @default("in-progress") // "in-progress", "completed", "abandoned"
+  responses            Json                // Personality question responses (question_id -> score)
+  demographics         Json?               // Demographic data (age, country, etc.)
+  pendingQuestions     Json?               // Set of question IDs currently shown to user
+  answerHistory        Json?               // Ordered list of question IDs as answered
+  backNavigationCount  Int                 @default(0)
+  backNavigationLog    Json?               // Detailed log of back navigation behavior
+  metadata             Json?               // Additional session metadata
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  completedAt          DateTime?
+  result               AssessmentResult?   // One-to-one relation to results
+}
+
+model AssessmentResult {
+  id                   String              @id @default(cuid())
+  sessionId            String              @unique
+  userId               String?
+  clerkUserId          String?             // Clerk user ID for authenticated users
+  
+  // Dimension Scores (0-100)
+  scoreLumen           Float               // Mindful Curiosity
+  scoreAether          Float               // Rational Reflection
+  scoreOrpheus         Float               // Compassionate Connection
+  scoreOrin            Float               // Structured Harmony
+  scoreLyra            Float               // Creative Expression
+  scoreVara            Float               // Purposeful Commitment
+  scoreChronos         Float               // Adaptive Spontaneity
+  scoreKael            Float               // Bold Resilience
+  
+  // Narrative
+  narrative            Json                // Complete OpenAI-generated narrative
+  archetype            String?             // Primary archetype (e.g., "The Pioneer")
+  profilePattern       String?             // Profile pattern (e.g., "Visionary Leader")
+  
+  // Validation & Quality
+  consistencyScore     Float?              // Response consistency (0-100)
+  attentionScore       Float?              // Attention check score (0-100)
+  validationFlags      Json?               // Any quality flags
+  
+  // Cost tracking
+  generationCost       Float?              // OpenAI API cost in USD
+  generationModel      String?             // Model used (e.g., "gpt-4o-mini")
+  
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  
+  session              AssessmentSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([clerkUserId])
+}
+
+model AssessmentTemplate {
+  id                   String              @id @default(uuid())
+  name                 String              @unique
+  description          String?
+  version              String              @default("1.0")
+  
+  // Item Pool
+  items                Json                // Complete item pool with correlations
+  dimensions           Json                // Dimension definitions
+  
+  // Configuration
+  minItemsPerDimension Int                 @default(2)
+  maxTotalItems        Int                 @default(54)
+  uncertaintyThreshold Float               @default(0.3)
+  
+  isActive             Boolean             @default(true)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  
+  @@index([isActive])
+}
