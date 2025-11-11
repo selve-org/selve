@@ -11,7 +11,6 @@ import httpx
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
-from functools import lru_cache
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,18 +25,22 @@ class ClerkAuth:
     def __init__(self):
         self.clerk_domain = os.getenv("CLERK_DOMAIN")
         self.clerk_secret_key = os.getenv("CLERK_SECRET_KEY")
+        self._jwks_cache = None  # Simple cache for JWKS
         
         if not self.clerk_domain:
             logger.warning("CLERK_DOMAIN not set - authentication will fail")
         if not self.clerk_secret_key:
             logger.warning("CLERK_SECRET_KEY not set - authentication will fail")
     
-    @lru_cache(maxsize=1)
     async def get_jwks(self) -> dict:
         """
         Fetch Clerk's JWKS (JSON Web Key Set) for token verification.
         Cached to avoid repeated API calls.
         """
+        # Return cached JWKS if available
+        if self._jwks_cache:
+            return self._jwks_cache
+        
         if not self.clerk_domain:
             raise HTTPException(status_code=500, detail="Clerk domain not configured")
         
@@ -47,7 +50,8 @@ class ClerkAuth:
             async with httpx.AsyncClient() as client:
                 response = await client.get(jwks_url)
                 response.raise_for_status()
-                return response.json()
+                self._jwks_cache = response.json()  # Cache the result
+                return self._jwks_cache
         except Exception as e:
             logger.error(f"Failed to fetch JWKS: {e}")
             raise HTTPException(status_code=500, detail="Failed to fetch authentication keys")

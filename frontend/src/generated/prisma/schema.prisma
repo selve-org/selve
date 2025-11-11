@@ -87,7 +87,8 @@ model QuestionnaireQuestion {
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
   section      QuestionnaireSection? @relation(fields: [sectionId], references: [id])
-  // Temporarily removed relation to QuestionnaireAnswer (placeholder mode)
+
+  // TODO: RESTORE AFTER PHASE 2 - Temporarily removed for placeholder question testing
   // answers      QuestionnaireAnswer[]
 }
 
@@ -111,7 +112,9 @@ model QuestionnaireAnswer {
   createdAt  DateTime             @default(now())
   updatedAt  DateTime             @updatedAt
   session    QuestionnaireSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  // Temporarily removed foreign key to QuestionnaireQuestion to allow placeholder questions
+
+  // TODO: RESTORE AFTER PHASE 2 - Foreign key removed to allow placeholder questions from FastAPI
+  // Without this, we get P2003 error when saving answers for questions not in DB
   // question   QuestionnaireQuestion @relation(fields: [questionId], references: [id])
 
   @@unique([sessionId, questionId])
