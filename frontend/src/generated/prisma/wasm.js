@@ -164,57 +164,6 @@ exports.Prisma.InviteLinkScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.QuestionnaireSectionScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  description: 'description',
-  order: 'order',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.QuestionnaireQuestionScalarFieldEnum = {
-  id: 'id',
-  text: 'text',
-  description: 'description',
-  type: 'type',
-  renderConfig: 'renderConfig',
-  order: 'order',
-  isRequired: 'isRequired',
-  sectionId: 'sectionId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.QuestionnaireSessionScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  status: 'status',
-  currentStep: 'currentStep',
-  metadata: 'metadata',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  completedAt: 'completedAt'
-};
-
-exports.Prisma.QuestionnaireAnswerScalarFieldEnum = {
-  id: 'id',
-  sessionId: 'sessionId',
-  questionId: 'questionId',
-  answer: 'answer',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.QuestionnaireCheckpointScalarFieldEnum = {
-  id: 'id',
-  sectionId: 'sectionId',
-  title: 'title',
-  description: 'description',
-  order: 'order',
-  iconType: 'iconType',
-  createdAt: 'createdAt'
-};
-
 exports.Prisma.AssessmentSessionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -312,11 +261,6 @@ exports.Prisma.ModelName = {
   Question: 'Question',
   Response: 'Response',
   InviteLink: 'InviteLink',
-  QuestionnaireSection: 'QuestionnaireSection',
-  QuestionnaireQuestion: 'QuestionnaireQuestion',
-  QuestionnaireSession: 'QuestionnaireSession',
-  QuestionnaireAnswer: 'QuestionnaireAnswer',
-  QuestionnaireCheckpoint: 'QuestionnaireCheckpoint',
   AssessmentSession: 'AssessmentSession',
   AssessmentResult: 'AssessmentResult',
   AssessmentTemplate: 'AssessmentTemplate'
