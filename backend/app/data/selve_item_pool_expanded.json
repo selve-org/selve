@@ -4,7 +4,7 @@
       "item": "XExpr6",
       "correlation": 0.7898036425664714,
       "reversed": true,
-      "text": "I don't talk a lot.",
+      "text": "I don't talk a lot. At parties, you find yourself observing conversations from the sidelines rather than jumping in.",
       "source": "HEXACO"
     },
     {
@@ -124,7 +124,7 @@
       "item": "N8",
       "correlation": 0.6905763628540472,
       "reversed": true,
-      "text": "I have frequent mood swings."
+      "text": "You feel energized and positive one moment, then deflated and pessimistic an hour later without a major triggering event."
     },
     {
       "item": "N7",
@@ -136,13 +136,13 @@
       "item": "N1",
       "correlation": 0.647909600001181,
       "reversed": true,
-      "text": "I get stressed out easily."
+      "text": "I get stressed out easily. When multiple demands pile up, you feel your stress level rising faster than it seems to affect those around you."
     },
     {
       "item": "N9",
       "correlation": 0.6433962863793045,
       "reversed": true,
-      "text": "I get irritated easily."
+      "text": "I get irritated easily. Minor annoyances—someone chewing loudly, slow internet, traffic delays—affect you more than they probably should."
     },
     {
       "item": "N10",
@@ -154,7 +154,7 @@
       "item": "N3",
       "correlation": 0.5613345725230401,
       "reversed": true,
-      "text": "I worry about things."
+      "text": "I worry about things. For example, at night, concerns about tomorrow or next week often cycle through your mind, keeping you awake longer than you'd like."
     },
     {
       "item": "N5",
@@ -186,13 +186,13 @@
       "item": "A7",
       "correlation": 0.6187946082482052,
       "reversed": true,
-      "text": "I am not really interested in others."
+      "text": "I am not really interested in others. Keeping up with friends' life updates and personal news feels more like a social obligation than natural curiosity"
     },
     {
       "item": "A5",
       "correlation": 0.6104442140199234,
       "reversed": true,
-      "text": "I am not interested in other people's problems."
+      "text": "I am not interested in other people's problems. When someone vents about their difficulties, your first thought is 'I have my own issues to deal with' rather than deep concern for theirs."
     },
     {
       "item": "A8",
@@ -222,7 +222,7 @@
       "item": "A1",
       "correlation": 0.38781409535958555,
       "reversed": true,
-      "text": "I feel little concern for others."
+      "text": "I feel little concern for others. When hearing about someone's misfortune, you acknowledge it mentally but don't feel personally affected or compelled to help"
     }
   ],
   "ORIN": [
@@ -242,7 +242,7 @@
       "item": "C4",
       "correlation": 0.5440941449359278,
       "reversed": true,
-      "text": "I make a mess of things."
+      "text": "I make a mess of things. When you dive into a project, your workspace—or even your kitchen—quickly turns chaotic, with papers, tools, utensils or ingredients scattered everywhere until you’ve finished."
     },
     {
       "item": "C1",
@@ -266,7 +266,7 @@
       "item": "C8",
       "correlation": 0.4624837796279394,
       "reversed": true,
-      "text": "I shirk my duties."
+      "text": "I shirk my duties. When faced with tedious responsibilities, you find creative ways to postpone them or convince yourself they're not that urgent."
     },
     {
       "item": "C7",
@@ -334,7 +334,7 @@
       "item": "O4",
       "correlation": 0.43811559554320273,
       "reversed": true,
-      "text": "I am not interested in abstract ideas."
+      "text": "I am not interested in abstract ideas. You'd rather discuss practical matters and real-world applications than explore hypothetical scenarios or philosophical questions."
     },
     {
       "item": "O7",
@@ -354,19 +354,19 @@
       "item": "HMode5",
       "correlation": 0.6387030573490349,
       "reversed": true,
-      "text": "I would like to have more power than other people."
+      "text": "I would like to have more power than other people. You find yourself comparing your influence and authority to others, wanting to ensure you're higher in the hierarchy."
     },
     {
       "item": "HFair7",
       "correlation": 0.5818502173299451,
       "reversed": true,
-      "text": "I cheat to get ahead."
+      "text": "I cheat to get ahead. When there’s a chance to move ahead faster, even if it means cutting corners or breaking a few rules, you do it because you believe results matter more than how you get them."
     },
     {
       "item": "HGree10",
       "correlation": 0.5762478127603611,
       "reversed": true,
-      "text": "I am out for my own personal gain."
+      "text": "I am out for my own personal gain. In negotiations or collaborations, your primary consideration is 'What's in this for me?' rather than mutual benefit."
     },
     {
       "item": "HGree5",
@@ -378,7 +378,7 @@
       "item": "HMode6",
       "correlation": 0.5660484386696356,
       "reversed": true,
-      "text": "I believe that I am better than others."
+      "text": "I believe that I am better than others. Deep down, you feel that your judgment, taste, and capabilities are superior to most people you encounter."
     },
     {
       "item": "HSinc3",
@@ -408,7 +408,7 @@
       "item": "HMode9",
       "correlation": 0.4960540611472413,
       "reversed": true,
-      "text": "I am likely to show off if I get the chance."
+      "text": "I am likely to show off if I get the chance. When you've accomplished something or acquired something notable, you find ways to ensure others become aware of it."
     },
     {
       "item": "HFair1",
@@ -426,7 +426,7 @@
       "item": "HFair8",
       "correlation": 0.46952964442459655,
       "reversed": true,
-      "text": "I steal things."
+      "text": "I steal things. You've taken items that weren't yours—whether office supplies, small goods, or borrowed items you never returned—without much guilt."
     },
     {
       "item": "HGree6",
@@ -458,13 +458,13 @@
       "item": "APati7",
       "correlation": 0.7278751572771077,
       "reversed": true,
-      "text": "I get angry easily."
+      "text": "I get angry easily. It doesn't take much to ignite your temper—you go from calm to angry faster than most people you know."
     },
     {
       "item": "APati6",
       "correlation": 0.7231994349711445,
       "reversed": true,
-      "text": "I am easily annoyed."
+      "text": "I am easily annoyed. Throughout the day, small irritations—inefficiency, incompetence, minor inconveniences—accumulate and grate on you"
     },
     {
       "item": "APati8",
@@ -488,7 +488,7 @@
       "item": "AForg5",
       "correlation": 0.6327538723671904,
       "reversed": true,
-      "text": "I find it hard to forgive others."
+      "text": "I find it hard to forgive others. When someone wrongs you, the memory stays fresh and you struggle to let it go, even when they apologize"
     },
     {
       "item": "APati5",
@@ -512,7 +512,7 @@
       "item": "AForg6",
       "correlation": 0.6025831768109279,
       "reversed": true,
-      "text": "I hold a grudge."
+      "text": "I hold a grudge. Years later, you can still recall specific incidents where people disappointed or betrayed you, and the resentment remains."
     },
     {
       "item": "AForg3",
@@ -530,7 +530,7 @@
       "item": "AGent8",
       "correlation": 0.540604855184732,
       "reversed": true,
-      "text": "I speak ill of others."
+      "text": "I speak ill of others. In conversations, you find yourself sharing critical observations or negative stories about people who aren't present"
     },
     {
       "item": "APati3",

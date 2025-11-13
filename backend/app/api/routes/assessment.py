@@ -155,16 +155,16 @@ async def start_assessment(
             }
         },
         {
-            "id": "demo_age",
-            "text": "How old are you?",
-            "type": "number-input",
+            "id": "demo_dob",
+            "text": "What's your date of birth?",
+            "type": "date-input",
             "dimension": "demographics",
             "isRequired": True,
             "renderConfig": {
-                "min": 13,
-                "max": 120,
-                "placeholder": "Enter your age",
-                "helpText": "Must be 13 or older to take this assessment"
+                "placeholder": "Select your birth date",
+                "helpText": "Must be 13 or older to take this assessment",
+                "maxDate": "today",  # Can't select future dates
+                "yearRange": [1900, 2012]  # Born between 1900 and 2012 (13+ years old)
             }
         },
         {
@@ -902,17 +902,17 @@ async def go_back(request: GetPreviousQuestionRequest):
                     "helpText": "Used for personalization in your results"
                 }
             },
-            "demo_age": {
-                "id": "demo_age",
-                "text": "How old are you?",
-                "type": "number-input",
+            "demo_dob": {
+                "id": "demo_dob",
+                "text": "What's your date of birth?",
+                "type": "date-input",
                 "dimension": "demographics",
                 "isRequired": True,
                 "renderConfig": {
-                    "min": 13,
-                    "max": 120,
-                    "placeholder": "Enter your age",
-                    "helpText": "Must be 13 or older to take this assessment"
+                    "placeholder": "Select your birth date",
+                    "helpText": "Must be 13 or older to take this assessment",
+                    "maxDate": "today",
+                    "yearRange": [1900, 2012]
                 }
             },
             "demo_gender": {
@@ -1305,6 +1305,11 @@ async def transfer_session(
     - Requires authentication (user must be signed in)
     - Only works on sessions that don't already have a user_id
     - Cannot steal other users' sessions
+    
+    Robustness:
+    - Checks database first, then falls back to in-memory cache
+    - Creates new session if old one was deleted
+    - Handles server restarts gracefully
     """
     if not user:
         raise HTTPException(
@@ -1314,7 +1319,7 @@ async def transfer_session(
     
     clerk_user_id = user.get("sub")
     
-    # Transfer in database
+    # Try database transfer first
     service = AssessmentService(db)
     try:
         db_session = await service.transfer_session_to_user(
@@ -1322,26 +1327,70 @@ async def transfer_session(
             clerk_user_id=clerk_user_id
         )
         
-        if not db_session:
-            raise HTTPException(status_code=404, detail="Session not found")
-        
-        # Update in-memory cache if exists
-        if request.session_id in sessions:
-            sessions[request.session_id]["user_id"] = clerk_user_id
-            sessions[request.session_id]["clerk_user"] = user
-        
-        print(f"✅ Session {request.session_id} transferred to user {clerk_user_id}")
-        
-        return {
-            "success": True,
-            "message": "Session transferred successfully",
-            "session_id": request.session_id,
-            "user_id": clerk_user_id,
-        }
-        
+        if db_session:
+            # Success - update in-memory cache if exists
+            if request.session_id in sessions:
+                sessions[request.session_id]["user_id"] = clerk_user_id
+                sessions[request.session_id]["clerk_user"] = user
+            
+            print(f"✅ Session {request.session_id} transferred to user {clerk_user_id}")
+            
+            return {
+                "success": True,
+                "message": "Session transferred successfully",
+                "session_id": request.session_id,
+                "user_id": clerk_user_id,
+            }
     except ValueError as e:
         # Session already owned by another user
         raise HTTPException(status_code=403, detail=str(e))
+    
+    # Database session not found - check in-memory cache
+    if request.session_id in sessions:
+        print(f"⚠️ Session {request.session_id} found in memory but not in database")
+        print(f"   Creating new database session for user {clerk_user_id}")
+        
+        # Create new session in database linked to user
+        # This handles cases where database was cleared but frontend has old session
+        new_session = await service.create_session(
+            clerk_user_id=clerk_user_id,
+            metadata={"transferred_from_memory": True}
+        )
+        
+        # Update in-memory cache to use new session ID
+        memory_session = sessions[request.session_id]
+        memory_session["user_id"] = clerk_user_id
+        memory_session["clerk_user"] = user
+        sessions[new_session.id] = memory_session
+        del sessions[request.session_id]  # Remove old session
+        
+        print(f"✅ Created new session {new_session.id} for user {clerk_user_id}")
+        
+        return {
+            "success": True,
+            "message": "New session created (old session not found in database)",
+            "session_id": new_session.id,
+            "user_id": clerk_user_id,
+            "note": "Your progress will continue in the new session"
+        }
+    
+    # Session not found anywhere - this means user has no active session
+    # Don't error - just create a fresh session for them
+    print(f"⚠️ Session {request.session_id} not found anywhere")
+    print(f"   Creating fresh session for user {clerk_user_id}")
+    
+    new_session = await service.create_session(
+        clerk_user_id=clerk_user_id,
+        metadata={"created_on_transfer": True}
+    )
+    
+    return {
+        "success": True,
+        "message": "Fresh session created (previous session not found)",
+        "session_id": new_session.id,
+        "user_id": clerk_user_id,
+        "note": "Starting fresh assessment"
+    }
 
 
 @router.delete("/assessment/{session_id}")

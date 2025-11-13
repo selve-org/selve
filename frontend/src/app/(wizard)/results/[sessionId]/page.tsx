@@ -41,6 +41,27 @@ export default function ResultsPage() {
 
         const data = await response.json();
         setResults(data);
+
+        // Update user profile with demographics and results (for authenticated users only)
+        // This saves demographics to User/Profile tables
+        if (data.demographics && data.scores && data.narrative) {
+          try {
+            await fetch('/api/update-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                demographics: data.demographics,
+                scores: data.scores,
+                narrative: data.narrative,
+              }),
+            });
+            console.log('✅ Profile updated with assessment results');
+          } catch (profileError) {
+            // Don't fail the whole page if profile update fails
+            // User can still see results, just profile won't be updated
+            console.error('⚠️ Failed to update profile (non-critical):', profileError);
+          }
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Failed to load results";
