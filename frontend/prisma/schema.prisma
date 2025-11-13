@@ -140,6 +140,7 @@ model AssessmentSession {
   userId               String?
   clerkUserId          String?             // Clerk user ID for authenticated users
   status               String              @default("in-progress") // "in-progress", "completed", "abandoned"
+  isCurrent            Boolean             @default(true)  // Whether this is the user's current active assessment
   responses            Json                // Personality question responses (question_id -> score)
   demographics         Json?               // Demographic data (age, country, etc.)
   pendingQuestions     Json?               // Set of question IDs currently shown to user
@@ -150,7 +151,11 @@ model AssessmentSession {
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   completedAt          DateTime?
+  archivedAt           DateTime?           // When this assessment was archived (user started a new one)
   result               AssessmentResult?   // One-to-one relation to results
+  
+  @@index([clerkUserId, isCurrent])       // Fast lookup for user's current assessment
+  @@index([clerkUserId, completedAt])     // Fast lookup for user's assessment history
 }
 
 model AssessmentResult {
@@ -158,6 +163,7 @@ model AssessmentResult {
   sessionId            String              @unique
   userId               String?
   clerkUserId          String?             // Clerk user ID for authenticated users
+  isCurrent            Boolean             @default(true)  // Whether this is the user's current/latest result
   
   // Dimension Scores (0-100)
   scoreLumen           Float               // Mindful Curiosity
@@ -190,6 +196,7 @@ model AssessmentResult {
   
   @@index([userId])
   @@index([clerkUserId])
+  @@index([clerkUserId, isCurrent])       // Fast lookup for user's current result
 }
 
 model AssessmentTemplate {

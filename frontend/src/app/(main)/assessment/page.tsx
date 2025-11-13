@@ -5,15 +5,29 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useState } from "react";
 import { useAssessmentSession } from "@/contexts/AssessmentSessionContext";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 export default function AssessmentPage() {
-  const { startAssessment, session } = useAssessmentSession();
+  const { startAssessment, session, archiveAndRestart } = useAssessmentSession();
   const router = useRouter();
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
   const handleStartAssessment = () => {
     startAssessment();
     router.push("/assessment/wizard");
+  };
+  
+  const handleRestartAssessment = async () => {
+    try {
+      const newSessionId = await archiveAndRestart();
+      router.push("/assessment/wizard");
+    } catch (error) {
+      console.error("Error restarting assessment:", error);
+      // archiveAndRestart already handles fallback, so just navigate
+      router.push("/assessment/wizard");
+    }
   };
 
   // Show continue option if user has existing progress
@@ -21,6 +35,9 @@ export default function AssessmentPage() {
     Object.keys(session.responses).length > 0 || 
     Object.keys(session.demographics).length > 0
   );
+  
+  // Check if assessment is completed
+  const isCompleted = session.status === "completed" && session.completedAt;
   return (
     <div
       className="min-h-screen bg-white dark:bg-[#0c0c0c] text-slate-900 dark:text-white flex flex-col justify-start items-start p-4 md:justify-center md:items-center md:p-8"
@@ -60,9 +77,51 @@ export default function AssessmentPage() {
 
         {/* CTA */}
         <div className="mt-12 md:mt-16">
-          {hasProgress ? (
+          {isCompleted ? (
             <div className="space-y-4">
-              {/* Continue Assessment Button */}
+              {/* Assessment Already Completed */}
+              <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 rounded-2xl">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                      Assessment Completed!
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      You completed this assessment on {new Date(session.completedAt!).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link 
+                        href={`/results/${session.sessionId}`}
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors"
+                      >
+                        <span>View Your Results</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                      <motion.button
+                        onClick={() => setShowRestartConfirm(true)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
+                        style={{ fontFamily: 'var(--font-inter)' }}
+                      >
+                        <span>Take Again</span>
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : hasProgress ? (
+            <div className="space-y-4">{/* Continue Assessment Button */}
               <motion.button
                 onClick={handleStartAssessment}
                 whileHover={{ scale: 1.03 }}
@@ -78,14 +137,7 @@ export default function AssessmentPage() {
 
               {/* Start Over Button */}
               <motion.button
-                onClick={() => {
-                  if (confirm("Are you sure you want to start over? This will delete your current progress.")) {
-                    // Clear session and start fresh
-                    localStorage.removeItem("selve_assessment_session");
-                    startAssessment();
-                    router.push("/assessment/wizard");
-                  }
-                }}
+                onClick={() => setShowRestartConfirm(true)}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className="group cursor-pointer inline-block overflow-hidden rounded-2xl px-6 py-3 text-sm font-medium border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all"
@@ -129,6 +181,18 @@ export default function AssessmentPage() {
           )}
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showRestartConfirm}
+        onClose={() => setShowRestartConfirm(false)}
+        onConfirm={handleRestartAssessment}
+        title="Start a New Assessment?"
+        description="Your previous results will be safely archived and you can view them anytime. Ready to discover how you've evolved?"
+        confirmText="Start Fresh"
+        cancelText="Keep Current"
+        variant="info"
+      />
     </div>
   );
 }

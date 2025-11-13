@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { ArtisticCanvas } from "@/components/wizard/ArtisticCanvas";
 import { QuestionRenderer } from "@/components/wizard/QuestionRenderer";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
@@ -55,6 +56,47 @@ export default function WizardPage() {
   const [backLockedMessage, setBackLockedMessage] = useState<string | null>(
     null
   );
+  const [hasShownCompletionToast, setHasShownCompletionToast] = useState(false);
+
+  /**
+   * Prevent browser back button navigation
+   */
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      e.preventDefault();
+      
+      // Push current state back to prevent navigation
+      window.history.pushState(null, '', window.location.href);
+      
+      // Show warning
+      toast.warning("Use the back button in the assessment", {
+        description: "Your progress is automatically saved. Use the arrow button to go back to previous questions.",
+        duration: 4000,
+      });
+    };
+
+    // Push initial state
+    window.history.pushState(null, '', window.location.href);
+    
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  /**
+   * Show celebration toast when assessment completes
+   */
+  useEffect(() => {
+    if (isComplete && !hasShownCompletionToast) {
+      toast.success("Assessment Complete! 🎉", {
+        description: "Generating your personalized personality profile...",
+        duration: 5000,
+      });
+      setHasShownCompletionToast(true);
+    }
+  }, [isComplete, hasShownCompletionToast]);
 
   /**
    * Update current answer when question changes (including when going back)

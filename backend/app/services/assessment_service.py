@@ -38,10 +38,21 @@ class AssessmentService:
         Returns:
             AssessmentSession object with ID
         """
+        # 🔄 For authenticated users, mark any existing current sessions as NOT current
+        # This ensures only ONE session is current at a time
+        if clerk_user_id:
+            await self.db.execute(
+                update(AssessmentSession)
+                .where(AssessmentSession.clerkUserId == clerk_user_id)
+                .where(AssessmentSession.isCurrent == True)
+                .values(isCurrent=False, archivedAt=datetime.utcnow())
+            )
+        
         session = AssessmentSession(
             userId=user_id,
             clerkUserId=clerk_user_id,
             status="in-progress",
+            isCurrent=True,  # Explicitly mark as current
             responses={},
             demographics={},
             pendingQuestions=[],
@@ -173,11 +184,21 @@ class AssessmentService:
         if not session:
             raise ValueError(f"Session {session_id} not found")
         
-        # Create result
+        # 🔄 Mark any existing results for this user as NOT current
+        if session.clerkUserId:
+            await self.db.execute(
+                update(AssessmentResult)
+                .where(AssessmentResult.clerkUserId == session.clerkUserId)
+                .where(AssessmentResult.isCurrent == True)
+                .values(isCurrent=False)
+            )
+        
+        # Create result (will have isCurrent=True by default from schema)
         result = AssessmentResult(
             sessionId=session_id,
             userId=session.userId,
             clerkUserId=session.clerkUserId,
+            isCurrent=True,  # Explicitly set as current
             scoreLumen=scores.get("LUMEN", 0),
             scoreAether=scores.get("AETHER", 0),
             scoreOrpheus=scores.get("ORPHEUS", 0),
@@ -309,6 +330,129 @@ class AssessmentService:
             Updated AssessmentSession or None if not found
         """
         return await self.update_session(session_id, status="abandoned")
+    
+    async def archive_current_and_create_new(
+        self, 
+        clerk_user_id: Optional[str] = None,
+        user_id: Optional[str] = None
+    ) -> AssessmentSession:
+        """
+        Archive user's current assessment(s) and create a new one.
+        This preserves all previous assessment data while starting fresh.
+        
+        Args:
+            clerk_user_id: Clerk user ID (for authenticated users)
+            user_id: Legacy user ID (optional)
+            
+        Returns:
+            Newly created AssessmentSession
+            
+        Raises:
+            Exception if database operations fail
+        """
+        try:
+            # Archive all current sessions and results for this user
+            if clerk_user_id:
+                # Mark all current sessions as archived
+                await self.db.execute(
+                    update(AssessmentSession)
+                    .where(AssessmentSession.clerkUserId == clerk_user_id)
+                    .where(AssessmentSession.isCurrent == True)
+                    .values(isCurrent=False, archivedAt=datetime.utcnow())
+                )
+                
+                # Mark all current results as archived
+                await self.db.execute(
+                    update(AssessmentResult)
+                    .where(AssessmentResult.clerkUserId == clerk_user_id)
+                    .where(AssessmentResult.isCurrent == True)
+                    .values(isCurrent=False)
+                )
+                
+                await self.db.commit()
+            
+            # Create new session (will have isCurrent=True by default)
+            new_session = await self.create_session(
+                clerk_user_id=clerk_user_id,
+                user_id=user_id
+            )
+            
+            return new_session
+            
+        except Exception as e:
+            await self.db.rollback()
+            raise Exception(f"Failed to archive and create new session: {str(e)}")
+    
+    async def get_current_session(
+        self, 
+        clerk_user_id: str
+    ) -> Optional[AssessmentSession]:
+        """
+        Get user's current (active) assessment session
+        
+        Args:
+            clerk_user_id: Clerk user ID
+            
+        Returns:
+            Current AssessmentSession or None if no current session exists
+        """
+        result = await self.db.execute(
+            select(AssessmentSession)
+            .where(AssessmentSession.clerkUserId == clerk_user_id)
+            .where(AssessmentSession.isCurrent == True)
+            .order_by(AssessmentSession.createdAt.desc())
+        )
+        return result.scalar_one_or_none()
+    
+    async def get_current_result(
+        self, 
+        clerk_user_id: str
+    ) -> Optional[AssessmentResult]:
+        """
+        Get user's current (latest) assessment result
+        
+        Args:
+            clerk_user_id: Clerk user ID
+            
+        Returns:
+            Current AssessmentResult or None if no current result exists
+        """
+        result = await self.db.execute(
+            select(AssessmentResult)
+            .where(AssessmentResult.clerkUserId == clerk_user_id)
+            .where(AssessmentResult.isCurrent == True)
+            .order_by(AssessmentResult.createdAt.desc())
+        )
+        return result.scalar_one_or_none()
+    
+    async def get_assessment_history(
+        self, 
+        clerk_user_id: str,
+        include_current: bool = True,
+        limit: int = 10
+    ) -> List[AssessmentSession]:
+        """
+        Get user's assessment history (all past assessments)
+        
+        Args:
+            clerk_user_id: Clerk user ID
+            include_current: Whether to include current assessment
+            limit: Maximum number of results
+            
+        Returns:
+            List of AssessmentSessions ordered by creation date (newest first)
+        """
+        query = select(AssessmentSession).where(
+            AssessmentSession.clerkUserId == clerk_user_id
+        )
+        
+        if not include_current:
+            query = query.where(AssessmentSession.isCurrent == False)
+        
+        query = query.order_by(AssessmentSession.createdAt.desc()).limit(limit)
+        
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
     
     async def delete_session(self, session_id: str) -> bool:
         """

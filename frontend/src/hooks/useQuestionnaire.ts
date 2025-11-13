@@ -1,9 +1,10 @@
 // src/hooks/useQuestionnaire.ts
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { useAssessmentProgress } from "@/contexts/AssessmentSessionContext";
 import type {
   QuestionnaireSession,
@@ -68,6 +69,28 @@ export function useQuestionnaire() {
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
   /**
+   * Get or create a device fingerprint for this browser
+   * Used to detect if sync is happening on same device vs different device
+   * Memoized to prevent recreating on every render
+   */
+  const deviceFingerprint = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    
+    const FINGERPRINT_KEY = 'selve_device_fp';
+    let fingerprint = localStorage.getItem(FINGERPRINT_KEY);
+    
+    if (!fingerprint) {
+      // Create a simple fingerprint from browser info + random ID
+      const browserInfo = `${navigator.userAgent}_${screen.width}x${screen.height}`;
+      const randomId = Math.random().toString(36).substring(2, 15);
+      fingerprint = btoa(`${browserInfo}_${randomId}`).substring(0, 32);
+      localStorage.setItem(FINGERPRINT_KEY, fingerprint);
+    }
+    
+    return fingerprint;
+  }, []); // Empty deps - only run once
+
+  /**
    * Initialize session and fetch first questions from SELVE backend
    */
   const initializeSession = useCallback(async () => {
@@ -83,6 +106,9 @@ export function useQuestionnaire() {
 
       // Minimum loading time to prevent flash
       const minLoadingTime = new Promise(resolve => setTimeout(resolve, 800));
+
+      // Track restored session data
+      let restoredSessionData: any = null;
 
       // Check if we have existing session to restore
       if (existingSessionId) {
@@ -115,10 +141,7 @@ export function useQuestionnaire() {
               });
               
               setSessionId(existingSessionId);
-              
-              // Session exists and is in progress - user can continue where they left off
-              // For now, we'll restart the session (they'll skip through answered questions)
-              // TODO: Restore exact state including current question and queue
+              restoredSessionData = sessionData; // Store for later use
               
               // Continue with normal initialization using existing session
               setState((prev) => ({
@@ -207,7 +230,18 @@ export function useQuestionnaire() {
       );
 
       setQuestionQueue(formattedQuestions);
-      setCurrentQuestionIndex(0);
+      
+      // Calculate which question to show based on already answered questions
+      // If restoring session, skip to first unanswered question
+      let startIndex = 0;
+      if (restoredSessionData) {
+        // Count how many questions have been answered
+        const answeredCount = restoredSessionData.questions_answered || 0;
+        startIndex = Math.min(answeredCount, formattedQuestions.length - 1);
+        console.log(`📍 Resuming from question ${startIndex + 1} (${answeredCount} already answered)`);
+      }
+      
+      setCurrentQuestionIndex(startIndex);
 
       setState((prev) => ({
         ...prev,
@@ -215,10 +249,10 @@ export function useQuestionnaire() {
           id: session_id,
           createdAt: new Date().toISOString(),
         } as QuestionnaireSession,
-        currentQuestion: formattedQuestions[0] || null,
+        currentQuestion: formattedQuestions[startIndex] || null,
         isLoading: false,
         progress: {
-          current: 0,
+          current: restoredSessionData?.questions_answered || 0,
           total: total_questions,
           percentage: progress,
         },
@@ -282,10 +316,36 @@ export function useQuestionnaire() {
             question_id: questionId,
             response: answer as number, // 1-5 scale
             is_going_back: isGoingBack, // Flag if this is a resubmission after going back
+            current_question_index: currentQuestionIndex, // Send current position for sync check
+            device_fingerprint: deviceFingerprint, // Track which device submitted this answer
           }),
         });
 
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          
+          // Check if this is a sync conflict (409 Conflict)
+          if (response.status === 409 || errorData.sync_conflict) {
+            const backendIndex = errorData.current_question_index || 0;
+            
+            // More user-friendly message - doesn't assume "another device"
+            toast.warning("Question already answered", {
+              description: `This question was already answered. Moving to question ${backendIndex + 1}.`,
+              duration: 5000,
+            });
+            
+            // Sync to the correct question
+            if (backendIndex < questionQueue.length) {
+              setCurrentQuestionIndex(backendIndex);
+              setState((prev) => ({
+                ...prev,
+                currentQuestion: questionQueue[backendIndex],
+                isLoading: false,
+              }));
+            }
+            return;
+          }
+          
           throw new Error("Failed to submit answer");
         }
 
@@ -401,7 +461,7 @@ export function useQuestionnaire() {
         }));
       }
     },
-    [sessionId, state.answers, currentQuestionIndex, questionQueue, isGoingBack]
+    [sessionId, state.answers, currentQuestionIndex, questionQueue, isGoingBack, deviceFingerprint, getToken, updateProgress, setState, setIsComplete]
   );
 
   /**
@@ -644,6 +704,101 @@ export function useQuestionnaire() {
   useEffect(() => {
     initializeSession();
   }, [initializeSession]);
+
+  /**
+   * Poll for session updates from other devices
+   * This prevents conflicts when user is taking assessment on multiple devices
+   */
+  useEffect(() => {
+    if (!sessionId || isComplete || isInitializing) return;
+
+    // Track the last known question index to detect changes
+    const lastKnownIndexRef = { current: currentQuestionIndex };
+    const hasShownSyncToastRef = { current: false }; // Prevent duplicate toasts
+    const currentDeviceFP = deviceFingerprint;
+    
+    const checkForUpdates = async () => {
+      try {
+        const token = await getToken();
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(
+          `${API_BASE}/api/assessment/session/${sessionId}`,
+          { headers }
+        );
+
+        if (response.ok) {
+          const sessionData = await response.json();
+          const backendQuestionsAnswered = sessionData.questions_answered || 0;
+          const localQuestionsAnswered = currentQuestionIndex;
+          const lastDeviceFP = sessionData.last_device_fingerprint; // Backend should return this
+
+          // Check if backend has more answers than our local state
+          // AND we haven't just initialized (to avoid showing message on page load)
+          if (backendQuestionsAnswered > localQuestionsAnswered && 
+              backendQuestionsAnswered > lastKnownIndexRef.current &&
+              !hasShownSyncToastRef.current) { // Only show toast once
+            
+            // Determine if this is from another device or same device
+            const isDifferentDevice = lastDeviceFP && lastDeviceFP !== currentDeviceFP;
+            
+            // Only show notification if we've been on the page for a bit
+            // (to avoid showing on initial page load/resume)
+            const timeSinceInit = Date.now() - (state.session?.createdAt ? new Date(state.session.createdAt).getTime() : 0);
+            const isLikelyPageRefresh = timeSinceInit < 5000; // Less than 5 seconds since init
+            
+            if (!isLikelyPageRefresh) {
+              if (isDifferentDevice) {
+                // Actually from another device - show warning
+                toast.warning("Active on another device", {
+                  description: `Progress detected from another device. Syncing to question ${backendQuestionsAnswered + 1}.`,
+                  duration: 6000,
+                });
+              } else {
+                // Same device, just resuming - gentle info message
+                toast.info("Progress synced", {
+                  description: `Continuing from question ${backendQuestionsAnswered + 1}.`,
+                  duration: 3000,
+                });
+              }
+              hasShownSyncToastRef.current = true; // Mark as shown
+            }
+
+            // Update to the correct question
+            if (backendQuestionsAnswered < questionQueue.length) {
+              setCurrentQuestionIndex(backendQuestionsAnswered);
+              setState((prev) => ({
+                ...prev,
+                currentQuestion: questionQueue[backendQuestionsAnswered],
+                progress: {
+                  current: backendQuestionsAnswered,
+                  total: prev.progress.total,
+                  percentage: sessionData.progress || 0,
+                },
+              }));
+              lastKnownIndexRef.current = backendQuestionsAnswered;
+            }
+          } else if (backendQuestionsAnswered === localQuestionsAnswered) {
+            // Reset toast flag when we're in sync
+            hasShownSyncToastRef.current = false;
+          }
+        }
+      } catch (error) {
+        // Silent fail - don't disrupt user experience
+        console.warn("Failed to check for session updates:", error);
+      }
+    };
+
+    // Poll every 10 seconds
+    const interval = setInterval(checkForUpdates, 10000);
+
+    return () => clearInterval(interval);
+  }, [sessionId, isComplete, isInitializing, currentQuestionIndex, questionQueue, getToken, setState, state.session?.createdAt, deviceFingerprint]);
 
   return {
     // State

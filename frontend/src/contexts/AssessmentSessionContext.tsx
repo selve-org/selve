@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -18,6 +18,8 @@ interface AssessmentSession {
   demographics: Record<string, any>;
   startedAt: string | null;
   lastActiveAt: string | null;
+  status: "in-progress" | "completed" | "abandoned";
+  completedAt: string | null;
 }
 
 interface AssessmentSessionContextType {
@@ -25,6 +27,7 @@ interface AssessmentSessionContextType {
   startAssessment: () => void;
   saveProgress: (data: Partial<AssessmentSession>) => void;
   clearSession: () => void;
+  archiveAndRestart: () => Promise<string | null>; // Returns new session ID or null on error
   canAccessWizard: boolean;
 }
 
@@ -75,6 +78,8 @@ function getDefaultSession(): AssessmentSession {
     demographics: {},
     startedAt: null,
     lastActiveAt: null,
+    status: "in-progress",
+    completedAt: null,
   };
 }
 
@@ -115,6 +120,81 @@ async function transferSessionToUser(
   return data;
 }
 
+async function fetchSessionStatus(sessionId: string): Promise<{ 
+  status: string; 
+  completedAt: string | null;
+  questions_answered: number;
+} | null> {
+  if (!sessionId) {
+    console.warn("⚠️ fetchSessionStatus called with empty sessionId");
+    return null;
+  }
+  
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/assessment/session/${sessionId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log("📭 Session not found in database (might be anonymous or expired)");
+        return null;
+      }
+      
+      const errorText = await response.text();
+      console.error(`❌ Failed to fetch session status: ${response.status} ${errorText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    return {
+      status: data.status || "in-progress",
+      completedAt: data.completed_at || null,
+      questions_answered: data.questions_answered || 0,
+    };
+    
+  } catch (error) {
+    console.error("❌ Error fetching session status:", error);
+    // Network errors, etc. - not fatal, just return null
+    return null;
+  }
+}
+
+async function fetchCurrentSession(clerkUserId: string): Promise<{
+  session_id: string;
+  status: string;
+  created_at: string;
+  completed_at: string | null;
+} | null> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/assessment/current/${clerkUserId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    
+    if (!response.ok) {
+      console.error(`❌ Failed to fetch current session: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.current_assessment || null;
+    
+  } catch (error) {
+    console.error("❌ Error fetching current session:", error);
+    return null;
+  }
+}
+
 interface AssessmentSessionProviderProps {
   children: ReactNode;
 }
@@ -123,6 +203,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
   const [session, setSession] = useState<AssessmentSession>(getDefaultSession);
   const [isHydrated, setIsHydrated] = useState(false);
   const [hasTransferredSession, setHasTransferredSession] = useState(false);
+  const hasShownTransferToastRef = useRef(false); // Track if we've shown the toast
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoaded: isUserLoaded } = useUser();
@@ -130,9 +211,72 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
 
   // Hydrate from localStorage on mount (client-side only)
   useEffect(() => {
-    setSession(getStoredSession());
-    setIsHydrated(true);
-  }, []);
+    const loadSession = async () => {
+      try {
+        const storedSession = getStoredSession();
+        
+        // For authenticated users, always check what their CURRENT session is on backend
+        // This prevents showing old completed sessions when they have a new active one
+        if (isUserLoaded && user?.id) {
+          console.log(`🔍 Checking current session for user: ${user.id}`);
+          const currentSession = await fetchCurrentSession(user.id);
+          
+          if (currentSession) {
+            // Backend has a current session for this user
+            if (currentSession.session_id !== storedSession.sessionId) {
+              // localStorage has wrong/old session - sync with backend current
+              console.log(`🔄 Syncing to current session: ${currentSession.session_id}`);
+              storedSession.sessionId = currentSession.session_id;
+              storedSession.status = currentSession.status as "in-progress" | "completed" | "abandoned";
+              storedSession.completedAt = currentSession.completed_at;
+              storedSession.startedAt = currentSession.created_at;
+              storedSession.hasStartedAssessment = true;
+              saveSessionToStorage(storedSession);
+            } else {
+              // localStorage session matches backend current - just update status
+              storedSession.status = currentSession.status as "in-progress" | "completed" | "abandoned";
+              storedSession.completedAt = currentSession.completed_at;
+              saveSessionToStorage(storedSession);
+            }
+          } else if (storedSession.sessionId) {
+            // localStorage has a session but backend says no current session
+            // This means the stored session was archived - fetch its status
+            console.log(`🔍 Checking stored session status: ${storedSession.sessionId}`);
+            const statusData = await fetchSessionStatus(storedSession.sessionId);
+            if (statusData) {
+              storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
+              storedSession.completedAt = statusData.completedAt;
+              saveSessionToStorage(storedSession);
+            }
+          }
+        } else if (storedSession.sessionId) {
+          // Anonymous user - just check the stored session's status
+          console.log(`🔄 Checking status for session: ${storedSession.sessionId}`);
+          const statusData = await fetchSessionStatus(storedSession.sessionId);
+          
+          if (statusData) {
+            storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
+            storedSession.completedAt = statusData.completedAt;
+            console.log(`✅ Session status synced: ${statusData.status}`);
+            saveSessionToStorage(storedSession);
+          } else {
+            console.log("📝 Using local session data (backend status unavailable)");
+          }
+        }
+        
+        setSession(storedSession);
+        
+      } catch (error) {
+        console.error("❌ Error loading session:", error);
+        // On error, use default session to prevent app crash
+        setSession(getDefaultSession());
+      } finally {
+        setIsHydrated(true);
+      }
+    };
+    
+    loadSession();
+  }, [isUserLoaded, user?.id]);
 
   // Save to localStorage whenever session changes
   useEffect(() => {
@@ -166,6 +310,78 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
     setSession(getDefaultSession());
   }, []);
 
+  const archiveAndRestart = useCallback(async (): Promise<string | null> => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    
+    try {
+      // Get Clerk user ID if available
+      const clerkUserId = user?.id;
+      
+      if (!clerkUserId) {
+        // For anonymous users, just clear localStorage and start fresh
+        console.log("📦 Anonymous user - clearing local session");
+        clearSession();
+        startAssessment();
+        return null;
+      }
+      
+      // For authenticated users, archive on backend
+      const token = await getToken();
+      const response = await fetch(`${API_BASE}/api/assessment/archive-and-restart?clerk_user_id=${clerkUserId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "Authorization": `Bearer ${token}` }),
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to archive assessment: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const newSessionId = data.new_session_id;
+      
+      console.log(`✅ Archived ${data.archived_count} assessment(s), created new session: ${newSessionId}`);
+      
+      // Show success toast
+      if (data.archived_count > 0) {
+        toast.success("Previous assessment saved!", {
+          description: `Your ${data.archived_count} previous ${data.archived_count === 1 ? 'assessment' : 'assessments'} archived successfully. Starting fresh!`,
+          duration: 4000,
+        });
+      } else {
+        toast.success("Starting fresh assessment", {
+          description: "Ready to discover your personality profile",
+          duration: 3000,
+        });
+      }
+      
+      // Clear local storage and create new session with the ID from backend
+      localStorage.removeItem(STORAGE_KEY);
+      setSession({
+        ...getDefaultSession(),
+        sessionId: newSessionId,
+        hasStartedAssessment: true,
+        startedAt: new Date().toISOString(),
+      });
+      
+      return newSessionId;
+      
+    } catch (error) {
+      console.error("❌ Failed to archive and restart:", error);
+      toast.error("Couldn't save to server", {
+        description: "No worries! Starting fresh locally instead. Your progress will still be saved.",
+        duration: 5000,
+      });
+      
+      // Fallback: clear locally if backend fails
+      clearSession();
+      startAssessment();
+      return null;
+    }
+  }, [user, getToken, clearSession, startAssessment]);
+
   // Transfer anonymous session when user signs in
   useEffect(() => {
     if (!isHydrated || !isUserLoaded || hasTransferredSession) return;
@@ -177,9 +393,18 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       transferSessionToUser(session.sessionId, user.id, getToken)
         .then(() => {
           console.log("✅ Session transferred successfully");
-          toast.success("Your progress has been saved to your account!", {
-            description: "You can now continue from any device",
-          });
+          
+          // Only show toast if user is on assessment-related page and haven't shown it yet
+          const isAssessmentPage = pathname?.includes("/assessment") || pathname?.includes("/results");
+          
+          if (isAssessmentPage && !hasShownTransferToastRef.current) {
+            toast.success("Progress saved to your account!", {
+              description: "You can now continue your assessment from any device, anytime.",
+              duration: 5000,
+            });
+            hasShownTransferToastRef.current = true;
+          }
+          
           setHasTransferredSession(true);
           
           // Update session with user info
@@ -189,19 +414,19 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
         })
         .catch((error: Error) => {
           console.error("❌ Failed to transfer session:", error);
-          toast.error("Failed to save progress to your account", {
-            description: "Your progress is still saved locally",
-          });
+          
+          // Only show error toast on assessment pages
+          const isAssessmentPage = pathname?.includes("/assessment") || pathname?.includes("/results");
+          
+          if (isAssessmentPage) {
+            toast.error("Couldn't sync to your account", {
+              description: "Don't worry - your progress is still saved on this device.",
+              duration: 5000,
+            });
+          }
         });
     }
-  }, [user, isUserLoaded, session.sessionId, isHydrated, hasTransferredSession, saveProgress]);
-
-  // Save to localStorage whenever session changes
-  useEffect(() => {
-    if (isHydrated) {
-      saveSessionToStorage(session);
-    }
-  }, [session, isHydrated]);
+  }, [user, isUserLoaded, session.sessionId, isHydrated, hasTransferredSession, saveProgress, getToken, pathname]);
 
   // Route protection: redirect to /assessment if trying to access wizard without starting
   useEffect(() => {
@@ -261,6 +486,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
     startAssessment,
     saveProgress,
     clearSession,
+    archiveAndRestart,
     canAccessWizard,
   };
 

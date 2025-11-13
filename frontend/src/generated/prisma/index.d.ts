@@ -13266,10 +13266,12 @@ export namespace Prisma {
     userId: string | null
     clerkUserId: string | null
     status: string | null
+    isCurrent: boolean | null
     backNavigationCount: number | null
     createdAt: Date | null
     updatedAt: Date | null
     completedAt: Date | null
+    archivedAt: Date | null
   }
 
   export type AssessmentSessionMaxAggregateOutputType = {
@@ -13277,10 +13279,12 @@ export namespace Prisma {
     userId: string | null
     clerkUserId: string | null
     status: string | null
+    isCurrent: boolean | null
     backNavigationCount: number | null
     createdAt: Date | null
     updatedAt: Date | null
     completedAt: Date | null
+    archivedAt: Date | null
   }
 
   export type AssessmentSessionCountAggregateOutputType = {
@@ -13288,6 +13292,7 @@ export namespace Prisma {
     userId: number
     clerkUserId: number
     status: number
+    isCurrent: number
     responses: number
     demographics: number
     pendingQuestions: number
@@ -13298,6 +13303,7 @@ export namespace Prisma {
     createdAt: number
     updatedAt: number
     completedAt: number
+    archivedAt: number
     _all: number
   }
 
@@ -13315,10 +13321,12 @@ export namespace Prisma {
     userId?: true
     clerkUserId?: true
     status?: true
+    isCurrent?: true
     backNavigationCount?: true
     createdAt?: true
     updatedAt?: true
     completedAt?: true
+    archivedAt?: true
   }
 
   export type AssessmentSessionMaxAggregateInputType = {
@@ -13326,10 +13334,12 @@ export namespace Prisma {
     userId?: true
     clerkUserId?: true
     status?: true
+    isCurrent?: true
     backNavigationCount?: true
     createdAt?: true
     updatedAt?: true
     completedAt?: true
+    archivedAt?: true
   }
 
   export type AssessmentSessionCountAggregateInputType = {
@@ -13337,6 +13347,7 @@ export namespace Prisma {
     userId?: true
     clerkUserId?: true
     status?: true
+    isCurrent?: true
     responses?: true
     demographics?: true
     pendingQuestions?: true
@@ -13347,6 +13358,7 @@ export namespace Prisma {
     createdAt?: true
     updatedAt?: true
     completedAt?: true
+    archivedAt?: true
     _all?: true
   }
 
@@ -13441,6 +13453,7 @@ export namespace Prisma {
     userId: string | null
     clerkUserId: string | null
     status: string
+    isCurrent: boolean
     responses: JsonValue
     demographics: JsonValue | null
     pendingQuestions: JsonValue | null
@@ -13451,6 +13464,7 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     completedAt: Date | null
+    archivedAt: Date | null
     _count: AssessmentSessionCountAggregateOutputType | null
     _avg: AssessmentSessionAvgAggregateOutputType | null
     _sum: AssessmentSessionSumAggregateOutputType | null
@@ -13477,6 +13491,7 @@ export namespace Prisma {
     userId?: boolean
     clerkUserId?: boolean
     status?: boolean
+    isCurrent?: boolean
     responses?: boolean
     demographics?: boolean
     pendingQuestions?: boolean
@@ -13487,6 +13502,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
+    archivedAt?: boolean
     result?: boolean | AssessmentSession$resultArgs<ExtArgs>
   }, ExtArgs["result"]["assessmentSession"]>
 
@@ -13495,6 +13511,7 @@ export namespace Prisma {
     userId?: boolean
     clerkUserId?: boolean
     status?: boolean
+    isCurrent?: boolean
     responses?: boolean
     demographics?: boolean
     pendingQuestions?: boolean
@@ -13505,6 +13522,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
+    archivedAt?: boolean
   }, ExtArgs["result"]["assessmentSession"]>
 
   export type AssessmentSessionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -13512,6 +13530,7 @@ export namespace Prisma {
     userId?: boolean
     clerkUserId?: boolean
     status?: boolean
+    isCurrent?: boolean
     responses?: boolean
     demographics?: boolean
     pendingQuestions?: boolean
@@ -13522,6 +13541,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
+    archivedAt?: boolean
   }, ExtArgs["result"]["assessmentSession"]>
 
   export type AssessmentSessionSelectScalar = {
@@ -13529,6 +13549,7 @@ export namespace Prisma {
     userId?: boolean
     clerkUserId?: boolean
     status?: boolean
+    isCurrent?: boolean
     responses?: boolean
     demographics?: boolean
     pendingQuestions?: boolean
@@ -13539,9 +13560,10 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     completedAt?: boolean
+    archivedAt?: boolean
   }
 
-  export type AssessmentSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "clerkUserId" | "status" | "responses" | "demographics" | "pendingQuestions" | "answerHistory" | "backNavigationCount" | "backNavigationLog" | "metadata" | "createdAt" | "updatedAt" | "completedAt", ExtArgs["result"]["assessmentSession"]>
+  export type AssessmentSessionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "clerkUserId" | "status" | "isCurrent" | "responses" | "demographics" | "pendingQuestions" | "answerHistory" | "backNavigationCount" | "backNavigationLog" | "metadata" | "createdAt" | "updatedAt" | "completedAt" | "archivedAt", ExtArgs["result"]["assessmentSession"]>
   export type AssessmentSessionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     result?: boolean | AssessmentSession$resultArgs<ExtArgs>
   }
@@ -13558,6 +13580,7 @@ export namespace Prisma {
       userId: string | null
       clerkUserId: string | null
       status: string
+      isCurrent: boolean
       responses: Prisma.JsonValue
       demographics: Prisma.JsonValue | null
       pendingQuestions: Prisma.JsonValue | null
@@ -13568,6 +13591,7 @@ export namespace Prisma {
       createdAt: Date
       updatedAt: Date
       completedAt: Date | null
+      archivedAt: Date | null
     }, ExtArgs["result"]["assessmentSession"]>
     composites: {}
   }
@@ -13996,6 +14020,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"AssessmentSession", 'String'>
     readonly clerkUserId: FieldRef<"AssessmentSession", 'String'>
     readonly status: FieldRef<"AssessmentSession", 'String'>
+    readonly isCurrent: FieldRef<"AssessmentSession", 'Boolean'>
     readonly responses: FieldRef<"AssessmentSession", 'Json'>
     readonly demographics: FieldRef<"AssessmentSession", 'Json'>
     readonly pendingQuestions: FieldRef<"AssessmentSession", 'Json'>
@@ -14006,6 +14031,7 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"AssessmentSession", 'DateTime'>
     readonly updatedAt: FieldRef<"AssessmentSession", 'DateTime'>
     readonly completedAt: FieldRef<"AssessmentSession", 'DateTime'>
+    readonly archivedAt: FieldRef<"AssessmentSession", 'DateTime'>
   }
     
 
@@ -14476,6 +14502,7 @@ export namespace Prisma {
     sessionId: string | null
     userId: string | null
     clerkUserId: string | null
+    isCurrent: boolean | null
     scoreLumen: number | null
     scoreAether: number | null
     scoreOrpheus: number | null
@@ -14499,6 +14526,7 @@ export namespace Prisma {
     sessionId: string | null
     userId: string | null
     clerkUserId: string | null
+    isCurrent: boolean | null
     scoreLumen: number | null
     scoreAether: number | null
     scoreOrpheus: number | null
@@ -14522,6 +14550,7 @@ export namespace Prisma {
     sessionId: number
     userId: number
     clerkUserId: number
+    isCurrent: number
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -14577,6 +14606,7 @@ export namespace Prisma {
     sessionId?: true
     userId?: true
     clerkUserId?: true
+    isCurrent?: true
     scoreLumen?: true
     scoreAether?: true
     scoreOrpheus?: true
@@ -14600,6 +14630,7 @@ export namespace Prisma {
     sessionId?: true
     userId?: true
     clerkUserId?: true
+    isCurrent?: true
     scoreLumen?: true
     scoreAether?: true
     scoreOrpheus?: true
@@ -14623,6 +14654,7 @@ export namespace Prisma {
     sessionId?: true
     userId?: true
     clerkUserId?: true
+    isCurrent?: true
     scoreLumen?: true
     scoreAether?: true
     scoreOrpheus?: true
@@ -14735,6 +14767,7 @@ export namespace Prisma {
     sessionId: string
     userId: string | null
     clerkUserId: string | null
+    isCurrent: boolean
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -14779,6 +14812,7 @@ export namespace Prisma {
     sessionId?: boolean
     userId?: boolean
     clerkUserId?: boolean
+    isCurrent?: boolean
     scoreLumen?: boolean
     scoreAether?: boolean
     scoreOrpheus?: boolean
@@ -14805,6 +14839,7 @@ export namespace Prisma {
     sessionId?: boolean
     userId?: boolean
     clerkUserId?: boolean
+    isCurrent?: boolean
     scoreLumen?: boolean
     scoreAether?: boolean
     scoreOrpheus?: boolean
@@ -14831,6 +14866,7 @@ export namespace Prisma {
     sessionId?: boolean
     userId?: boolean
     clerkUserId?: boolean
+    isCurrent?: boolean
     scoreLumen?: boolean
     scoreAether?: boolean
     scoreOrpheus?: boolean
@@ -14857,6 +14893,7 @@ export namespace Prisma {
     sessionId?: boolean
     userId?: boolean
     clerkUserId?: boolean
+    isCurrent?: boolean
     scoreLumen?: boolean
     scoreAether?: boolean
     scoreOrpheus?: boolean
@@ -14877,7 +14914,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type AssessmentResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "userId" | "clerkUserId" | "scoreLumen" | "scoreAether" | "scoreOrpheus" | "scoreOrin" | "scoreLyra" | "scoreVara" | "scoreChronos" | "scoreKael" | "narrative" | "archetype" | "profilePattern" | "consistencyScore" | "attentionScore" | "validationFlags" | "generationCost" | "generationModel" | "createdAt" | "updatedAt", ExtArgs["result"]["assessmentResult"]>
+  export type AssessmentResultOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "userId" | "clerkUserId" | "isCurrent" | "scoreLumen" | "scoreAether" | "scoreOrpheus" | "scoreOrin" | "scoreLyra" | "scoreVara" | "scoreChronos" | "scoreKael" | "narrative" | "archetype" | "profilePattern" | "consistencyScore" | "attentionScore" | "validationFlags" | "generationCost" | "generationModel" | "createdAt" | "updatedAt", ExtArgs["result"]["assessmentResult"]>
   export type AssessmentResultInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     session?: boolean | AssessmentSessionDefaultArgs<ExtArgs>
   }
@@ -14898,6 +14935,7 @@ export namespace Prisma {
       sessionId: string
       userId: string | null
       clerkUserId: string | null
+      isCurrent: boolean
       scoreLumen: number
       scoreAether: number
       scoreOrpheus: number
@@ -15344,6 +15382,7 @@ export namespace Prisma {
     readonly sessionId: FieldRef<"AssessmentResult", 'String'>
     readonly userId: FieldRef<"AssessmentResult", 'String'>
     readonly clerkUserId: FieldRef<"AssessmentResult", 'String'>
+    readonly isCurrent: FieldRef<"AssessmentResult", 'Boolean'>
     readonly scoreLumen: FieldRef<"AssessmentResult", 'Float'>
     readonly scoreAether: FieldRef<"AssessmentResult", 'Float'>
     readonly scoreOrpheus: FieldRef<"AssessmentResult", 'Float'>
@@ -17040,6 +17079,7 @@ export namespace Prisma {
     userId: 'userId',
     clerkUserId: 'clerkUserId',
     status: 'status',
+    isCurrent: 'isCurrent',
     responses: 'responses',
     demographics: 'demographics',
     pendingQuestions: 'pendingQuestions',
@@ -17049,7 +17089,8 @@ export namespace Prisma {
     metadata: 'metadata',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    completedAt: 'completedAt'
+    completedAt: 'completedAt',
+    archivedAt: 'archivedAt'
   };
 
   export type AssessmentSessionScalarFieldEnum = (typeof AssessmentSessionScalarFieldEnum)[keyof typeof AssessmentSessionScalarFieldEnum]
@@ -17060,6 +17101,7 @@ export namespace Prisma {
     sessionId: 'sessionId',
     userId: 'userId',
     clerkUserId: 'clerkUserId',
+    isCurrent: 'isCurrent',
     scoreLumen: 'scoreLumen',
     scoreAether: 'scoreAether',
     scoreOrpheus: 'scoreOrpheus',
@@ -17900,6 +17942,7 @@ export namespace Prisma {
     userId?: StringNullableFilter<"AssessmentSession"> | string | null
     clerkUserId?: StringNullableFilter<"AssessmentSession"> | string | null
     status?: StringFilter<"AssessmentSession"> | string
+    isCurrent?: BoolFilter<"AssessmentSession"> | boolean
     responses?: JsonFilter<"AssessmentSession">
     demographics?: JsonNullableFilter<"AssessmentSession">
     pendingQuestions?: JsonNullableFilter<"AssessmentSession">
@@ -17910,6 +17953,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AssessmentSession"> | Date | string
     updatedAt?: DateTimeFilter<"AssessmentSession"> | Date | string
     completedAt?: DateTimeNullableFilter<"AssessmentSession"> | Date | string | null
+    archivedAt?: DateTimeNullableFilter<"AssessmentSession"> | Date | string | null
     result?: XOR<AssessmentResultNullableScalarRelationFilter, AssessmentResultWhereInput> | null
   }
 
@@ -17918,6 +17962,7 @@ export namespace Prisma {
     userId?: SortOrderInput | SortOrder
     clerkUserId?: SortOrderInput | SortOrder
     status?: SortOrder
+    isCurrent?: SortOrder
     responses?: SortOrder
     demographics?: SortOrderInput | SortOrder
     pendingQuestions?: SortOrderInput | SortOrder
@@ -17928,6 +17973,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     result?: AssessmentResultOrderByWithRelationInput
   }
 
@@ -17939,6 +17985,7 @@ export namespace Prisma {
     userId?: StringNullableFilter<"AssessmentSession"> | string | null
     clerkUserId?: StringNullableFilter<"AssessmentSession"> | string | null
     status?: StringFilter<"AssessmentSession"> | string
+    isCurrent?: BoolFilter<"AssessmentSession"> | boolean
     responses?: JsonFilter<"AssessmentSession">
     demographics?: JsonNullableFilter<"AssessmentSession">
     pendingQuestions?: JsonNullableFilter<"AssessmentSession">
@@ -17949,6 +17996,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AssessmentSession"> | Date | string
     updatedAt?: DateTimeFilter<"AssessmentSession"> | Date | string
     completedAt?: DateTimeNullableFilter<"AssessmentSession"> | Date | string | null
+    archivedAt?: DateTimeNullableFilter<"AssessmentSession"> | Date | string | null
     result?: XOR<AssessmentResultNullableScalarRelationFilter, AssessmentResultWhereInput> | null
   }, "id">
 
@@ -17957,6 +18005,7 @@ export namespace Prisma {
     userId?: SortOrderInput | SortOrder
     clerkUserId?: SortOrderInput | SortOrder
     status?: SortOrder
+    isCurrent?: SortOrder
     responses?: SortOrder
     demographics?: SortOrderInput | SortOrder
     pendingQuestions?: SortOrderInput | SortOrder
@@ -17967,6 +18016,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     _count?: AssessmentSessionCountOrderByAggregateInput
     _avg?: AssessmentSessionAvgOrderByAggregateInput
     _max?: AssessmentSessionMaxOrderByAggregateInput
@@ -17982,6 +18032,7 @@ export namespace Prisma {
     userId?: StringNullableWithAggregatesFilter<"AssessmentSession"> | string | null
     clerkUserId?: StringNullableWithAggregatesFilter<"AssessmentSession"> | string | null
     status?: StringWithAggregatesFilter<"AssessmentSession"> | string
+    isCurrent?: BoolWithAggregatesFilter<"AssessmentSession"> | boolean
     responses?: JsonWithAggregatesFilter<"AssessmentSession">
     demographics?: JsonNullableWithAggregatesFilter<"AssessmentSession">
     pendingQuestions?: JsonNullableWithAggregatesFilter<"AssessmentSession">
@@ -17992,6 +18043,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"AssessmentSession"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"AssessmentSession"> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<"AssessmentSession"> | Date | string | null
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"AssessmentSession"> | Date | string | null
   }
 
   export type AssessmentResultWhereInput = {
@@ -18002,6 +18054,7 @@ export namespace Prisma {
     sessionId?: StringFilter<"AssessmentResult"> | string
     userId?: StringNullableFilter<"AssessmentResult"> | string | null
     clerkUserId?: StringNullableFilter<"AssessmentResult"> | string | null
+    isCurrent?: BoolFilter<"AssessmentResult"> | boolean
     scoreLumen?: FloatFilter<"AssessmentResult"> | number
     scoreAether?: FloatFilter<"AssessmentResult"> | number
     scoreOrpheus?: FloatFilter<"AssessmentResult"> | number
@@ -18028,6 +18081,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     userId?: SortOrderInput | SortOrder
     clerkUserId?: SortOrderInput | SortOrder
+    isCurrent?: SortOrder
     scoreLumen?: SortOrder
     scoreAether?: SortOrder
     scoreOrpheus?: SortOrder
@@ -18057,6 +18111,7 @@ export namespace Prisma {
     NOT?: AssessmentResultWhereInput | AssessmentResultWhereInput[]
     userId?: StringNullableFilter<"AssessmentResult"> | string | null
     clerkUserId?: StringNullableFilter<"AssessmentResult"> | string | null
+    isCurrent?: BoolFilter<"AssessmentResult"> | boolean
     scoreLumen?: FloatFilter<"AssessmentResult"> | number
     scoreAether?: FloatFilter<"AssessmentResult"> | number
     scoreOrpheus?: FloatFilter<"AssessmentResult"> | number
@@ -18083,6 +18138,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     userId?: SortOrderInput | SortOrder
     clerkUserId?: SortOrderInput | SortOrder
+    isCurrent?: SortOrder
     scoreLumen?: SortOrder
     scoreAether?: SortOrder
     scoreOrpheus?: SortOrder
@@ -18116,6 +18172,7 @@ export namespace Prisma {
     sessionId?: StringWithAggregatesFilter<"AssessmentResult"> | string
     userId?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
     clerkUserId?: StringNullableWithAggregatesFilter<"AssessmentResult"> | string | null
+    isCurrent?: BoolWithAggregatesFilter<"AssessmentResult"> | boolean
     scoreLumen?: FloatWithAggregatesFilter<"AssessmentResult"> | number
     scoreAether?: FloatWithAggregatesFilter<"AssessmentResult"> | number
     scoreOrpheus?: FloatWithAggregatesFilter<"AssessmentResult"> | number
@@ -18922,6 +18979,7 @@ export namespace Prisma {
     userId?: string | null
     clerkUserId?: string | null
     status?: string
+    isCurrent?: boolean
     responses: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -18932,6 +18990,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
+    archivedAt?: Date | string | null
     result?: AssessmentResultCreateNestedOneWithoutSessionInput
   }
 
@@ -18940,6 +18999,7 @@ export namespace Prisma {
     userId?: string | null
     clerkUserId?: string | null
     status?: string
+    isCurrent?: boolean
     responses: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -18950,6 +19010,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
+    archivedAt?: Date | string | null
     result?: AssessmentResultUncheckedCreateNestedOneWithoutSessionInput
   }
 
@@ -18958,6 +19019,7 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     responses?: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -18968,6 +19030,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     result?: AssessmentResultUpdateOneWithoutSessionNestedInput
   }
 
@@ -18976,6 +19039,7 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     responses?: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -18986,6 +19050,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     result?: AssessmentResultUncheckedUpdateOneWithoutSessionNestedInput
   }
 
@@ -18994,6 +19059,7 @@ export namespace Prisma {
     userId?: string | null
     clerkUserId?: string | null
     status?: string
+    isCurrent?: boolean
     responses: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -19004,6 +19070,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
+    archivedAt?: Date | string | null
   }
 
   export type AssessmentSessionUpdateManyMutationInput = {
@@ -19011,6 +19078,7 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     responses?: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -19021,6 +19089,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AssessmentSessionUncheckedUpdateManyInput = {
@@ -19028,6 +19097,7 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     responses?: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -19038,12 +19108,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AssessmentResultCreateInput = {
     id?: string
     userId?: string | null
     clerkUserId?: string | null
+    isCurrent?: boolean
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -19070,6 +19142,7 @@ export namespace Prisma {
     sessionId: string
     userId?: string | null
     clerkUserId?: string | null
+    isCurrent?: boolean
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -19094,6 +19167,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     scoreLumen?: FloatFieldUpdateOperationsInput | number
     scoreAether?: FloatFieldUpdateOperationsInput | number
     scoreOrpheus?: FloatFieldUpdateOperationsInput | number
@@ -19120,6 +19194,7 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     scoreLumen?: FloatFieldUpdateOperationsInput | number
     scoreAether?: FloatFieldUpdateOperationsInput | number
     scoreOrpheus?: FloatFieldUpdateOperationsInput | number
@@ -19145,6 +19220,7 @@ export namespace Prisma {
     sessionId: string
     userId?: string | null
     clerkUserId?: string | null
+    isCurrent?: boolean
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -19169,6 +19245,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     scoreLumen?: FloatFieldUpdateOperationsInput | number
     scoreAether?: FloatFieldUpdateOperationsInput | number
     scoreOrpheus?: FloatFieldUpdateOperationsInput | number
@@ -19194,6 +19271,7 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     scoreLumen?: FloatFieldUpdateOperationsInput | number
     scoreAether?: FloatFieldUpdateOperationsInput | number
     scoreOrpheus?: FloatFieldUpdateOperationsInput | number
@@ -20009,6 +20087,7 @@ export namespace Prisma {
     userId?: SortOrder
     clerkUserId?: SortOrder
     status?: SortOrder
+    isCurrent?: SortOrder
     responses?: SortOrder
     demographics?: SortOrder
     pendingQuestions?: SortOrder
@@ -20019,6 +20098,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrder
+    archivedAt?: SortOrder
   }
 
   export type AssessmentSessionAvgOrderByAggregateInput = {
@@ -20030,10 +20110,12 @@ export namespace Prisma {
     userId?: SortOrder
     clerkUserId?: SortOrder
     status?: SortOrder
+    isCurrent?: SortOrder
     backNavigationCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrder
+    archivedAt?: SortOrder
   }
 
   export type AssessmentSessionMinOrderByAggregateInput = {
@@ -20041,10 +20123,12 @@ export namespace Prisma {
     userId?: SortOrder
     clerkUserId?: SortOrder
     status?: SortOrder
+    isCurrent?: SortOrder
     backNavigationCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     completedAt?: SortOrder
+    archivedAt?: SortOrder
   }
 
   export type AssessmentSessionSumOrderByAggregateInput = {
@@ -20083,6 +20167,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     userId?: SortOrder
     clerkUserId?: SortOrder
+    isCurrent?: SortOrder
     scoreLumen?: SortOrder
     scoreAether?: SortOrder
     scoreOrpheus?: SortOrder
@@ -20122,6 +20207,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     userId?: SortOrder
     clerkUserId?: SortOrder
+    isCurrent?: SortOrder
     scoreLumen?: SortOrder
     scoreAether?: SortOrder
     scoreOrpheus?: SortOrder
@@ -20145,6 +20231,7 @@ export namespace Prisma {
     sessionId?: SortOrder
     userId?: SortOrder
     clerkUserId?: SortOrder
+    isCurrent?: SortOrder
     scoreLumen?: SortOrder
     scoreAether?: SortOrder
     scoreOrpheus?: SortOrder
@@ -22150,6 +22237,7 @@ export namespace Prisma {
     id?: string
     userId?: string | null
     clerkUserId?: string | null
+    isCurrent?: boolean
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -22174,6 +22262,7 @@ export namespace Prisma {
     id?: string
     userId?: string | null
     clerkUserId?: string | null
+    isCurrent?: boolean
     scoreLumen: number
     scoreAether: number
     scoreOrpheus: number
@@ -22214,6 +22303,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     scoreLumen?: FloatFieldUpdateOperationsInput | number
     scoreAether?: FloatFieldUpdateOperationsInput | number
     scoreOrpheus?: FloatFieldUpdateOperationsInput | number
@@ -22238,6 +22328,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     scoreLumen?: FloatFieldUpdateOperationsInput | number
     scoreAether?: FloatFieldUpdateOperationsInput | number
     scoreOrpheus?: FloatFieldUpdateOperationsInput | number
@@ -22263,6 +22354,7 @@ export namespace Prisma {
     userId?: string | null
     clerkUserId?: string | null
     status?: string
+    isCurrent?: boolean
     responses: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -22273,6 +22365,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
+    archivedAt?: Date | string | null
   }
 
   export type AssessmentSessionUncheckedCreateWithoutResultInput = {
@@ -22280,6 +22373,7 @@ export namespace Prisma {
     userId?: string | null
     clerkUserId?: string | null
     status?: string
+    isCurrent?: boolean
     responses: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -22290,6 +22384,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     completedAt?: Date | string | null
+    archivedAt?: Date | string | null
   }
 
   export type AssessmentSessionCreateOrConnectWithoutResultInput = {
@@ -22313,6 +22408,7 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     responses?: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -22323,6 +22419,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AssessmentSessionUncheckedUpdateWithoutResultInput = {
@@ -22330,6 +22427,7 @@ export namespace Prisma {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     clerkUserId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    isCurrent?: BoolFieldUpdateOperationsInput | boolean
     responses?: JsonNullValueInput | InputJsonValue
     demographics?: NullableJsonNullValueInput | InputJsonValue
     pendingQuestions?: NullableJsonNullValueInput | InputJsonValue
@@ -22340,6 +22438,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type InviteLinkCreateManyInviterInput = {

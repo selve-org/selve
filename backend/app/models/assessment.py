@@ -26,6 +26,7 @@ class AssessmentSession(Base):
     userId = Column(String, nullable=True)
     clerkUserId = Column(String, nullable=True, index=True)
     status = Column(String, default="in-progress")  # "in-progress", "completed", "abandoned"
+    isCurrent = Column(Boolean, default=True)  # Whether this is the user's current active assessment
     
     # JSON fields
     responses = Column(JSON, nullable=False, default=dict)  # {question_id: score}
@@ -40,12 +41,19 @@ class AssessmentSession(Base):
     createdAt = Column(DateTime(timezone=True), default=func.now(), nullable=False)
     updatedAt = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
     completedAt = Column(DateTime(timezone=True), nullable=True)
+    archivedAt = Column(DateTime(timezone=True), nullable=True)  # When this assessment was archived
     
     # Relationship
     result = relationship("AssessmentResult", back_populates="session", uselist=False, cascade="all, delete-orphan")
     
+    # Indexes
+    __table_args__ = (
+        Index('idx_session_clerkUserId_isCurrent', 'clerkUserId', 'isCurrent'),
+        Index('idx_session_clerkUserId_completedAt', 'clerkUserId', 'completedAt'),
+    )
+    
     def __repr__(self):
-        return f"<AssessmentSession(id={self.id}, status={self.status}, user={self.clerkUserId})>"
+        return f"<AssessmentSession(id={self.id}, status={self.status}, user={self.clerkUserId}, current={self.isCurrent})>"
 
 
 class AssessmentResult(Base):
@@ -59,6 +67,7 @@ class AssessmentResult(Base):
     sessionId = Column(String, ForeignKey("AssessmentSession.id", ondelete="CASCADE"), unique=True, nullable=False)
     userId = Column(String, nullable=True)
     clerkUserId = Column(String, nullable=True, index=True)
+    isCurrent = Column(Boolean, default=True)  # Whether this is the user's current/latest result
     
     # Dimension Scores (0-100)
     scoreLumen = Column(Float, nullable=False)     # Mindful Curiosity
@@ -95,10 +104,11 @@ class AssessmentResult(Base):
     __table_args__ = (
         Index('idx_result_userId', 'userId'),
         Index('idx_result_clerkUserId', 'clerkUserId'),
+        Index('idx_result_clerkUserId_isCurrent', 'clerkUserId', 'isCurrent'),
     )
     
     def __repr__(self):
-        return f"<AssessmentResult(id={self.id}, archetype={self.archetype}, user={self.clerkUserId})>"
+        return f"<AssessmentResult(id={self.id}, archetype={self.archetype}, user={self.clerkUserId}, current={self.isCurrent})>"
 
 
 class AssessmentTemplate(Base):

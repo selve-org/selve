@@ -220,6 +220,7 @@ exports.Prisma.AssessmentSessionScalarFieldEnum = {
   userId: 'userId',
   clerkUserId: 'clerkUserId',
   status: 'status',
+  isCurrent: 'isCurrent',
   responses: 'responses',
   demographics: 'demographics',
   pendingQuestions: 'pendingQuestions',
@@ -229,7 +230,8 @@ exports.Prisma.AssessmentSessionScalarFieldEnum = {
   metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  completedAt: 'completedAt'
+  completedAt: 'completedAt',
+  archivedAt: 'archivedAt'
 };
 
 exports.Prisma.AssessmentResultScalarFieldEnum = {
@@ -237,6 +239,7 @@ exports.Prisma.AssessmentResultScalarFieldEnum = {
   sessionId: 'sessionId',
   userId: 'userId',
   clerkUserId: 'clerkUserId',
+  isCurrent: 'isCurrent',
   scoreLumen: 'scoreLumen',
   scoreAether: 'scoreAether',
   scoreOrpheus: 'scoreOrpheus',

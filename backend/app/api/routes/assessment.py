@@ -1411,4 +1411,207 @@ async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db))
         "can_resume": db_session.status == "in-progress",
         "created_at": db_session.createdAt.isoformat(),
         "updated_at": db_session.updatedAt.isoformat() if db_session.updatedAt else None,
+        "completed_at": db_session.completedAt.isoformat() if db_session.completedAt else None,
     }
+
+
+# ============================================================================
+# ASSESSMENT ARCHIVING & RETAKE
+# ============================================================================
+
+@router.post("/assessment/archive-and-restart")
+async def archive_and_restart_assessment(
+    clerk_user_id: Optional[str] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Archive user's current assessment(s) and create a new one.
+    
+    This endpoint:
+    1. Marks all current sessions as archived (isCurrent=False, sets archivedAt)
+    2. Marks all current results as archived (isCurrent=False)
+    3. Creates a brand new session for the user
+    
+    All previous assessment data is preserved for historical tracking.
+    
+    Args:
+        clerk_user_id: Clerk user ID (from auth or request body)
+        
+    Returns:
+        - new_session_id: ID of the newly created session
+        - archived_count: Number of previous sessions archived
+        - message: Success message
+    """
+    if not clerk_user_id:
+        raise HTTPException(
+            status_code=400, 
+            detail="clerk_user_id is required for authenticated users"
+        )
+    
+    try:
+        service = AssessmentService(db)
+        
+        # Get count of current sessions before archiving
+        from sqlalchemy import func, select
+        from app.models.assessment import AssessmentSession
+        
+        result = await db.execute(
+            select(func.count())
+            .select_from(AssessmentSession)
+            .where(AssessmentSession.clerkUserId == clerk_user_id)
+            .where(AssessmentSession.isCurrent == True)
+        )
+        archived_count = result.scalar() or 0
+        
+        # Archive current and create new
+        new_session = await service.archive_current_and_create_new(
+            clerk_user_id=clerk_user_id
+        )
+        
+        return {
+            "new_session_id": new_session.id,
+            "archived_count": archived_count,
+            "message": f"Successfully archived {archived_count} previous assessment(s) and created new session",
+            "created_at": new_session.createdAt.isoformat(),
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to archive and restart: {str(e)}")
+
+
+@router.get("/assessment/history/{clerk_user_id}")
+async def get_assessment_history(
+    clerk_user_id: str,
+    include_current: bool = True,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get user's assessment history (all assessments, past and present)
+    
+    Args:
+        clerk_user_id: Clerk user ID
+        include_current: Whether to include current assessment (default: True)
+        limit: Maximum number of results (default: 10)
+        
+    Returns:
+        List of assessment sessions with metadata, ordered by date (newest first)
+    """
+    service = AssessmentService(db)
+    
+    try:
+        sessions = await service.get_assessment_history(
+            clerk_user_id=clerk_user_id,
+            include_current=include_current,
+            limit=limit
+        )
+        
+        return {
+            "total": len(sessions),
+            "assessments": [
+                {
+                    "session_id": s.id,
+                    "status": s.status,
+                    "is_current": s.isCurrent,
+                    "created_at": s.createdAt.isoformat(),
+                    "completed_at": s.completedAt.isoformat() if s.completedAt else None,
+                    "archived_at": s.archivedAt.isoformat() if s.archivedAt else None,
+                    "questions_answered": len(s.responses or {}) + len(s.demographics or {}),
+                }
+                for s in sessions
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch history: {str(e)}")
+
+
+@router.get("/assessment/current/{clerk_user_id}")
+async def get_current_assessment(
+    clerk_user_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get user's current (active) assessment
+    
+    Args:
+        clerk_user_id: Clerk user ID
+        
+    Returns:
+        Current assessment session details or null if no current assessment
+    """
+    service = AssessmentService(db)
+    
+    try:
+        session = await service.get_current_session(clerk_user_id)
+        
+        if not session:
+            return {"current_assessment": None}
+        
+        return {
+            "current_assessment": {
+                "session_id": session.id,
+                "status": session.status,
+                "created_at": session.createdAt.isoformat(),
+                "completed_at": session.completedAt.isoformat() if session.completedAt else None,
+                "questions_answered": len(session.responses or {}) + len(session.demographics or {}),
+                "progress": min(
+                    (len(session.responses or {}) + len(session.demographics or {})) / 44, 
+                    0.95
+                ),
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch current assessment: {str(e)}")
+
+
+@router.get("/assessment/current-result/{clerk_user_id}")
+async def get_current_result(
+    clerk_user_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get user's current (latest) assessment result
+    
+    This returns only the most recent result marked as isCurrent=True.
+    Use this when you want to display "your current personality profile".
+    
+    Args:
+        clerk_user_id: Clerk user ID
+        
+    Returns:
+        Current result with scores and narrative, or null if no current result
+    """
+    service = AssessmentService(db)
+    
+    try:
+        result = await service.get_current_result(clerk_user_id)
+        
+        if not result:
+            return {"current_result": None}
+        
+        return {
+            "current_result": {
+                "session_id": result.sessionId,
+                "scores": {
+                    "LUMEN": result.scoreLumen,
+                    "AETHER": result.scoreAether,
+                    "ORPHEUS": result.scoreOrpheus,
+                    "ORIN": result.scoreOrin,
+                    "LYRA": result.scoreLyra,
+                    "VARA": result.scoreVara,
+                    "CHRONOS": result.scoreChronos,
+                    "KAEL": result.scoreKael,
+                },
+                "archetype": result.archetype,
+                "profile_pattern": result.profilePattern,
+                "created_at": result.createdAt.isoformat(),
+                "consistency_score": result.consistencyScore,
+                "attention_score": result.attentionScore,
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch current result: {str(e)}")
+
