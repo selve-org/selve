@@ -3,7 +3,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import type { QuestionnaireCheckpoint } from "@/types/questionnaire";
+import type { QuestionnaireCheckpoint } from "@/lib/types/questionnaire";
 
 interface CheckpointProps {
   checkpoint: QuestionnaireCheckpoint;

@@ -36,6 +36,64 @@ sessions: Dict[str, Dict] = {}
 
 
 # ============================================================================
+# Helper Functions
+# ============================================================================
+
+def get_question_type_and_config(item_code: str) -> tuple[str, Dict]:
+    """
+    Generate question type and renderConfig based on item code's scale range.
+    
+    Big Five items (E, N, A, C, O + digit): 1-5 scale (horizontal slider)
+    16PF Dominance items (D + digit): 1-5 scale (horizontal slider)
+    HEXACO items (all others): 1-7 scale (vertical radio buttons for better UI)
+    
+    Returns:
+        (question_type, renderConfig) tuple
+    """
+    # 16PF Dominance items (D): 1-5 scale - horizontal slider
+    if item_code.startswith('D') and item_code[1:].isdigit():
+        return ("scale-slider", {
+            "min": 1,
+            "max": 5,
+            "step": 1,
+            "labels": {
+                1: "Strongly Disagree",
+                2: "Disagree",
+                3: "Neutral",
+                4: "Agree",
+                5: "Strongly Agree"
+            }
+        })
+    # Big Five items (E, N, A, C, O - single letter + digit): 1-5 scale - horizontal slider
+    elif len(item_code) >= 2 and item_code[0] in ['E', 'N', 'A', 'C', 'O'] and item_code[1:].isdigit():
+        return ("scale-slider", {
+            "min": 1,
+            "max": 5,
+            "step": 1,
+            "labels": {
+                1: "Strongly Disagree",
+                2: "Disagree",
+                3: "Neutral",
+                4: "Agree",
+                5: "Strongly Agree"
+            }
+        })
+    # HEXACO items: 1-7 scale - vertical radio buttons (better for 7 options)
+    else:
+        return ("radio", {
+            "options": [
+                {"value": 1, "label": "That is definitely NOT me!"},
+                {"value": 2, "label": "Disagree"},
+                {"value": 3, "label": "Somewhat Disagree"},
+                {"value": 4, "label": "Neutral"},
+                {"value": 5, "label": "Somewhat Agree"},
+                {"value": 6, "label": "Agree"},
+                {"value": 7, "label": "That IS definitely me!"}
+            ]
+        })
+
+
+# ============================================================================
 # Request/Response Models
 # ============================================================================
 
@@ -721,29 +779,18 @@ async def submit_answer(
             print(f"   • Invalid item structure: {item}")
     print(f"{'='*70}\n")
     
-    # Format questions
-    next_questions = [
-        {
-            "id": q["item"],  # Use "item" field as the ID
+    # Format questions with correct type and config based on scale
+    next_questions = []
+    for q in next_items:
+        question_type, render_config = get_question_type_and_config(q["item"])
+        next_questions.append({
+            "id": q["item"],
             "text": q["text"],
             "dimension": q["dimension"],
-            "type": "scale-slider",  # SELVE uses Likert scale (1-5)
+            "type": question_type,  # Use correct type (slider for 5-point, radio for 7-point)
             "isRequired": True,
-            "renderConfig": {
-                "min": 1,
-                "max": 5,
-                "step": 1,
-                "labels": {
-                    "1": "Strongly Disagree",
-                    "2": "Disagree",
-                    "3": "Neutral",
-                    "4": "Agree",
-                    "5": "Strongly Agree"
-                }
-            }
-        }
-        for q in next_items
-    ]
+            "renderConfig": render_config
+        })
     
     # Mark new questions as pending
     for q in next_questions:
@@ -988,24 +1035,14 @@ async def go_back(request: GetPreviousQuestionRequest):
             dim_items = tester.scorer.get_items_by_dimension(dim)
             for item in dim_items:
                 if item['item'] == last_question_id:
+                    question_type, render_config = get_question_type_and_config(item["item"])
                     question_obj = {
                         "id": item["item"],
                         "text": item["text"],
-                        "dimension": item.get("dimension", dim),  # Use item dimension or fall back to current dim
-                        "type": "scale-slider",
+                        "dimension": item.get("dimension", dim),
+                        "type": question_type,  # Use correct type (slider for 5-point, radio for 7-point)
                         "isRequired": True,
-                        "renderConfig": {
-                            "min": 1,
-                            "max": 5,
-                            "step": 1,
-                            "labels": {
-                                "1": "Strongly Disagree",
-                                "2": "Disagree",
-                                "3": "Neutral",
-                                "4": "Agree",
-                                "5": "Strongly Agree"
-                            }
-                        }
+                        "renderConfig": render_config
                     }
                     break
             if question_obj:
@@ -1451,6 +1488,40 @@ async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db))
         sessions[session_id] = session_to_state_dict(db_session)
         print(f"♻️  Restored session {session_id} from database to memory")
     
+    # Get pending questions from memory if available
+    pending_questions_list = []
+    pending_questions_details = []
+    if session_id in sessions:
+        pending_set = sessions[session_id].get("pending_questions", set())
+        pending_questions_list = list(pending_set)
+        
+        # Load item pool to get full question details
+        if pending_questions_list:
+            tester = sessions[session_id]["tester"]
+            item_pool = tester.scorer.item_pool
+            
+            # item_pool is a dict with dimensions as keys, need to flatten
+            all_items = []
+            for dimension, items in item_pool.items():
+                for item in items:
+                    item["dimension"] = dimension  # Ensure dimension is set
+                    all_items.append(item)
+            
+            for question_id in pending_questions_list:
+                # Find question in flattened item pool
+                matching_items = [item for item in all_items if item["item"] == question_id]
+                if matching_items:
+                    item = matching_items[0]
+                    question_type, render_config = get_question_type_and_config(item["item"])
+                    pending_questions_details.append({
+                        "id": item["item"],
+                        "text": item["text"],
+                        "dimension": item.get("dimension", "UNKNOWN"),
+                        "type": question_type,  # Use correct type (slider for 5-point, radio for 7-point)
+                        "isRequired": True,
+                        "renderConfig": render_config
+                    })
+    
     return {
         "session_id": session_id,
         "status": db_session.status,
@@ -1461,6 +1532,13 @@ async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db))
         "created_at": db_session.createdAt.isoformat(),
         "updated_at": db_session.updatedAt.isoformat() if db_session.updatedAt else None,
         "completed_at": db_session.completedAt.isoformat() if db_session.completedAt else None,
+        # Include actual response data for session restoration
+        "responses": responses,
+        "demographics": demographics,
+        # Include user ID to detect anonymous vs authenticated sessions
+        "clerk_user_id": db_session.clerkUserId,
+        # Include pending questions with full details for continuation
+        "pending_questions": pending_questions_details,
     }
 
 
@@ -1588,6 +1666,9 @@ async def get_current_assessment(
         
     Returns:
         Current assessment session details or null if no current assessment
+        
+    Note:
+        Returns null if session exists but has 0 answers (user started but never submitted anything)
     """
     service = AssessmentService(db)
     
@@ -1597,17 +1678,29 @@ async def get_current_assessment(
         if not session:
             return {"current_assessment": None}
         
+        # Count total answers (demographics + personality responses)
+        questions_answered = len(session.responses or {}) + len(session.demographics or {})
+        
+        # If user started wizard but never submitted ANY answer, treat as no session
+        # This prevents showing "Continue Assessment" for empty sessions
+        if questions_answered == 0:
+            print(f"⚠️  Session {session.id} has 0 answers - treating as no current session")
+            return {"current_assessment": None}
+        
         return {
             "current_assessment": {
                 "session_id": session.id,
                 "status": session.status,
                 "created_at": session.createdAt.isoformat(),
                 "completed_at": session.completedAt.isoformat() if session.completedAt else None,
-                "questions_answered": len(session.responses or {}) + len(session.demographics or {}),
+                "questions_answered": questions_answered,
                 "progress": min(
-                    (len(session.responses or {}) + len(session.demographics or {})) / 44, 
+                    questions_answered / 44, 
                     0.95
                 ),
+                # Include actual response data for session restoration
+                "responses": session.responses or {},
+                "demographics": session.demographics or {},
             }
         }
         

@@ -11,7 +11,7 @@ import type {
   QuestionnaireQuestion,
   QuestionnaireCheckpoint,
   WizardState,
-} from "@/types/questionnaire";
+} from "@/lib/types/questionnaire";
 
 // API base URL - defaults to localhost for development
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -169,41 +169,56 @@ export function useQuestionnaire() {
         }
       }
 
-      // Start assessment with SELVE backend (new or existing session)
-      // Get auth token if user is signed in
-      const token = await getToken();
+      // If we have a restored session with answers, DON'T call /start (would break adaptive flow)
+      // Instead, use pending questions from the restored session
+      let session_id, questions, total_questions, progress;
       
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(`${API_BASE}/api/assessment/start`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          user_id: null, // Clerk ID will be extracted from token on backend
-          metadata: { source: "web", restored_session: !!existingSessionId },
-        }),
-      });
+      if (restoredSessionData && restoredSessionData.questions_answered > 0) {
+        // Session is being restored - use pending questions from backend
+        console.log("♻️ Restored session detected - using pending questions to preserve adaptive flow");
+        
+        session_id = existingSessionId;
+        // Use pending questions from restored session data
+        questions = restoredSessionData.pending_questions || [];
+        total_questions = restoredSessionData.total_questions || 44;
+        progress = restoredSessionData.progress || 0;
+        
+        setSessionId(session_id);
+        
+        console.log(`📋 Loaded ${questions.length} pending questions from backend`);
+      } else {
+        // New session - call /start to initialize
+        const token = await getToken();
+        
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(`${API_BASE}/api/assessment/start`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            user_id: null, // Clerk ID will be extracted from token on backend
+            metadata: { source: "web", restored_session: false },
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to start assessment");
-      }
+        if (!response.ok) {
+          throw new Error("Failed to start assessment");
+        }
 
-      const data = await response.json();
-      const { session_id, questions, total_questions, progress } = data;
+        const data = await response.json();
+        session_id = data.session_id;
+        questions = data.questions;
+        total_questions = data.total_questions;
+        progress = data.progress;
 
-      // Store session ID (use existing one if we're restoring, or new one)
-      const finalSessionId = existingSessionId || session_id;
-      setSessionId(finalSessionId);
-      
-      // Update progress with session ID if it's new
-      if (!existingSessionId) {
-        updateProgress({ sessionId: finalSessionId });
+        setSessionId(session_id);
+        updateProgress({ sessionId: session_id });
       }
 
       // Convert backend questions to frontend format
@@ -231,6 +246,24 @@ export function useQuestionnaire() {
 
       setQuestionQueue(formattedQuestions);
       
+      // Restore previous answers from backend if available
+      const restoredAnswers = new Map();
+      if (restoredSessionData) {
+        // Load demographics into answers map
+        const demographics = restoredSessionData.demographics || {};
+        Object.entries(demographics).forEach(([key, value]) => {
+          restoredAnswers.set(key, value);
+        });
+        
+        // Load personality responses into answers map
+        const responses = restoredSessionData.responses || {};
+        Object.entries(responses).forEach(([key, value]) => {
+          restoredAnswers.set(key, value);
+        });
+        
+        console.log(`✅ Restored ${restoredAnswers.size} previous answers from backend`);
+      }
+      
       // Calculate which question to show based on already answered questions
       // If restoring session, skip to first unanswered question
       let startIndex = 0;
@@ -250,6 +283,7 @@ export function useQuestionnaire() {
           createdAt: new Date().toISOString(),
         } as QuestionnaireSession,
         currentQuestion: formattedQuestions[startIndex] || null,
+        answers: restoredAnswers, // Load restored answers into state
         isLoading: false,
         progress: {
           current: restoredSessionData?.questions_answered || 0,

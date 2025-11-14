@@ -94,6 +94,9 @@ export interface RenderConfig {
   minLength?: number;
   rows?: number; // For textarea
 
+  // For date inputs
+  yearRange?: [number, number]; // [minYear, maxYear]
+
   // For file upload
   accept?: string; // File types to accept
   maxSize?: number; // Max file size in bytes

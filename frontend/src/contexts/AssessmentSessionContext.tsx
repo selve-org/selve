@@ -124,6 +124,12 @@ async function fetchSessionStatus(sessionId: string): Promise<{
   status: string; 
   completedAt: string | null;
   questions_answered: number;
+  responses?: Record<string, unknown>;
+  demographics?: Record<string, unknown>;
+  clerk_user_id?: string | null;
+  pending_questions?: any[]; // Full question objects
+  total_questions?: number;
+  progress?: number;
 } | null> {
   if (!sessionId) {
     console.warn("⚠️ fetchSessionStatus called with empty sessionId");
@@ -156,7 +162,14 @@ async function fetchSessionStatus(sessionId: string): Promise<{
       status: data.status || "in-progress",
       completedAt: data.completed_at || null,
       questions_answered: data.questions_answered || 0,
+      responses: data.responses || {},
+      demographics: data.demographics || {},
+      clerk_user_id: data.clerk_user_id || null,
+      pending_questions: data.pending_questions || [],
+      total_questions: data.total_questions || 44,
+      progress: data.progress || 0,
     };
+
     
   } catch (error) {
     console.error("❌ Error fetching session status:", error);
@@ -170,6 +183,8 @@ async function fetchCurrentSession(clerkUserId: string): Promise<{
   status: string;
   created_at: string;
   completed_at: string | null;
+  responses?: Record<string, unknown>;
+  demographics?: Record<string, unknown>;
 } | null> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   
@@ -213,7 +228,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const storedSession = getStoredSession();
+        let storedSession = getStoredSession();
         
         // For authenticated users, always check what their CURRENT session is on backend
         // This prevents showing old completed sessions when they have a new active one
@@ -222,7 +237,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
           const currentSession = await fetchCurrentSession(user.id);
           
           if (currentSession) {
-            // Backend has a current session for this user
+            // Backend has a current session for this user (with at least 1 answer)
             if (currentSession.session_id !== storedSession.sessionId) {
               // localStorage has wrong/old session - sync with backend current
               console.log(`🔄 Syncing to current session: ${currentSession.session_id}`);
@@ -231,21 +246,44 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
               storedSession.completedAt = currentSession.completed_at;
               storedSession.startedAt = currentSession.created_at;
               storedSession.hasStartedAssessment = true;
+              // Restore responses and demographics from backend
+              storedSession.responses = currentSession.responses || {};
+              storedSession.demographics = currentSession.demographics || {};
               saveSessionToStorage(storedSession);
             } else {
-              // localStorage session matches backend current - just update status
+              // localStorage session matches backend current - just update status and restore data
               storedSession.status = currentSession.status as "in-progress" | "completed" | "abandoned";
               storedSession.completedAt = currentSession.completed_at;
+              // Always restore responses and demographics from backend (source of truth)
+              storedSession.responses = currentSession.responses || {};
+              storedSession.demographics = currentSession.demographics || {};
               saveSessionToStorage(storedSession);
             }
           } else if (storedSession.sessionId) {
             // localStorage has a session but backend says no current session
-            // This means the stored session was archived - fetch its status
+            // This could mean: 1) session was archived, 2) session has 0 answers (empty)
             console.log(`🔍 Checking stored session status: ${storedSession.sessionId}`);
             const statusData = await fetchSessionStatus(storedSession.sessionId);
             if (statusData) {
-              storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
-              storedSession.completedAt = statusData.completedAt;
+              // Check if session has any actual data
+              if (statusData.questions_answered === 0) {
+                // Empty session - clear it
+                console.log(`🗑️  Authenticated user session has 0 answers - clearing`);
+                storedSession = getDefaultSession();
+                saveSessionToStorage(storedSession);
+              } else {
+                // Session exists but was archived - restore data from backend
+                console.log(`✅ Restoring archived session data: ${statusData.questions_answered} answers`);
+                storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
+                storedSession.completedAt = statusData.completedAt;
+                storedSession.responses = statusData.responses || {};
+                storedSession.demographics = statusData.demographics || {};
+                saveSessionToStorage(storedSession);
+              }
+            } else {
+              // Session not found or has no data - clear it
+              console.log(`🗑️  Clearing empty/invalid session from localStorage`);
+              storedSession = getDefaultSession();
               saveSessionToStorage(storedSession);
             }
           }
@@ -255,10 +293,21 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
           const statusData = await fetchSessionStatus(storedSession.sessionId);
           
           if (statusData) {
-            storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
-            storedSession.completedAt = statusData.completedAt;
-            console.log(`✅ Session status synced: ${statusData.status}`);
-            saveSessionToStorage(storedSession);
+            // Check if session has any actual data (at least 1 answer)
+            if (statusData.questions_answered === 0) {
+              // Empty session - clear it
+              console.log(`🗑️  Anonymous session has 0 answers - clearing`);
+              storedSession = getDefaultSession();
+              saveSessionToStorage(storedSession);
+            } else {
+              // Restore responses and demographics from backend
+              console.log(`✅ Restoring session data: ${statusData.questions_answered} answers`);
+              storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
+              storedSession.completedAt = statusData.completedAt;
+              storedSession.responses = statusData.responses || {};
+              storedSession.demographics = statusData.demographics || {};
+              saveSessionToStorage(storedSession);
+            }
           } else {
             console.log("📝 Using local session data (backend status unavailable)");
           }
@@ -387,8 +436,13 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
     if (!isHydrated || !isUserLoaded || hasTransferredSession) return;
     
     // User just signed in and has an active anonymous session
-    if (user && session.sessionId && !session.sessionId.includes(user.id)) {
-      console.log("🔄 Transferring anonymous session to authenticated user...");
+    // Check if session exists but has no clerkUserId (anonymous)
+    if (user && session.sessionId) {
+      // Verify this is actually an anonymous session before transferring
+      fetchSessionStatus(session.sessionId).then(sessionData => {
+        // Only transfer if session has no clerk_user_id (anonymous) or different user
+        if (sessionData && (!sessionData.clerk_user_id || sessionData.clerk_user_id !== user.id) && session.sessionId) {
+          console.log("🔄 Transferring anonymous session to authenticated user...");
       
       transferSessionToUser(session.sessionId, user.id, getToken)
         .then(() => {
@@ -425,6 +479,10 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
             });
           }
         });
+        }
+      }).catch(err => {
+        console.error("Failed to check session for transfer:", err);
+      });
     }
   }, [user, isUserLoaded, session.sessionId, isHydrated, hasTransferredSession, saveProgress, getToken, pathname]);
 

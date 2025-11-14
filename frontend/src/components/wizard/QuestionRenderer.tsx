@@ -3,7 +3,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import type { QuestionnaireQuestion } from "@/types/questionnaire";
+import type { QuestionnaireQuestion } from "@/lib/types/questionnaire";
 import {
   PillSelect,
   TextInput,

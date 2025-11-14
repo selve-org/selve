@@ -3,7 +3,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import type { RenderConfig } from "@/types/questionnaire";
+import type { RenderConfig } from "@/lib/types/questionnaire";
 
 interface PillSelectProps {
   value: string | string[] | null;

@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import type { RenderConfig } from "@/types/questionnaire";
+import type { RenderConfig } from "@/lib/types/questionnaire";
 
 interface NumberInputProps {
   value: number | string;
