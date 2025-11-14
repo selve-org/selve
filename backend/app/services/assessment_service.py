@@ -179,6 +179,12 @@ class AssessmentService:
         Returns:
             AssessmentResult object
         """
+        # 🔒 Check if result already exists (prevent duplicate on concurrent requests)
+        existing_result = await self.get_result(session_id)
+        if existing_result:
+            print(f"⚠️ Result already exists for session {session_id}, returning existing")
+            return existing_result
+        
         # Get session to extract user IDs
         session = await self.get_session(session_id)
         if not session:
