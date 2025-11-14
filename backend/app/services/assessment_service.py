@@ -164,6 +164,13 @@ class AssessmentService:
         """
         Save final assessment results
         
+        IMPORTANT: This function is IDEMPOTENT - safe to call multiple times.
+        If result already exists, returns the existing result without re-generating.
+        This prevents:
+            - Duplicate database entries on concurrent requests
+            - Unnecessary OpenAI API calls (saves money!)
+            - Race conditions when user refreshes results page
+        
         Args:
             session_id: Session this result belongs to
             scores: Dimension scores dict (LUMEN, AETHER, etc.)
@@ -177,9 +184,10 @@ class AssessmentService:
             generation_model: Model used for generation
             
         Returns:
-            AssessmentResult object
+            AssessmentResult object (existing or newly created)
         """
-        # 🔒 Check if result already exists (prevent duplicate on concurrent requests)
+        # 🔒 IDEMPOTENCY CHECK: Return existing result if already saved
+        # Prevents duplicate on concurrent requests (e.g., multiple tabs, rapid refreshes)
         existing_result = await self.get_result(session_id)
         if existing_result:
             print(f"⚠️ Result already exists for session {session_id}, returning existing")

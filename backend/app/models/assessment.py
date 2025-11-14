@@ -115,6 +115,18 @@ class AssessmentTemplate(Base):
     """
     Assessment template - item pools and configurations
     Matches Prisma's AssessmentTemplate model
+    
+    ⚠️ CURRENTLY UNUSED - FUTURE FEATURE
+    
+    Purpose: Support multiple assessment versions/templates (e.g., "Teen Version", "Clinical", "Quick Screen")
+    Current State: Item pool hardcoded in app/data/selve_item_pool_expanded.json
+    Future Use Cases:
+        - A/B testing different item pools
+        - Version control for assessment changes
+        - Multiple assessment types for different audiences
+        - Template switching without code deployment
+    
+    To activate: Seed database with item pool, modify AdaptiveTester to load from here
     """
     __tablename__ = "AssessmentTemplate"
     

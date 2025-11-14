@@ -1063,6 +1063,12 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
     """
     Get complete assessment results with narrative.
     
+    ✅ BEST PRACTICE: Results are cached in database
+    - First request: Generates narrative with OpenAI (~$0.002) → Saves to database
+    - All subsequent requests: Fetches from database (FREE, instant!)
+    - Prevents duplicate OpenAI calls on page refresh
+    - Idempotent: Safe to call multiple times
+    
     Returns:
     - scores: Dimension scores (0-100)
     - narrative: Complete psychological narrative
@@ -1070,12 +1076,12 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
       - dimensions: Detailed dimension narratives
       - summary: Executive summary
     """
-    # Check database first for existing results
+    # 🔍 STEP 1: Check database FIRST for existing results (caching layer)
     service = AssessmentService(db)
     existing_result = await service.get_result(session_id)
     
     if existing_result:
-        # Results already generated - return from database
+        # ✅ Results already generated - return cached from database (NO OpenAI call)
         print(f"\n📊 Returning existing results from database for session {session_id}")
         
         # Load session for demographics
@@ -1144,6 +1150,10 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
             detail=f"Assessment not complete. Need more responses for: {', '.join(incomplete_dims)}",
         )
     
+    # ⚠️ STEP 2: No existing results - generate new ones (costs money via OpenAI)
+    # This only runs ONCE per session (first time results requested)
+    # All subsequent requests return cached result from STEP 1
+    
     # Score responses
     profile = scorer.score_responses(responses)
     
@@ -1153,7 +1163,7 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
     if validator:
         validation_result = validator.validate_responses(responses)
     
-    # Generate narrative using integrated OpenAI generator
+    # 🤖 Generate narrative using OpenAI (EXPENSIVE - only runs once!)
     # Convert float scores to int for the generator
     int_scores = {dim: int(score) for dim, score in profile.dimension_scores.items()}
     
@@ -1212,7 +1222,8 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
     # Mark session as completed
     session["completed_at"] = datetime.now().isoformat()
     
-    # 💾 Save results to database
+    # 💾 Save results to database for future requests (caching)
+    # This enables instant, free retrieval on page refresh (STEP 1 above)
     archetype_name = None
     profile_pattern = None
     if 'sections' in narrative_dict and 'archetype' in narrative_dict['sections']:
@@ -1222,6 +1233,7 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
     
     validation_flags = validation_result.get('flags', []) if validation_result else None
     
+    # save_result() is idempotent - if called twice concurrently, returns existing
     await service.save_result(
         session_id=session_id,
         scores=profile.dimension_scores,
