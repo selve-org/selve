@@ -5,7 +5,7 @@ Main entry point for the psychology profiling backend
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import questions, assessment
+from app.api.routes import questions, assessment, invites
 
 app = FastAPI(
     title="SELVE Psychology API",
@@ -28,6 +28,7 @@ app.add_middleware(
 # Include routers
 app.include_router(questions.router, prefix="/api", tags=["questions"])
 app.include_router(assessment.router, prefix="/api", tags=["assessment"])
+app.include_router(invites.router, prefix="/api", tags=["invites"])
 
 
 @app.get("/")
