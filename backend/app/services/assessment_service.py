@@ -192,12 +192,12 @@ class AssessmentService:
         if existing_result:
             print(f"⚠️ Result already exists for session {session_id}, returning existing")
             return existing_result
-        
+
         # Get session to extract user IDs
         session = await self.get_session(session_id)
         if not session:
             raise ValueError(f"Session {session_id} not found")
-        
+
         # 🔄 Mark any existing results for this user as NOT current
         if session.clerkUserId:
             await self.db.execute(
@@ -206,7 +206,7 @@ class AssessmentService:
                 .where(AssessmentResult.isCurrent == True)
                 .values(isCurrent=False)
             )
-        
+
         # Create result (will have isCurrent=True by default from schema)
         result = AssessmentResult(
             sessionId=session_id,
@@ -230,15 +230,28 @@ class AssessmentService:
             generationCost=generation_cost,
             generationModel=generation_model,
         )
-        
+
         self.db.add(result)
-        
+
         # Update session status to completed
         await self.update_session(session_id, status="completed")
-        
-        await self.db.commit()
-        await self.db.refresh(result)
-        
+
+        try:
+            await self.db.commit()
+            await self.db.refresh(result)
+        except Exception as e:
+            # Handle race condition: another request may have inserted the result
+            # between our check and our insert
+            await self.db.rollback()
+            if "duplicate key" in str(e).lower() or "unique constraint" in str(e).lower():
+                print(f"⚠️ Race condition detected: result was created by concurrent request")
+                # Fetch and return the result that was created by the other request
+                existing_result = await self.get_result(session_id)
+                if existing_result:
+                    return existing_result
+            # Re-raise if it's a different error
+            raise
+
         return result
     
     async def get_result(self, session_id: str) -> Optional[AssessmentResult]:
