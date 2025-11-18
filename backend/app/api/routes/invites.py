@@ -6,7 +6,7 @@ Handles creating, managing, and tracking friend assessment invites
 import os
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 from prisma import Prisma
 from prisma.errors import PrismaError
@@ -16,7 +16,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from app.services.tier_service import TierService, enforce_invite_limits
 from app.services.mailgun_service import MailgunService
-from app.auth import get_current_user_optional
 
 router = APIRouter(prefix="/invites", tags=["invites"])
 
@@ -95,8 +94,7 @@ def generate_invite_code() -> str:
 @router.post("/create", response_model=CreateInviteResponse)
 async def create_invite(
     request: Request,
-    invite_data: CreateInviteRequest,
-    user_id: Optional[str] = Depends(get_current_user_optional)
+    invite_data: CreateInviteRequest
 ):
     """
     Create a new friend assessment invite
@@ -122,7 +120,8 @@ async def create_invite(
     - email_sent: Whether email was delivered
     """
     
-    # Require authentication
+    # Get user ID from header (passed by Next.js API route)
+    user_id = request.headers.get("X-User-ID")
     if not user_id:
         raise HTTPException(
             status_code=401,
