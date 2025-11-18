@@ -21,6 +21,7 @@ httpx==0.28.1
 pyjwt==2.9.0
 cryptography==43.0.3
 python-jose[cryptography]==3.3.0
+svix==1.36.0
 
 # Future: AI and Psychology Libraries (to be added in later phases)
 # numpy==2.0.2

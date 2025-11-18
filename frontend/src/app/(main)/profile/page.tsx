@@ -49,7 +49,12 @@ export default function ProfilePage() {
 
   const fetchInvites = async () => {
     try {
-      const response = await fetch("/api/invites/list");
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${backendUrl}/api/invites`, {
+        headers: {
+          "X-User-ID": user?.id || "",
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setInvites(data.invites || []);

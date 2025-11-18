@@ -19,8 +19,8 @@ from app.services.mailgun_service import MailgunService
 
 router = APIRouter(prefix="/invites", tags=["invites"])
 
-# Initialize Prisma client
-prisma = Prisma(auto_register=True)
+# Get Prisma client (shared global instance)
+prisma = Prisma()
 
 
 class CreateInviteRequest(BaseModel):
@@ -28,7 +28,7 @@ class CreateInviteRequest(BaseModel):
     friend_email: EmailStr = Field(..., description="Friend's email address")
     friend_nickname: Optional[str] = Field(None, max_length=100, description="Friend's nickname (optional)")
     relationship_type: str = Field(..., description="Relationship type: friend, sibling, parent, partner, coworker")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -47,18 +47,6 @@ class CreateInviteResponse(BaseModel):
     remaining_invites: int
     email_sent: bool
     message: str
-
-
-@router.on_event("startup")
-async def startup():
-    """Connect to database on startup"""
-    await prisma.connect()
-
-
-@router.on_event("shutdown")
-async def shutdown():
-    """Disconnect from database on shutdown"""
-    await prisma.disconnect()
 
 
 def get_client_ip(request: Request) -> str:
@@ -89,6 +77,59 @@ def generate_invite_code() -> str:
     from nanoid import generate
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
     return generate(alphabet, 28)
+
+
+@router.get("")
+async def list_invites(request: Request):
+    """
+    List all invites for authenticated user with remaining count
+
+    **Headers Required**:
+    - X-User-ID: User's Clerk ID
+
+    **Returns**:
+    - invites: List of invite objects (ordered by createdAt desc)
+    - remaining_invites: Number of remaining invites in user's quota
+    - tier: User's current tier (free or premium)
+    """
+    # Get user ID from header
+    user_id = request.headers.get("X-User-ID")
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required. Please sign in to view invites."
+        )
+
+    try:
+        # Get user from database to verify they exist
+        user = await prisma.user.find_unique(where={"clerkId": user_id})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Fetch user's invites
+        invites = await prisma.invitelink.find_many(
+            where={"inviterId": user.id},
+            order={"createdAt": "desc"}
+        )
+
+        # Calculate remaining invites using TierService
+        tier_service = TierService(prisma)
+        tier = await tier_service.get_user_tier(user.id)
+        remaining = await tier_service.get_remaining_invites(user.id)
+
+        return {
+            "invites": invites,
+            "remaining_invites": remaining,
+            "tier": tier
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching invites: {str(e)}"
+        )
 
 
 @router.post("/create", response_model=CreateInviteResponse)

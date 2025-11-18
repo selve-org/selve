@@ -11,29 +11,12 @@
     "start": "next start",
     "lint": "next lint",
     "tunnel": "npx @ngrok/ngrok@latest http 3000",
-    "tunnel:lt": "lt --port 3000 --subdomain selve-dev",
-    "postinstall": "prisma generate",
-    "db:push": "prisma db push",
-    "db:push:dev": "NODE_ENV=development prisma db push",
-    "db:push:prod": "NODE_ENV=production prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:migrate:dev": "NODE_ENV=development prisma migrate dev",
-    "db:migrate:prod": "NODE_ENV=production prisma migrate deploy",
-    "db:seed": "prisma db seed",
-    "db:seed:dev": "NODE_ENV=development prisma db seed",
-    "db:seed:prod": "NODE_ENV=production prisma db seed",
-    "db:studio": "prisma studio",
-    "db:studio:dev": "NODE_ENV=development prisma studio",
-    "db:studio:prod": "NODE_ENV=production prisma studio"
-  },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "tunnel:lt": "lt --port 3000 --subdomain selve-dev"
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/nextjs": "^6.20.2",
     "@heroicons/react": "^2.2.0",
-    "@prisma/client": "6.9.0",
     "@sentry/nextjs": "^9.25.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.18.1",
@@ -60,7 +43,6 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "localtunnel": "^2.0.2",
-    "prisma": "6.9.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5"
