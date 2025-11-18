@@ -48,26 +48,72 @@ model Question {
 }
 
 model Response {
-  id             String   @id @default(uuid())
-  questionId     String
-  answeredById   String
-  aboutUserId    String
-  answer         String
-  createdAt      DateTime @default(now())
-  aboutUser      User     @relation("ResponsesAbout", fields: [aboutUserId], references: [id])
-  answeredByUser User     @relation("ResponsesGiven", fields: [answeredById], references: [id])
-  question       Question @relation(fields: [questionId], references: [id])
+  id               String   @id @default(uuid())
+  questionId       String
+  answeredById     String
+  aboutUserId      String
+  answer           String
+  
+  // Friend Assessment Quality Tracking
+  notSure          Boolean  @default(false)  // "Not Sure" button tracking
+  responseTime     Int?                      // Response time in milliseconds
+  qualityScore     Float?                    // 0-100 quality score
+  flaggedMalicious Boolean  @default(false)  // Detect sabotage attempts
+  
+  createdAt        DateTime @default(now())
+  aboutUser        User     @relation("ResponsesAbout", fields: [aboutUserId], references: [id])
+  answeredByUser   User     @relation("ResponsesGiven", fields: [answeredById], references: [id])
+  question         Question @relation(fields: [questionId], references: [id])
 }
 
 model InviteLink {
-  id        String    @id @default(uuid())
-  code      String    @unique
-  inviterId String
-  targetId  String
-  expiresAt DateTime?
-  createdAt DateTime  @default(now())
-  inviter   User      @relation("InviterRelation", fields: [inviterId], references: [id])
-  target    User      @relation("TargetRelation", fields: [targetId], references: [id])
+  id               String    @id @default(uuid())
+  inviteCode       String    @unique  // NanoID(28) for security
+  inviterId        String
+  targetId         String?
+  
+  // Status & Expiration
+  status           String    @default("pending")  // "pending" | "completed" | "expired" | "abandoned"
+  expiresAt        DateTime                       // Auto-expire after 7 days (extendable)
+  completedAt      DateTime?
+  
+  // Friend Metadata
+  friendEmail      String?
+  friendNickname   String?
+  relationshipType String?   // "friend" | "sibling" | "parent" | "partner" | "coworker"
+  
+  // Analytics & Tracking
+  openedAt         DateTime?
+  startedAt        DateTime?
+  abandonedAt      DateTime?
+  deviceType       String?   // "mobile" | "desktop" | "tablet"
+  
+  // Abuse Prevention
+  ipAddress        String?
+  userAgent        String?
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  inviter          User      @relation("InviterRelation", fields: [inviterId], references: [id])
+  target           User?     @relation("TargetRelation", fields: [targetId], references: [id])
+  
+  @@index([inviterId, status])
+  @@index([expiresAt])
+  @@index([ipAddress, createdAt])
+}
+
+model RateLimit {
+  id           String   @id @default(cuid())
+  userId       String
+  invitesSent  Int      @default(0)
+  windowStart  DateTime
+  windowEnd    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@unique([userId, windowStart])
+  @@index([userId, windowEnd])
 }
 
 // ============================================================================

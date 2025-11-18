@@ -39,6 +39,11 @@ export type Response = $Result.DefaultSelection<Prisma.$ResponsePayload>
  */
 export type InviteLink = $Result.DefaultSelection<Prisma.$InviteLinkPayload>
 /**
+ * Model RateLimit
+ * 
+ */
+export type RateLimit = $Result.DefaultSelection<Prisma.$RateLimitPayload>
+/**
  * Model AssessmentSession
  * 
  */
@@ -228,6 +233,16 @@ export class PrismaClient<
     * ```
     */
   get inviteLink(): Prisma.InviteLinkDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.rateLimit`: Exposes CRUD operations for the **RateLimit** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RateLimits
+    * const rateLimits = await prisma.rateLimit.findMany()
+    * ```
+    */
+  get rateLimit(): Prisma.RateLimitDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.assessmentSession`: Exposes CRUD operations for the **AssessmentSession** model.
@@ -703,6 +718,7 @@ export namespace Prisma {
     Question: 'Question',
     Response: 'Response',
     InviteLink: 'InviteLink',
+    RateLimit: 'RateLimit',
     AssessmentSession: 'AssessmentSession',
     AssessmentResult: 'AssessmentResult',
     AssessmentTemplate: 'AssessmentTemplate'
@@ -724,7 +740,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "profile" | "question" | "response" | "inviteLink" | "assessmentSession" | "assessmentResult" | "assessmentTemplate"
+      modelProps: "user" | "profile" | "question" | "response" | "inviteLink" | "rateLimit" | "assessmentSession" | "assessmentResult" | "assessmentTemplate"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1098,6 +1114,80 @@ export namespace Prisma {
           }
         }
       }
+      RateLimit: {
+        payload: Prisma.$RateLimitPayload<ExtArgs>
+        fields: Prisma.RateLimitFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RateLimitFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RateLimitFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>
+          }
+          findFirst: {
+            args: Prisma.RateLimitFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RateLimitFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>
+          }
+          findMany: {
+            args: Prisma.RateLimitFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>[]
+          }
+          create: {
+            args: Prisma.RateLimitCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>
+          }
+          createMany: {
+            args: Prisma.RateLimitCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RateLimitCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>[]
+          }
+          delete: {
+            args: Prisma.RateLimitDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>
+          }
+          update: {
+            args: Prisma.RateLimitUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>
+          }
+          deleteMany: {
+            args: Prisma.RateLimitDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RateLimitUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RateLimitUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>[]
+          }
+          upsert: {
+            args: Prisma.RateLimitUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RateLimitPayload>
+          }
+          aggregate: {
+            args: Prisma.RateLimitAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRateLimit>
+          }
+          groupBy: {
+            args: Prisma.RateLimitGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RateLimitGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RateLimitCountArgs<ExtArgs>
+            result: $Utils.Optional<RateLimitCountAggregateOutputType> | number
+          }
+        }
+      }
       AssessmentSession: {
         payload: Prisma.$AssessmentSessionPayload<ExtArgs>
         fields: Prisma.AssessmentSessionFieldRefs
@@ -1409,6 +1499,7 @@ export namespace Prisma {
     question?: QuestionOmit
     response?: ResponseOmit
     inviteLink?: InviteLinkOmit
+    rateLimit?: RateLimitOmit
     assessmentSession?: AssessmentSessionOmit
     assessmentResult?: AssessmentResultOmit
     assessmentTemplate?: AssessmentTemplateOmit
@@ -4927,8 +5018,20 @@ export namespace Prisma {
 
   export type AggregateResponse = {
     _count: ResponseCountAggregateOutputType | null
+    _avg: ResponseAvgAggregateOutputType | null
+    _sum: ResponseSumAggregateOutputType | null
     _min: ResponseMinAggregateOutputType | null
     _max: ResponseMaxAggregateOutputType | null
+  }
+
+  export type ResponseAvgAggregateOutputType = {
+    responseTime: number | null
+    qualityScore: number | null
+  }
+
+  export type ResponseSumAggregateOutputType = {
+    responseTime: number | null
+    qualityScore: number | null
   }
 
   export type ResponseMinAggregateOutputType = {
@@ -4937,6 +5040,10 @@ export namespace Prisma {
     answeredById: string | null
     aboutUserId: string | null
     answer: string | null
+    notSure: boolean | null
+    responseTime: number | null
+    qualityScore: number | null
+    flaggedMalicious: boolean | null
     createdAt: Date | null
   }
 
@@ -4946,6 +5053,10 @@ export namespace Prisma {
     answeredById: string | null
     aboutUserId: string | null
     answer: string | null
+    notSure: boolean | null
+    responseTime: number | null
+    qualityScore: number | null
+    flaggedMalicious: boolean | null
     createdAt: Date | null
   }
 
@@ -4955,10 +5066,24 @@ export namespace Prisma {
     answeredById: number
     aboutUserId: number
     answer: number
+    notSure: number
+    responseTime: number
+    qualityScore: number
+    flaggedMalicious: number
     createdAt: number
     _all: number
   }
 
+
+  export type ResponseAvgAggregateInputType = {
+    responseTime?: true
+    qualityScore?: true
+  }
+
+  export type ResponseSumAggregateInputType = {
+    responseTime?: true
+    qualityScore?: true
+  }
 
   export type ResponseMinAggregateInputType = {
     id?: true
@@ -4966,6 +5091,10 @@ export namespace Prisma {
     answeredById?: true
     aboutUserId?: true
     answer?: true
+    notSure?: true
+    responseTime?: true
+    qualityScore?: true
+    flaggedMalicious?: true
     createdAt?: true
   }
 
@@ -4975,6 +5104,10 @@ export namespace Prisma {
     answeredById?: true
     aboutUserId?: true
     answer?: true
+    notSure?: true
+    responseTime?: true
+    qualityScore?: true
+    flaggedMalicious?: true
     createdAt?: true
   }
 
@@ -4984,6 +5117,10 @@ export namespace Prisma {
     answeredById?: true
     aboutUserId?: true
     answer?: true
+    notSure?: true
+    responseTime?: true
+    qualityScore?: true
+    flaggedMalicious?: true
     createdAt?: true
     _all?: true
   }
@@ -5026,6 +5163,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ResponseAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ResponseSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ResponseMinAggregateInputType
@@ -5056,6 +5205,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ResponseCountAggregateInputType | true
+    _avg?: ResponseAvgAggregateInputType
+    _sum?: ResponseSumAggregateInputType
     _min?: ResponseMinAggregateInputType
     _max?: ResponseMaxAggregateInputType
   }
@@ -5066,8 +5217,14 @@ export namespace Prisma {
     answeredById: string
     aboutUserId: string
     answer: string
+    notSure: boolean
+    responseTime: number | null
+    qualityScore: number | null
+    flaggedMalicious: boolean
     createdAt: Date
     _count: ResponseCountAggregateOutputType | null
+    _avg: ResponseAvgAggregateOutputType | null
+    _sum: ResponseSumAggregateOutputType | null
     _min: ResponseMinAggregateOutputType | null
     _max: ResponseMaxAggregateOutputType | null
   }
@@ -5092,6 +5249,10 @@ export namespace Prisma {
     answeredById?: boolean
     aboutUserId?: boolean
     answer?: boolean
+    notSure?: boolean
+    responseTime?: boolean
+    qualityScore?: boolean
+    flaggedMalicious?: boolean
     createdAt?: boolean
     aboutUser?: boolean | UserDefaultArgs<ExtArgs>
     answeredByUser?: boolean | UserDefaultArgs<ExtArgs>
@@ -5104,6 +5265,10 @@ export namespace Prisma {
     answeredById?: boolean
     aboutUserId?: boolean
     answer?: boolean
+    notSure?: boolean
+    responseTime?: boolean
+    qualityScore?: boolean
+    flaggedMalicious?: boolean
     createdAt?: boolean
     aboutUser?: boolean | UserDefaultArgs<ExtArgs>
     answeredByUser?: boolean | UserDefaultArgs<ExtArgs>
@@ -5116,6 +5281,10 @@ export namespace Prisma {
     answeredById?: boolean
     aboutUserId?: boolean
     answer?: boolean
+    notSure?: boolean
+    responseTime?: boolean
+    qualityScore?: boolean
+    flaggedMalicious?: boolean
     createdAt?: boolean
     aboutUser?: boolean | UserDefaultArgs<ExtArgs>
     answeredByUser?: boolean | UserDefaultArgs<ExtArgs>
@@ -5128,10 +5297,14 @@ export namespace Prisma {
     answeredById?: boolean
     aboutUserId?: boolean
     answer?: boolean
+    notSure?: boolean
+    responseTime?: boolean
+    qualityScore?: boolean
+    flaggedMalicious?: boolean
     createdAt?: boolean
   }
 
-  export type ResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "questionId" | "answeredById" | "aboutUserId" | "answer" | "createdAt", ExtArgs["result"]["response"]>
+  export type ResponseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "questionId" | "answeredById" | "aboutUserId" | "answer" | "notSure" | "responseTime" | "qualityScore" | "flaggedMalicious" | "createdAt", ExtArgs["result"]["response"]>
   export type ResponseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     aboutUser?: boolean | UserDefaultArgs<ExtArgs>
     answeredByUser?: boolean | UserDefaultArgs<ExtArgs>
@@ -5161,6 +5334,10 @@ export namespace Prisma {
       answeredById: string
       aboutUserId: string
       answer: string
+      notSure: boolean
+      responseTime: number | null
+      qualityScore: number | null
+      flaggedMalicious: boolean
       createdAt: Date
     }, ExtArgs["result"]["response"]>
     composites: {}
@@ -5593,6 +5770,10 @@ export namespace Prisma {
     readonly answeredById: FieldRef<"Response", 'String'>
     readonly aboutUserId: FieldRef<"Response", 'String'>
     readonly answer: FieldRef<"Response", 'String'>
+    readonly notSure: FieldRef<"Response", 'Boolean'>
+    readonly responseTime: FieldRef<"Response", 'Int'>
+    readonly qualityScore: FieldRef<"Response", 'Float'>
+    readonly flaggedMalicious: FieldRef<"Response", 'Boolean'>
     readonly createdAt: FieldRef<"Response", 'DateTime'>
   }
     
@@ -6020,58 +6201,130 @@ export namespace Prisma {
 
   export type InviteLinkMinAggregateOutputType = {
     id: string | null
-    code: string | null
+    inviteCode: string | null
     inviterId: string | null
     targetId: string | null
+    status: string | null
     expiresAt: Date | null
+    completedAt: Date | null
+    friendEmail: string | null
+    friendNickname: string | null
+    relationshipType: string | null
+    openedAt: Date | null
+    startedAt: Date | null
+    abandonedAt: Date | null
+    deviceType: string | null
+    ipAddress: string | null
+    userAgent: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type InviteLinkMaxAggregateOutputType = {
     id: string | null
-    code: string | null
+    inviteCode: string | null
     inviterId: string | null
     targetId: string | null
+    status: string | null
     expiresAt: Date | null
+    completedAt: Date | null
+    friendEmail: string | null
+    friendNickname: string | null
+    relationshipType: string | null
+    openedAt: Date | null
+    startedAt: Date | null
+    abandonedAt: Date | null
+    deviceType: string | null
+    ipAddress: string | null
+    userAgent: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type InviteLinkCountAggregateOutputType = {
     id: number
-    code: number
+    inviteCode: number
     inviterId: number
     targetId: number
+    status: number
     expiresAt: number
+    completedAt: number
+    friendEmail: number
+    friendNickname: number
+    relationshipType: number
+    openedAt: number
+    startedAt: number
+    abandonedAt: number
+    deviceType: number
+    ipAddress: number
+    userAgent: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
   export type InviteLinkMinAggregateInputType = {
     id?: true
-    code?: true
+    inviteCode?: true
     inviterId?: true
     targetId?: true
+    status?: true
     expiresAt?: true
+    completedAt?: true
+    friendEmail?: true
+    friendNickname?: true
+    relationshipType?: true
+    openedAt?: true
+    startedAt?: true
+    abandonedAt?: true
+    deviceType?: true
+    ipAddress?: true
+    userAgent?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type InviteLinkMaxAggregateInputType = {
     id?: true
-    code?: true
+    inviteCode?: true
     inviterId?: true
     targetId?: true
+    status?: true
     expiresAt?: true
+    completedAt?: true
+    friendEmail?: true
+    friendNickname?: true
+    relationshipType?: true
+    openedAt?: true
+    startedAt?: true
+    abandonedAt?: true
+    deviceType?: true
+    ipAddress?: true
+    userAgent?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type InviteLinkCountAggregateInputType = {
     id?: true
-    code?: true
+    inviteCode?: true
     inviterId?: true
     targetId?: true
+    status?: true
     expiresAt?: true
+    completedAt?: true
+    friendEmail?: true
+    friendNickname?: true
+    relationshipType?: true
+    openedAt?: true
+    startedAt?: true
+    abandonedAt?: true
+    deviceType?: true
+    ipAddress?: true
+    userAgent?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -6149,11 +6402,23 @@ export namespace Prisma {
 
   export type InviteLinkGroupByOutputType = {
     id: string
-    code: string
+    inviteCode: string
     inviterId: string
-    targetId: string
-    expiresAt: Date | null
+    targetId: string | null
+    status: string
+    expiresAt: Date
+    completedAt: Date | null
+    friendEmail: string | null
+    friendNickname: string | null
+    relationshipType: string | null
+    openedAt: Date | null
+    startedAt: Date | null
+    abandonedAt: Date | null
+    deviceType: string | null
+    ipAddress: string | null
+    userAgent: string | null
     createdAt: Date
+    updatedAt: Date
     _count: InviteLinkCountAggregateOutputType | null
     _min: InviteLinkMinAggregateOutputType | null
     _max: InviteLinkMaxAggregateOutputType | null
@@ -6175,73 +6440,133 @@ export namespace Prisma {
 
   export type InviteLinkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    code?: boolean
+    inviteCode?: boolean
     inviterId?: boolean
     targetId?: boolean
+    status?: boolean
     expiresAt?: boolean
+    completedAt?: boolean
+    friendEmail?: boolean
+    friendNickname?: boolean
+    relationshipType?: boolean
+    openedAt?: boolean
+    startedAt?: boolean
+    abandonedAt?: boolean
+    deviceType?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     inviter?: boolean | UserDefaultArgs<ExtArgs>
-    target?: boolean | UserDefaultArgs<ExtArgs>
+    target?: boolean | InviteLink$targetArgs<ExtArgs>
   }, ExtArgs["result"]["inviteLink"]>
 
   export type InviteLinkSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    code?: boolean
+    inviteCode?: boolean
     inviterId?: boolean
     targetId?: boolean
+    status?: boolean
     expiresAt?: boolean
+    completedAt?: boolean
+    friendEmail?: boolean
+    friendNickname?: boolean
+    relationshipType?: boolean
+    openedAt?: boolean
+    startedAt?: boolean
+    abandonedAt?: boolean
+    deviceType?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     inviter?: boolean | UserDefaultArgs<ExtArgs>
-    target?: boolean | UserDefaultArgs<ExtArgs>
+    target?: boolean | InviteLink$targetArgs<ExtArgs>
   }, ExtArgs["result"]["inviteLink"]>
 
   export type InviteLinkSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    code?: boolean
+    inviteCode?: boolean
     inviterId?: boolean
     targetId?: boolean
+    status?: boolean
     expiresAt?: boolean
+    completedAt?: boolean
+    friendEmail?: boolean
+    friendNickname?: boolean
+    relationshipType?: boolean
+    openedAt?: boolean
+    startedAt?: boolean
+    abandonedAt?: boolean
+    deviceType?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     inviter?: boolean | UserDefaultArgs<ExtArgs>
-    target?: boolean | UserDefaultArgs<ExtArgs>
+    target?: boolean | InviteLink$targetArgs<ExtArgs>
   }, ExtArgs["result"]["inviteLink"]>
 
   export type InviteLinkSelectScalar = {
     id?: boolean
-    code?: boolean
+    inviteCode?: boolean
     inviterId?: boolean
     targetId?: boolean
+    status?: boolean
     expiresAt?: boolean
+    completedAt?: boolean
+    friendEmail?: boolean
+    friendNickname?: boolean
+    relationshipType?: boolean
+    openedAt?: boolean
+    startedAt?: boolean
+    abandonedAt?: boolean
+    deviceType?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type InviteLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "inviterId" | "targetId" | "expiresAt" | "createdAt", ExtArgs["result"]["inviteLink"]>
+  export type InviteLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "inviteCode" | "inviterId" | "targetId" | "status" | "expiresAt" | "completedAt" | "friendEmail" | "friendNickname" | "relationshipType" | "openedAt" | "startedAt" | "abandonedAt" | "deviceType" | "ipAddress" | "userAgent" | "createdAt" | "updatedAt", ExtArgs["result"]["inviteLink"]>
   export type InviteLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     inviter?: boolean | UserDefaultArgs<ExtArgs>
-    target?: boolean | UserDefaultArgs<ExtArgs>
+    target?: boolean | InviteLink$targetArgs<ExtArgs>
   }
   export type InviteLinkIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     inviter?: boolean | UserDefaultArgs<ExtArgs>
-    target?: boolean | UserDefaultArgs<ExtArgs>
+    target?: boolean | InviteLink$targetArgs<ExtArgs>
   }
   export type InviteLinkIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     inviter?: boolean | UserDefaultArgs<ExtArgs>
-    target?: boolean | UserDefaultArgs<ExtArgs>
+    target?: boolean | InviteLink$targetArgs<ExtArgs>
   }
 
   export type $InviteLinkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "InviteLink"
     objects: {
       inviter: Prisma.$UserPayload<ExtArgs>
-      target: Prisma.$UserPayload<ExtArgs>
+      target: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      code: string
+      inviteCode: string
       inviterId: string
-      targetId: string
-      expiresAt: Date | null
+      targetId: string | null
+      status: string
+      expiresAt: Date
+      completedAt: Date | null
+      friendEmail: string | null
+      friendNickname: string | null
+      relationshipType: string | null
+      openedAt: Date | null
+      startedAt: Date | null
+      abandonedAt: Date | null
+      deviceType: string | null
+      ipAddress: string | null
+      userAgent: string | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["inviteLink"]>
     composites: {}
   }
@@ -6637,7 +6962,7 @@ export namespace Prisma {
   export interface Prisma__InviteLinkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     inviter<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    target<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    target<T extends InviteLink$targetArgs<ExtArgs> = {}>(args?: Subset<T, InviteLink$targetArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6668,11 +6993,23 @@ export namespace Prisma {
    */
   interface InviteLinkFieldRefs {
     readonly id: FieldRef<"InviteLink", 'String'>
-    readonly code: FieldRef<"InviteLink", 'String'>
+    readonly inviteCode: FieldRef<"InviteLink", 'String'>
     readonly inviterId: FieldRef<"InviteLink", 'String'>
     readonly targetId: FieldRef<"InviteLink", 'String'>
+    readonly status: FieldRef<"InviteLink", 'String'>
     readonly expiresAt: FieldRef<"InviteLink", 'DateTime'>
+    readonly completedAt: FieldRef<"InviteLink", 'DateTime'>
+    readonly friendEmail: FieldRef<"InviteLink", 'String'>
+    readonly friendNickname: FieldRef<"InviteLink", 'String'>
+    readonly relationshipType: FieldRef<"InviteLink", 'String'>
+    readonly openedAt: FieldRef<"InviteLink", 'DateTime'>
+    readonly startedAt: FieldRef<"InviteLink", 'DateTime'>
+    readonly abandonedAt: FieldRef<"InviteLink", 'DateTime'>
+    readonly deviceType: FieldRef<"InviteLink", 'String'>
+    readonly ipAddress: FieldRef<"InviteLink", 'String'>
+    readonly userAgent: FieldRef<"InviteLink", 'String'>
     readonly createdAt: FieldRef<"InviteLink", 'DateTime'>
+    readonly updatedAt: FieldRef<"InviteLink", 'DateTime'>
   }
     
 
@@ -7069,6 +7406,25 @@ export namespace Prisma {
   }
 
   /**
+   * InviteLink.target
+   */
+  export type InviteLink$targetArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
    * InviteLink without action
    */
   export type InviteLinkDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7084,6 +7440,1061 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: InviteLinkInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model RateLimit
+   */
+
+  export type AggregateRateLimit = {
+    _count: RateLimitCountAggregateOutputType | null
+    _avg: RateLimitAvgAggregateOutputType | null
+    _sum: RateLimitSumAggregateOutputType | null
+    _min: RateLimitMinAggregateOutputType | null
+    _max: RateLimitMaxAggregateOutputType | null
+  }
+
+  export type RateLimitAvgAggregateOutputType = {
+    invitesSent: number | null
+  }
+
+  export type RateLimitSumAggregateOutputType = {
+    invitesSent: number | null
+  }
+
+  export type RateLimitMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    invitesSent: number | null
+    windowStart: Date | null
+    windowEnd: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RateLimitMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    invitesSent: number | null
+    windowStart: Date | null
+    windowEnd: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type RateLimitCountAggregateOutputType = {
+    id: number
+    userId: number
+    invitesSent: number
+    windowStart: number
+    windowEnd: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type RateLimitAvgAggregateInputType = {
+    invitesSent?: true
+  }
+
+  export type RateLimitSumAggregateInputType = {
+    invitesSent?: true
+  }
+
+  export type RateLimitMinAggregateInputType = {
+    id?: true
+    userId?: true
+    invitesSent?: true
+    windowStart?: true
+    windowEnd?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RateLimitMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    invitesSent?: true
+    windowStart?: true
+    windowEnd?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type RateLimitCountAggregateInputType = {
+    id?: true
+    userId?: true
+    invitesSent?: true
+    windowStart?: true
+    windowEnd?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type RateLimitAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RateLimit to aggregate.
+     */
+    where?: RateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RateLimits to fetch.
+     */
+    orderBy?: RateLimitOrderByWithRelationInput | RateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RateLimits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned RateLimits
+    **/
+    _count?: true | RateLimitCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RateLimitAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RateLimitSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RateLimitMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RateLimitMaxAggregateInputType
+  }
+
+  export type GetRateLimitAggregateType<T extends RateLimitAggregateArgs> = {
+        [P in keyof T & keyof AggregateRateLimit]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRateLimit[P]>
+      : GetScalarType<T[P], AggregateRateLimit[P]>
+  }
+
+
+
+
+  export type RateLimitGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RateLimitWhereInput
+    orderBy?: RateLimitOrderByWithAggregationInput | RateLimitOrderByWithAggregationInput[]
+    by: RateLimitScalarFieldEnum[] | RateLimitScalarFieldEnum
+    having?: RateLimitScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RateLimitCountAggregateInputType | true
+    _avg?: RateLimitAvgAggregateInputType
+    _sum?: RateLimitSumAggregateInputType
+    _min?: RateLimitMinAggregateInputType
+    _max?: RateLimitMaxAggregateInputType
+  }
+
+  export type RateLimitGroupByOutputType = {
+    id: string
+    userId: string
+    invitesSent: number
+    windowStart: Date
+    windowEnd: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: RateLimitCountAggregateOutputType | null
+    _avg: RateLimitAvgAggregateOutputType | null
+    _sum: RateLimitSumAggregateOutputType | null
+    _min: RateLimitMinAggregateOutputType | null
+    _max: RateLimitMaxAggregateOutputType | null
+  }
+
+  type GetRateLimitGroupByPayload<T extends RateLimitGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RateLimitGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RateLimitGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RateLimitGroupByOutputType[P]>
+            : GetScalarType<T[P], RateLimitGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RateLimitSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    invitesSent?: boolean
+    windowStart?: boolean
+    windowEnd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["rateLimit"]>
+
+  export type RateLimitSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    invitesSent?: boolean
+    windowStart?: boolean
+    windowEnd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["rateLimit"]>
+
+  export type RateLimitSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    invitesSent?: boolean
+    windowStart?: boolean
+    windowEnd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["rateLimit"]>
+
+  export type RateLimitSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    invitesSent?: boolean
+    windowStart?: boolean
+    windowEnd?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type RateLimitOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "invitesSent" | "windowStart" | "windowEnd" | "createdAt" | "updatedAt", ExtArgs["result"]["rateLimit"]>
+
+  export type $RateLimitPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RateLimit"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      invitesSent: number
+      windowStart: Date
+      windowEnd: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["rateLimit"]>
+    composites: {}
+  }
+
+  type RateLimitGetPayload<S extends boolean | null | undefined | RateLimitDefaultArgs> = $Result.GetResult<Prisma.$RateLimitPayload, S>
+
+  type RateLimitCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RateLimitFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RateLimitCountAggregateInputType | true
+    }
+
+  export interface RateLimitDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RateLimit'], meta: { name: 'RateLimit' } }
+    /**
+     * Find zero or one RateLimit that matches the filter.
+     * @param {RateLimitFindUniqueArgs} args - Arguments to find a RateLimit
+     * @example
+     * // Get one RateLimit
+     * const rateLimit = await prisma.rateLimit.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RateLimitFindUniqueArgs>(args: SelectSubset<T, RateLimitFindUniqueArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one RateLimit that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RateLimitFindUniqueOrThrowArgs} args - Arguments to find a RateLimit
+     * @example
+     * // Get one RateLimit
+     * const rateLimit = await prisma.rateLimit.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RateLimitFindUniqueOrThrowArgs>(args: SelectSubset<T, RateLimitFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RateLimit that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitFindFirstArgs} args - Arguments to find a RateLimit
+     * @example
+     * // Get one RateLimit
+     * const rateLimit = await prisma.rateLimit.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RateLimitFindFirstArgs>(args?: SelectSubset<T, RateLimitFindFirstArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first RateLimit that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitFindFirstOrThrowArgs} args - Arguments to find a RateLimit
+     * @example
+     * // Get one RateLimit
+     * const rateLimit = await prisma.rateLimit.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RateLimitFindFirstOrThrowArgs>(args?: SelectSubset<T, RateLimitFindFirstOrThrowArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more RateLimits that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all RateLimits
+     * const rateLimits = await prisma.rateLimit.findMany()
+     * 
+     * // Get first 10 RateLimits
+     * const rateLimits = await prisma.rateLimit.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const rateLimitWithIdOnly = await prisma.rateLimit.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RateLimitFindManyArgs>(args?: SelectSubset<T, RateLimitFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a RateLimit.
+     * @param {RateLimitCreateArgs} args - Arguments to create a RateLimit.
+     * @example
+     * // Create one RateLimit
+     * const RateLimit = await prisma.rateLimit.create({
+     *   data: {
+     *     // ... data to create a RateLimit
+     *   }
+     * })
+     * 
+     */
+    create<T extends RateLimitCreateArgs>(args: SelectSubset<T, RateLimitCreateArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many RateLimits.
+     * @param {RateLimitCreateManyArgs} args - Arguments to create many RateLimits.
+     * @example
+     * // Create many RateLimits
+     * const rateLimit = await prisma.rateLimit.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RateLimitCreateManyArgs>(args?: SelectSubset<T, RateLimitCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many RateLimits and returns the data saved in the database.
+     * @param {RateLimitCreateManyAndReturnArgs} args - Arguments to create many RateLimits.
+     * @example
+     * // Create many RateLimits
+     * const rateLimit = await prisma.rateLimit.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many RateLimits and only return the `id`
+     * const rateLimitWithIdOnly = await prisma.rateLimit.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RateLimitCreateManyAndReturnArgs>(args?: SelectSubset<T, RateLimitCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a RateLimit.
+     * @param {RateLimitDeleteArgs} args - Arguments to delete one RateLimit.
+     * @example
+     * // Delete one RateLimit
+     * const RateLimit = await prisma.rateLimit.delete({
+     *   where: {
+     *     // ... filter to delete one RateLimit
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RateLimitDeleteArgs>(args: SelectSubset<T, RateLimitDeleteArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one RateLimit.
+     * @param {RateLimitUpdateArgs} args - Arguments to update one RateLimit.
+     * @example
+     * // Update one RateLimit
+     * const rateLimit = await prisma.rateLimit.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RateLimitUpdateArgs>(args: SelectSubset<T, RateLimitUpdateArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more RateLimits.
+     * @param {RateLimitDeleteManyArgs} args - Arguments to filter RateLimits to delete.
+     * @example
+     * // Delete a few RateLimits
+     * const { count } = await prisma.rateLimit.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RateLimitDeleteManyArgs>(args?: SelectSubset<T, RateLimitDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RateLimits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many RateLimits
+     * const rateLimit = await prisma.rateLimit.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RateLimitUpdateManyArgs>(args: SelectSubset<T, RateLimitUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more RateLimits and returns the data updated in the database.
+     * @param {RateLimitUpdateManyAndReturnArgs} args - Arguments to update many RateLimits.
+     * @example
+     * // Update many RateLimits
+     * const rateLimit = await prisma.rateLimit.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more RateLimits and only return the `id`
+     * const rateLimitWithIdOnly = await prisma.rateLimit.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RateLimitUpdateManyAndReturnArgs>(args: SelectSubset<T, RateLimitUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one RateLimit.
+     * @param {RateLimitUpsertArgs} args - Arguments to update or create a RateLimit.
+     * @example
+     * // Update or create a RateLimit
+     * const rateLimit = await prisma.rateLimit.upsert({
+     *   create: {
+     *     // ... data to create a RateLimit
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the RateLimit we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RateLimitUpsertArgs>(args: SelectSubset<T, RateLimitUpsertArgs<ExtArgs>>): Prisma__RateLimitClient<$Result.GetResult<Prisma.$RateLimitPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of RateLimits.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitCountArgs} args - Arguments to filter RateLimits to count.
+     * @example
+     * // Count the number of RateLimits
+     * const count = await prisma.rateLimit.count({
+     *   where: {
+     *     // ... the filter for the RateLimits we want to count
+     *   }
+     * })
+    **/
+    count<T extends RateLimitCountArgs>(
+      args?: Subset<T, RateLimitCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RateLimitCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a RateLimit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RateLimitAggregateArgs>(args: Subset<T, RateLimitAggregateArgs>): Prisma.PrismaPromise<GetRateLimitAggregateType<T>>
+
+    /**
+     * Group by RateLimit.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RateLimitGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RateLimitGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RateLimitGroupByArgs['orderBy'] }
+        : { orderBy?: RateLimitGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RateLimitGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRateLimitGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RateLimit model
+   */
+  readonly fields: RateLimitFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for RateLimit.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RateLimitClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the RateLimit model
+   */
+  interface RateLimitFieldRefs {
+    readonly id: FieldRef<"RateLimit", 'String'>
+    readonly userId: FieldRef<"RateLimit", 'String'>
+    readonly invitesSent: FieldRef<"RateLimit", 'Int'>
+    readonly windowStart: FieldRef<"RateLimit", 'DateTime'>
+    readonly windowEnd: FieldRef<"RateLimit", 'DateTime'>
+    readonly createdAt: FieldRef<"RateLimit", 'DateTime'>
+    readonly updatedAt: FieldRef<"RateLimit", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * RateLimit findUnique
+   */
+  export type RateLimitFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which RateLimit to fetch.
+     */
+    where: RateLimitWhereUniqueInput
+  }
+
+  /**
+   * RateLimit findUniqueOrThrow
+   */
+  export type RateLimitFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which RateLimit to fetch.
+     */
+    where: RateLimitWhereUniqueInput
+  }
+
+  /**
+   * RateLimit findFirst
+   */
+  export type RateLimitFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which RateLimit to fetch.
+     */
+    where?: RateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RateLimits to fetch.
+     */
+    orderBy?: RateLimitOrderByWithRelationInput | RateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RateLimits.
+     */
+    cursor?: RateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RateLimits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RateLimits.
+     */
+    distinct?: RateLimitScalarFieldEnum | RateLimitScalarFieldEnum[]
+  }
+
+  /**
+   * RateLimit findFirstOrThrow
+   */
+  export type RateLimitFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which RateLimit to fetch.
+     */
+    where?: RateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RateLimits to fetch.
+     */
+    orderBy?: RateLimitOrderByWithRelationInput | RateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for RateLimits.
+     */
+    cursor?: RateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RateLimits.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RateLimits.
+     */
+    distinct?: RateLimitScalarFieldEnum | RateLimitScalarFieldEnum[]
+  }
+
+  /**
+   * RateLimit findMany
+   */
+  export type RateLimitFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * Filter, which RateLimits to fetch.
+     */
+    where?: RateLimitWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of RateLimits to fetch.
+     */
+    orderBy?: RateLimitOrderByWithRelationInput | RateLimitOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing RateLimits.
+     */
+    cursor?: RateLimitWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` RateLimits from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` RateLimits.
+     */
+    skip?: number
+    distinct?: RateLimitScalarFieldEnum | RateLimitScalarFieldEnum[]
+  }
+
+  /**
+   * RateLimit create
+   */
+  export type RateLimitCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * The data needed to create a RateLimit.
+     */
+    data: XOR<RateLimitCreateInput, RateLimitUncheckedCreateInput>
+  }
+
+  /**
+   * RateLimit createMany
+   */
+  export type RateLimitCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many RateLimits.
+     */
+    data: RateLimitCreateManyInput | RateLimitCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RateLimit createManyAndReturn
+   */
+  export type RateLimitCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * The data used to create many RateLimits.
+     */
+    data: RateLimitCreateManyInput | RateLimitCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * RateLimit update
+   */
+  export type RateLimitUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * The data needed to update a RateLimit.
+     */
+    data: XOR<RateLimitUpdateInput, RateLimitUncheckedUpdateInput>
+    /**
+     * Choose, which RateLimit to update.
+     */
+    where: RateLimitWhereUniqueInput
+  }
+
+  /**
+   * RateLimit updateMany
+   */
+  export type RateLimitUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update RateLimits.
+     */
+    data: XOR<RateLimitUpdateManyMutationInput, RateLimitUncheckedUpdateManyInput>
+    /**
+     * Filter which RateLimits to update
+     */
+    where?: RateLimitWhereInput
+    /**
+     * Limit how many RateLimits to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RateLimit updateManyAndReturn
+   */
+  export type RateLimitUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * The data used to update RateLimits.
+     */
+    data: XOR<RateLimitUpdateManyMutationInput, RateLimitUncheckedUpdateManyInput>
+    /**
+     * Filter which RateLimits to update
+     */
+    where?: RateLimitWhereInput
+    /**
+     * Limit how many RateLimits to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * RateLimit upsert
+   */
+  export type RateLimitUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * The filter to search for the RateLimit to update in case it exists.
+     */
+    where: RateLimitWhereUniqueInput
+    /**
+     * In case the RateLimit found by the `where` argument doesn't exist, create a new RateLimit with this data.
+     */
+    create: XOR<RateLimitCreateInput, RateLimitUncheckedCreateInput>
+    /**
+     * In case the RateLimit was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RateLimitUpdateInput, RateLimitUncheckedUpdateInput>
+  }
+
+  /**
+   * RateLimit delete
+   */
+  export type RateLimitDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
+    /**
+     * Filter which RateLimit to delete.
+     */
+    where: RateLimitWhereUniqueInput
+  }
+
+  /**
+   * RateLimit deleteMany
+   */
+  export type RateLimitDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which RateLimits to delete
+     */
+    where?: RateLimitWhereInput
+    /**
+     * Limit how many RateLimits to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * RateLimit without action
+   */
+  export type RateLimitDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RateLimit
+     */
+    select?: RateLimitSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RateLimit
+     */
+    omit?: RateLimitOmit<ExtArgs> | null
   }
 
 
@@ -10836,6 +12247,10 @@ export namespace Prisma {
     answeredById: 'answeredById',
     aboutUserId: 'aboutUserId',
     answer: 'answer',
+    notSure: 'notSure',
+    responseTime: 'responseTime',
+    qualityScore: 'qualityScore',
+    flaggedMalicious: 'flaggedMalicious',
     createdAt: 'createdAt'
   };
 
@@ -10844,14 +12259,39 @@ export namespace Prisma {
 
   export const InviteLinkScalarFieldEnum: {
     id: 'id',
-    code: 'code',
+    inviteCode: 'inviteCode',
     inviterId: 'inviterId',
     targetId: 'targetId',
+    status: 'status',
     expiresAt: 'expiresAt',
-    createdAt: 'createdAt'
+    completedAt: 'completedAt',
+    friendEmail: 'friendEmail',
+    friendNickname: 'friendNickname',
+    relationshipType: 'relationshipType',
+    openedAt: 'openedAt',
+    startedAt: 'startedAt',
+    abandonedAt: 'abandonedAt',
+    deviceType: 'deviceType',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type InviteLinkScalarFieldEnum = (typeof InviteLinkScalarFieldEnum)[keyof typeof InviteLinkScalarFieldEnum]
+
+
+  export const RateLimitScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    invitesSent: 'invitesSent',
+    windowStart: 'windowStart',
+    windowEnd: 'windowEnd',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
 
 
   export const AssessmentSessionScalarFieldEnum: {
@@ -11252,6 +12692,10 @@ export namespace Prisma {
     answeredById?: StringFilter<"Response"> | string
     aboutUserId?: StringFilter<"Response"> | string
     answer?: StringFilter<"Response"> | string
+    notSure?: BoolFilter<"Response"> | boolean
+    responseTime?: IntNullableFilter<"Response"> | number | null
+    qualityScore?: FloatNullableFilter<"Response"> | number | null
+    flaggedMalicious?: BoolFilter<"Response"> | boolean
     createdAt?: DateTimeFilter<"Response"> | Date | string
     aboutUser?: XOR<UserScalarRelationFilter, UserWhereInput>
     answeredByUser?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -11264,6 +12708,10 @@ export namespace Prisma {
     answeredById?: SortOrder
     aboutUserId?: SortOrder
     answer?: SortOrder
+    notSure?: SortOrder
+    responseTime?: SortOrderInput | SortOrder
+    qualityScore?: SortOrderInput | SortOrder
+    flaggedMalicious?: SortOrder
     createdAt?: SortOrder
     aboutUser?: UserOrderByWithRelationInput
     answeredByUser?: UserOrderByWithRelationInput
@@ -11279,6 +12727,10 @@ export namespace Prisma {
     answeredById?: StringFilter<"Response"> | string
     aboutUserId?: StringFilter<"Response"> | string
     answer?: StringFilter<"Response"> | string
+    notSure?: BoolFilter<"Response"> | boolean
+    responseTime?: IntNullableFilter<"Response"> | number | null
+    qualityScore?: FloatNullableFilter<"Response"> | number | null
+    flaggedMalicious?: BoolFilter<"Response"> | boolean
     createdAt?: DateTimeFilter<"Response"> | Date | string
     aboutUser?: XOR<UserScalarRelationFilter, UserWhereInput>
     answeredByUser?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -11291,10 +12743,16 @@ export namespace Prisma {
     answeredById?: SortOrder
     aboutUserId?: SortOrder
     answer?: SortOrder
+    notSure?: SortOrder
+    responseTime?: SortOrderInput | SortOrder
+    qualityScore?: SortOrderInput | SortOrder
+    flaggedMalicious?: SortOrder
     createdAt?: SortOrder
     _count?: ResponseCountOrderByAggregateInput
+    _avg?: ResponseAvgOrderByAggregateInput
     _max?: ResponseMaxOrderByAggregateInput
     _min?: ResponseMinOrderByAggregateInput
+    _sum?: ResponseSumOrderByAggregateInput
   }
 
   export type ResponseScalarWhereWithAggregatesInput = {
@@ -11306,6 +12764,10 @@ export namespace Prisma {
     answeredById?: StringWithAggregatesFilter<"Response"> | string
     aboutUserId?: StringWithAggregatesFilter<"Response"> | string
     answer?: StringWithAggregatesFilter<"Response"> | string
+    notSure?: BoolWithAggregatesFilter<"Response"> | boolean
+    responseTime?: IntNullableWithAggregatesFilter<"Response"> | number | null
+    qualityScore?: FloatNullableWithAggregatesFilter<"Response"> | number | null
+    flaggedMalicious?: BoolWithAggregatesFilter<"Response"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Response"> | Date | string
   }
 
@@ -11314,47 +12776,95 @@ export namespace Prisma {
     OR?: InviteLinkWhereInput[]
     NOT?: InviteLinkWhereInput | InviteLinkWhereInput[]
     id?: StringFilter<"InviteLink"> | string
-    code?: StringFilter<"InviteLink"> | string
+    inviteCode?: StringFilter<"InviteLink"> | string
     inviterId?: StringFilter<"InviteLink"> | string
-    targetId?: StringFilter<"InviteLink"> | string
-    expiresAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    targetId?: StringNullableFilter<"InviteLink"> | string | null
+    status?: StringFilter<"InviteLink"> | string
+    expiresAt?: DateTimeFilter<"InviteLink"> | Date | string
+    completedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    friendEmail?: StringNullableFilter<"InviteLink"> | string | null
+    friendNickname?: StringNullableFilter<"InviteLink"> | string | null
+    relationshipType?: StringNullableFilter<"InviteLink"> | string | null
+    openedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    startedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    abandonedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    deviceType?: StringNullableFilter<"InviteLink"> | string | null
+    ipAddress?: StringNullableFilter<"InviteLink"> | string | null
+    userAgent?: StringNullableFilter<"InviteLink"> | string | null
     createdAt?: DateTimeFilter<"InviteLink"> | Date | string
+    updatedAt?: DateTimeFilter<"InviteLink"> | Date | string
     inviter?: XOR<UserScalarRelationFilter, UserWhereInput>
-    target?: XOR<UserScalarRelationFilter, UserWhereInput>
+    target?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
   export type InviteLinkOrderByWithRelationInput = {
     id?: SortOrder
-    code?: SortOrder
+    inviteCode?: SortOrder
     inviterId?: SortOrder
-    targetId?: SortOrder
-    expiresAt?: SortOrderInput | SortOrder
+    targetId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    friendEmail?: SortOrderInput | SortOrder
+    friendNickname?: SortOrderInput | SortOrder
+    relationshipType?: SortOrderInput | SortOrder
+    openedAt?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    abandonedAt?: SortOrderInput | SortOrder
+    deviceType?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     inviter?: UserOrderByWithRelationInput
     target?: UserOrderByWithRelationInput
   }
 
   export type InviteLinkWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    code?: string
+    inviteCode?: string
     AND?: InviteLinkWhereInput | InviteLinkWhereInput[]
     OR?: InviteLinkWhereInput[]
     NOT?: InviteLinkWhereInput | InviteLinkWhereInput[]
     inviterId?: StringFilter<"InviteLink"> | string
-    targetId?: StringFilter<"InviteLink"> | string
-    expiresAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    targetId?: StringNullableFilter<"InviteLink"> | string | null
+    status?: StringFilter<"InviteLink"> | string
+    expiresAt?: DateTimeFilter<"InviteLink"> | Date | string
+    completedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    friendEmail?: StringNullableFilter<"InviteLink"> | string | null
+    friendNickname?: StringNullableFilter<"InviteLink"> | string | null
+    relationshipType?: StringNullableFilter<"InviteLink"> | string | null
+    openedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    startedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    abandonedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    deviceType?: StringNullableFilter<"InviteLink"> | string | null
+    ipAddress?: StringNullableFilter<"InviteLink"> | string | null
+    userAgent?: StringNullableFilter<"InviteLink"> | string | null
     createdAt?: DateTimeFilter<"InviteLink"> | Date | string
+    updatedAt?: DateTimeFilter<"InviteLink"> | Date | string
     inviter?: XOR<UserScalarRelationFilter, UserWhereInput>
-    target?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "code">
+    target?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "inviteCode">
 
   export type InviteLinkOrderByWithAggregationInput = {
     id?: SortOrder
-    code?: SortOrder
+    inviteCode?: SortOrder
     inviterId?: SortOrder
-    targetId?: SortOrder
-    expiresAt?: SortOrderInput | SortOrder
+    targetId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    expiresAt?: SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    friendEmail?: SortOrderInput | SortOrder
+    friendNickname?: SortOrderInput | SortOrder
+    relationshipType?: SortOrderInput | SortOrder
+    openedAt?: SortOrderInput | SortOrder
+    startedAt?: SortOrderInput | SortOrder
+    abandonedAt?: SortOrderInput | SortOrder
+    deviceType?: SortOrderInput | SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: InviteLinkCountOrderByAggregateInput
     _max?: InviteLinkMaxOrderByAggregateInput
     _min?: InviteLinkMinOrderByAggregateInput
@@ -11365,11 +12875,88 @@ export namespace Prisma {
     OR?: InviteLinkScalarWhereWithAggregatesInput[]
     NOT?: InviteLinkScalarWhereWithAggregatesInput | InviteLinkScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"InviteLink"> | string
-    code?: StringWithAggregatesFilter<"InviteLink"> | string
+    inviteCode?: StringWithAggregatesFilter<"InviteLink"> | string
     inviterId?: StringWithAggregatesFilter<"InviteLink"> | string
-    targetId?: StringWithAggregatesFilter<"InviteLink"> | string
-    expiresAt?: DateTimeNullableWithAggregatesFilter<"InviteLink"> | Date | string | null
+    targetId?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
+    status?: StringWithAggregatesFilter<"InviteLink"> | string
+    expiresAt?: DateTimeWithAggregatesFilter<"InviteLink"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"InviteLink"> | Date | string | null
+    friendEmail?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
+    friendNickname?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
+    relationshipType?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
+    openedAt?: DateTimeNullableWithAggregatesFilter<"InviteLink"> | Date | string | null
+    startedAt?: DateTimeNullableWithAggregatesFilter<"InviteLink"> | Date | string | null
+    abandonedAt?: DateTimeNullableWithAggregatesFilter<"InviteLink"> | Date | string | null
+    deviceType?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
+    ipAddress?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"InviteLink"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"InviteLink"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"InviteLink"> | Date | string
+  }
+
+  export type RateLimitWhereInput = {
+    AND?: RateLimitWhereInput | RateLimitWhereInput[]
+    OR?: RateLimitWhereInput[]
+    NOT?: RateLimitWhereInput | RateLimitWhereInput[]
+    id?: StringFilter<"RateLimit"> | string
+    userId?: StringFilter<"RateLimit"> | string
+    invitesSent?: IntFilter<"RateLimit"> | number
+    windowStart?: DateTimeFilter<"RateLimit"> | Date | string
+    windowEnd?: DateTimeFilter<"RateLimit"> | Date | string
+    createdAt?: DateTimeFilter<"RateLimit"> | Date | string
+    updatedAt?: DateTimeFilter<"RateLimit"> | Date | string
+  }
+
+  export type RateLimitOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    invitesSent?: SortOrder
+    windowStart?: SortOrder
+    windowEnd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RateLimitWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_windowStart?: RateLimitUserIdWindowStartCompoundUniqueInput
+    AND?: RateLimitWhereInput | RateLimitWhereInput[]
+    OR?: RateLimitWhereInput[]
+    NOT?: RateLimitWhereInput | RateLimitWhereInput[]
+    userId?: StringFilter<"RateLimit"> | string
+    invitesSent?: IntFilter<"RateLimit"> | number
+    windowStart?: DateTimeFilter<"RateLimit"> | Date | string
+    windowEnd?: DateTimeFilter<"RateLimit"> | Date | string
+    createdAt?: DateTimeFilter<"RateLimit"> | Date | string
+    updatedAt?: DateTimeFilter<"RateLimit"> | Date | string
+  }, "id" | "userId_windowStart">
+
+  export type RateLimitOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    invitesSent?: SortOrder
+    windowStart?: SortOrder
+    windowEnd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: RateLimitCountOrderByAggregateInput
+    _avg?: RateLimitAvgOrderByAggregateInput
+    _max?: RateLimitMaxOrderByAggregateInput
+    _min?: RateLimitMinOrderByAggregateInput
+    _sum?: RateLimitSumOrderByAggregateInput
+  }
+
+  export type RateLimitScalarWhereWithAggregatesInput = {
+    AND?: RateLimitScalarWhereWithAggregatesInput | RateLimitScalarWhereWithAggregatesInput[]
+    OR?: RateLimitScalarWhereWithAggregatesInput[]
+    NOT?: RateLimitScalarWhereWithAggregatesInput | RateLimitScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"RateLimit"> | string
+    userId?: StringWithAggregatesFilter<"RateLimit"> | string
+    invitesSent?: IntWithAggregatesFilter<"RateLimit"> | number
+    windowStart?: DateTimeWithAggregatesFilter<"RateLimit"> | Date | string
+    windowEnd?: DateTimeWithAggregatesFilter<"RateLimit"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"RateLimit"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RateLimit"> | Date | string
   }
 
   export type AssessmentSessionWhereInput = {
@@ -11928,6 +13515,10 @@ export namespace Prisma {
   export type ResponseCreateInput = {
     id?: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
     aboutUser: UserCreateNestedOneWithoutResponsesAboutInput
     answeredByUser: UserCreateNestedOneWithoutResponsesGivenInput
@@ -11940,12 +13531,20 @@ export namespace Prisma {
     answeredById: string
     aboutUserId: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
   export type ResponseUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     aboutUser?: UserUpdateOneRequiredWithoutResponsesAboutNestedInput
     answeredByUser?: UserUpdateOneRequiredWithoutResponsesGivenNestedInput
@@ -11958,6 +13557,10 @@ export namespace Prisma {
     answeredById?: StringFieldUpdateOperationsInput | string
     aboutUserId?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11967,12 +13570,20 @@ export namespace Prisma {
     answeredById: string
     aboutUserId: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
   export type ResponseUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -11982,68 +13593,226 @@ export namespace Prisma {
     answeredById?: StringFieldUpdateOperationsInput | string
     aboutUserId?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InviteLinkCreateInput = {
     id?: string
-    code: string
-    expiresAt?: Date | string | null
+    inviteCode: string
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     inviter: UserCreateNestedOneWithoutInviteLinksSentInput
-    target: UserCreateNestedOneWithoutInviteLinksReceivedInput
+    target?: UserCreateNestedOneWithoutInviteLinksReceivedInput
   }
 
   export type InviteLinkUncheckedCreateInput = {
     id?: string
-    code: string
+    inviteCode: string
     inviterId: string
-    targetId: string
-    expiresAt?: Date | string | null
+    targetId?: string | null
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type InviteLinkUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inviteCode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inviter?: UserUpdateOneRequiredWithoutInviteLinksSentNestedInput
-    target?: UserUpdateOneRequiredWithoutInviteLinksReceivedNestedInput
+    target?: UserUpdateOneWithoutInviteLinksReceivedNestedInput
   }
 
   export type InviteLinkUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
+    inviteCode?: StringFieldUpdateOperationsInput | string
     inviterId?: StringFieldUpdateOperationsInput | string
-    targetId?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InviteLinkCreateManyInput = {
     id?: string
-    code: string
+    inviteCode: string
     inviterId: string
-    targetId: string
-    expiresAt?: Date | string | null
+    targetId?: string | null
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type InviteLinkUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inviteCode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InviteLinkUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
+    inviteCode?: StringFieldUpdateOperationsInput | string
     inviterId?: StringFieldUpdateOperationsInput | string
-    targetId?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RateLimitCreateInput = {
+    id?: string
+    userId: string
+    invitesSent?: number
+    windowStart: Date | string
+    windowEnd: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RateLimitUncheckedCreateInput = {
+    id?: string
+    userId: string
+    invitesSent?: number
+    windowStart: Date | string
+    windowEnd: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RateLimitUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    invitesSent?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    windowEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RateLimitUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    invitesSent?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    windowEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RateLimitCreateManyInput = {
+    id?: string
+    userId: string
+    invitesSent?: number
+    windowStart: Date | string
+    windowEnd: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RateLimitUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    invitesSent?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    windowEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RateLimitUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    invitesSent?: IntFieldUpdateOperationsInput | number
+    windowStart?: DateTimeFieldUpdateOperationsInput | Date | string
+    windowEnd?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AssessmentSessionCreateInput = {
@@ -12733,6 +14502,28 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type QuestionScalarRelationFilter = {
     is?: QuestionWhereInput
     isNot?: QuestionWhereInput
@@ -12744,7 +14535,16 @@ export namespace Prisma {
     answeredById?: SortOrder
     aboutUserId?: SortOrder
     answer?: SortOrder
+    notSure?: SortOrder
+    responseTime?: SortOrder
+    qualityScore?: SortOrder
+    flaggedMalicious?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ResponseAvgOrderByAggregateInput = {
+    responseTime?: SortOrder
+    qualityScore?: SortOrder
   }
 
   export type ResponseMaxOrderByAggregateInput = {
@@ -12753,6 +14553,10 @@ export namespace Prisma {
     answeredById?: SortOrder
     aboutUserId?: SortOrder
     answer?: SortOrder
+    notSure?: SortOrder
+    responseTime?: SortOrder
+    qualityScore?: SortOrder
+    flaggedMalicious?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -12762,7 +14566,48 @@ export namespace Prisma {
     answeredById?: SortOrder
     aboutUserId?: SortOrder
     answer?: SortOrder
+    notSure?: SortOrder
+    responseTime?: SortOrder
+    qualityScore?: SortOrder
+    flaggedMalicious?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ResponseSumOrderByAggregateInput = {
+    responseTime?: SortOrder
+    qualityScore?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -12776,31 +14621,72 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type InviteLinkCountOrderByAggregateInput = {
     id?: SortOrder
-    code?: SortOrder
+    inviteCode?: SortOrder
     inviterId?: SortOrder
     targetId?: SortOrder
+    status?: SortOrder
     expiresAt?: SortOrder
+    completedAt?: SortOrder
+    friendEmail?: SortOrder
+    friendNickname?: SortOrder
+    relationshipType?: SortOrder
+    openedAt?: SortOrder
+    startedAt?: SortOrder
+    abandonedAt?: SortOrder
+    deviceType?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type InviteLinkMaxOrderByAggregateInput = {
     id?: SortOrder
-    code?: SortOrder
+    inviteCode?: SortOrder
     inviterId?: SortOrder
     targetId?: SortOrder
+    status?: SortOrder
     expiresAt?: SortOrder
+    completedAt?: SortOrder
+    friendEmail?: SortOrder
+    friendNickname?: SortOrder
+    relationshipType?: SortOrder
+    openedAt?: SortOrder
+    startedAt?: SortOrder
+    abandonedAt?: SortOrder
+    deviceType?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type InviteLinkMinOrderByAggregateInput = {
     id?: SortOrder
-    code?: SortOrder
+    inviteCode?: SortOrder
     inviterId?: SortOrder
     targetId?: SortOrder
+    status?: SortOrder
     expiresAt?: SortOrder
+    completedAt?: SortOrder
+    friendEmail?: SortOrder
+    friendNickname?: SortOrder
+    relationshipType?: SortOrder
+    openedAt?: SortOrder
+    startedAt?: SortOrder
+    abandonedAt?: SortOrder
+    deviceType?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -12815,6 +14701,76 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type RateLimitUserIdWindowStartCompoundUniqueInput = {
+    userId: string
+    windowStart: Date | string
+  }
+
+  export type RateLimitCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    invitesSent?: SortOrder
+    windowStart?: SortOrder
+    windowEnd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RateLimitAvgOrderByAggregateInput = {
+    invitesSent?: SortOrder
+  }
+
+  export type RateLimitMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    invitesSent?: SortOrder
+    windowStart?: SortOrder
+    windowEnd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RateLimitMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    invitesSent?: SortOrder
+    windowStart?: SortOrder
+    windowEnd?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RateLimitSumOrderByAggregateInput = {
+    invitesSent?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
   export type JsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -12838,17 +14794,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type AssessmentResultNullableScalarRelationFilter = {
@@ -12935,22 +14880,6 @@ export namespace Prisma {
     _max?: NestedJsonFilter<$PrismaModel>
   }
 
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
   export type FloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -12960,17 +14889,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type AssessmentSessionScalarRelationFilter = {
@@ -13094,22 +15012,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type AssessmentTemplateCountOrderByAggregateInput = {
@@ -13455,6 +15357,22 @@ export namespace Prisma {
     connect?: QuestionWhereUniqueInput
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type UserUpdateOneRequiredWithoutResponsesAboutNestedInput = {
     create?: XOR<UserCreateWithoutResponsesAboutInput, UserUncheckedCreateWithoutResponsesAboutInput>
     connectOrCreate?: UserCreateOrConnectWithoutResponsesAboutInput
@@ -13503,12 +15421,22 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInviteLinksSentInput, UserUpdateWithoutInviteLinksSentInput>, UserUncheckedUpdateWithoutInviteLinksSentInput>
   }
 
-  export type UserUpdateOneRequiredWithoutInviteLinksReceivedNestedInput = {
+  export type UserUpdateOneWithoutInviteLinksReceivedNestedInput = {
     create?: XOR<UserCreateWithoutInviteLinksReceivedInput, UserUncheckedCreateWithoutInviteLinksReceivedInput>
     connectOrCreate?: UserCreateOrConnectWithoutInviteLinksReceivedInput
     upsert?: UserUpsertWithoutInviteLinksReceivedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInviteLinksReceivedInput, UserUpdateWithoutInviteLinksReceivedInput>, UserUncheckedUpdateWithoutInviteLinksReceivedInput>
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type AssessmentResultCreateNestedOneWithoutSessionInput = {
@@ -13521,14 +15449,6 @@ export namespace Prisma {
     create?: XOR<AssessmentResultCreateWithoutSessionInput, AssessmentResultUncheckedCreateWithoutSessionInput>
     connectOrCreate?: AssessmentResultCreateOrConnectWithoutSessionInput
     connect?: AssessmentResultWhereUniqueInput
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type AssessmentResultUpdateOneWithoutSessionNestedInput = {
@@ -13559,14 +15479,6 @@ export namespace Prisma {
 
   export type FloatFieldUpdateOperationsInput = {
     set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
     increment?: number
     decrement?: number
     multiply?: number
@@ -13726,6 +15638,49 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -13749,29 +15704,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-  export type NestedJsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -13800,16 +15732,28 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
 
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
@@ -13828,36 +15772,44 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
-  }
-
   export type InviteLinkCreateWithoutInviterInput = {
     id?: string
-    code: string
-    expiresAt?: Date | string | null
+    inviteCode: string
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
-    target: UserCreateNestedOneWithoutInviteLinksReceivedInput
+    updatedAt?: Date | string
+    target?: UserCreateNestedOneWithoutInviteLinksReceivedInput
   }
 
   export type InviteLinkUncheckedCreateWithoutInviterInput = {
     id?: string
-    code: string
-    targetId: string
-    expiresAt?: Date | string | null
+    inviteCode: string
+    targetId?: string | null
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type InviteLinkCreateOrConnectWithoutInviterInput = {
@@ -13872,18 +15824,42 @@ export namespace Prisma {
 
   export type InviteLinkCreateWithoutTargetInput = {
     id?: string
-    code: string
-    expiresAt?: Date | string | null
+    inviteCode: string
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     inviter: UserCreateNestedOneWithoutInviteLinksSentInput
   }
 
   export type InviteLinkUncheckedCreateWithoutTargetInput = {
     id?: string
-    code: string
+    inviteCode: string
     inviterId: string
-    expiresAt?: Date | string | null
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type InviteLinkCreateOrConnectWithoutTargetInput = {
@@ -13920,6 +15896,10 @@ export namespace Prisma {
   export type ResponseCreateWithoutAboutUserInput = {
     id?: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
     answeredByUser: UserCreateNestedOneWithoutResponsesGivenInput
     question: QuestionCreateNestedOneWithoutResponsesInput
@@ -13930,6 +15910,10 @@ export namespace Prisma {
     questionId: string
     answeredById: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
@@ -13946,6 +15930,10 @@ export namespace Prisma {
   export type ResponseCreateWithoutAnsweredByUserInput = {
     id?: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
     aboutUser: UserCreateNestedOneWithoutResponsesAboutInput
     question: QuestionCreateNestedOneWithoutResponsesInput
@@ -13956,6 +15944,10 @@ export namespace Prisma {
     questionId: string
     aboutUserId: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
@@ -13990,11 +15982,23 @@ export namespace Prisma {
     OR?: InviteLinkScalarWhereInput[]
     NOT?: InviteLinkScalarWhereInput | InviteLinkScalarWhereInput[]
     id?: StringFilter<"InviteLink"> | string
-    code?: StringFilter<"InviteLink"> | string
+    inviteCode?: StringFilter<"InviteLink"> | string
     inviterId?: StringFilter<"InviteLink"> | string
-    targetId?: StringFilter<"InviteLink"> | string
-    expiresAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    targetId?: StringNullableFilter<"InviteLink"> | string | null
+    status?: StringFilter<"InviteLink"> | string
+    expiresAt?: DateTimeFilter<"InviteLink"> | Date | string
+    completedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    friendEmail?: StringNullableFilter<"InviteLink"> | string | null
+    friendNickname?: StringNullableFilter<"InviteLink"> | string | null
+    relationshipType?: StringNullableFilter<"InviteLink"> | string | null
+    openedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    startedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    abandonedAt?: DateTimeNullableFilter<"InviteLink"> | Date | string | null
+    deviceType?: StringNullableFilter<"InviteLink"> | string | null
+    ipAddress?: StringNullableFilter<"InviteLink"> | string | null
+    userAgent?: StringNullableFilter<"InviteLink"> | string | null
     createdAt?: DateTimeFilter<"InviteLink"> | Date | string
+    updatedAt?: DateTimeFilter<"InviteLink"> | Date | string
   }
 
   export type InviteLinkUpsertWithWhereUniqueWithoutTargetInput = {
@@ -14065,6 +16069,10 @@ export namespace Prisma {
     answeredById?: StringFilter<"Response"> | string
     aboutUserId?: StringFilter<"Response"> | string
     answer?: StringFilter<"Response"> | string
+    notSure?: BoolFilter<"Response"> | boolean
+    responseTime?: IntNullableFilter<"Response"> | number | null
+    qualityScore?: FloatNullableFilter<"Response"> | number | null
+    flaggedMalicious?: BoolFilter<"Response"> | boolean
     createdAt?: DateTimeFilter<"Response"> | Date | string
   }
 
@@ -14155,6 +16163,10 @@ export namespace Prisma {
   export type ResponseCreateWithoutQuestionInput = {
     id?: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
     aboutUser: UserCreateNestedOneWithoutResponsesAboutInput
     answeredByUser: UserCreateNestedOneWithoutResponsesGivenInput
@@ -14165,6 +16177,10 @@ export namespace Prisma {
     answeredById: string
     aboutUserId: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
@@ -14724,18 +16740,42 @@ export namespace Prisma {
 
   export type InviteLinkCreateManyInviterInput = {
     id?: string
-    code: string
-    targetId: string
-    expiresAt?: Date | string | null
+    inviteCode: string
+    targetId?: string | null
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type InviteLinkCreateManyTargetInput = {
     id?: string
-    code: string
+    inviteCode: string
     inviterId: string
-    expiresAt?: Date | string | null
+    status?: string
+    expiresAt: Date | string
+    completedAt?: Date | string | null
+    friendEmail?: string | null
+    friendNickname?: string | null
+    relationshipType?: string | null
+    openedAt?: Date | string | null
+    startedAt?: Date | string | null
+    abandonedAt?: Date | string | null
+    deviceType?: string | null
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ResponseCreateManyAboutUserInput = {
@@ -14743,6 +16783,10 @@ export namespace Prisma {
     questionId: string
     answeredById: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
@@ -14751,60 +16795,140 @@ export namespace Prisma {
     questionId: string
     aboutUserId: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
   export type InviteLinkUpdateWithoutInviterInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inviteCode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    target?: UserUpdateOneRequiredWithoutInviteLinksReceivedNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    target?: UserUpdateOneWithoutInviteLinksReceivedNestedInput
   }
 
   export type InviteLinkUncheckedUpdateWithoutInviterInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    targetId?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inviteCode?: StringFieldUpdateOperationsInput | string
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InviteLinkUncheckedUpdateManyWithoutInviterInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    targetId?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inviteCode?: StringFieldUpdateOperationsInput | string
+    targetId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InviteLinkUpdateWithoutTargetInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    inviteCode?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     inviter?: UserUpdateOneRequiredWithoutInviteLinksSentNestedInput
   }
 
   export type InviteLinkUncheckedUpdateWithoutTargetInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
+    inviteCode?: StringFieldUpdateOperationsInput | string
     inviterId?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type InviteLinkUncheckedUpdateManyWithoutTargetInput = {
     id?: StringFieldUpdateOperationsInput | string
-    code?: StringFieldUpdateOperationsInput | string
+    inviteCode?: StringFieldUpdateOperationsInput | string
     inviterId?: StringFieldUpdateOperationsInput | string
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    friendEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    friendNickname?: NullableStringFieldUpdateOperationsInput | string | null
+    relationshipType?: NullableStringFieldUpdateOperationsInput | string | null
+    openedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    abandonedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deviceType?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ResponseUpdateWithoutAboutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     answeredByUser?: UserUpdateOneRequiredWithoutResponsesGivenNestedInput
     question?: QuestionUpdateOneRequiredWithoutResponsesNestedInput
@@ -14815,6 +16939,10 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     answeredById?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -14823,12 +16951,20 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     answeredById?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ResponseUpdateWithoutAnsweredByUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     aboutUser?: UserUpdateOneRequiredWithoutResponsesAboutNestedInput
     question?: QuestionUpdateOneRequiredWithoutResponsesNestedInput
@@ -14839,6 +16975,10 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     aboutUserId?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -14847,6 +16987,10 @@ export namespace Prisma {
     questionId?: StringFieldUpdateOperationsInput | string
     aboutUserId?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -14855,12 +16999,20 @@ export namespace Prisma {
     answeredById: string
     aboutUserId: string
     answer: string
+    notSure?: boolean
+    responseTime?: number | null
+    qualityScore?: number | null
+    flaggedMalicious?: boolean
     createdAt?: Date | string
   }
 
   export type ResponseUpdateWithoutQuestionInput = {
     id?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     aboutUser?: UserUpdateOneRequiredWithoutResponsesAboutNestedInput
     answeredByUser?: UserUpdateOneRequiredWithoutResponsesGivenNestedInput
@@ -14871,6 +17023,10 @@ export namespace Prisma {
     answeredById?: StringFieldUpdateOperationsInput | string
     aboutUserId?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -14879,6 +17035,10 @@ export namespace Prisma {
     answeredById?: StringFieldUpdateOperationsInput | string
     aboutUserId?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
+    notSure?: BoolFieldUpdateOperationsInput | boolean
+    responseTime?: NullableIntFieldUpdateOperationsInput | number | null
+    qualityScore?: NullableFloatFieldUpdateOperationsInput | number | null
+    flaggedMalicious?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

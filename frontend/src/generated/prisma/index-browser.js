@@ -152,16 +152,42 @@ exports.Prisma.ResponseScalarFieldEnum = {
   answeredById: 'answeredById',
   aboutUserId: 'aboutUserId',
   answer: 'answer',
+  notSure: 'notSure',
+  responseTime: 'responseTime',
+  qualityScore: 'qualityScore',
+  flaggedMalicious: 'flaggedMalicious',
   createdAt: 'createdAt'
 };
 
 exports.Prisma.InviteLinkScalarFieldEnum = {
   id: 'id',
-  code: 'code',
+  inviteCode: 'inviteCode',
   inviterId: 'inviterId',
   targetId: 'targetId',
+  status: 'status',
   expiresAt: 'expiresAt',
-  createdAt: 'createdAt'
+  completedAt: 'completedAt',
+  friendEmail: 'friendEmail',
+  friendNickname: 'friendNickname',
+  relationshipType: 'relationshipType',
+  openedAt: 'openedAt',
+  startedAt: 'startedAt',
+  abandonedAt: 'abandonedAt',
+  deviceType: 'deviceType',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RateLimitScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  invitesSent: 'invitesSent',
+  windowStart: 'windowStart',
+  windowEnd: 'windowEnd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.AssessmentSessionScalarFieldEnum = {
@@ -261,6 +287,7 @@ exports.Prisma.ModelName = {
   Question: 'Question',
   Response: 'Response',
   InviteLink: 'InviteLink',
+  RateLimit: 'RateLimit',
   AssessmentSession: 'AssessmentSession',
   AssessmentResult: 'AssessmentResult',
   AssessmentTemplate: 'AssessmentTemplate'
