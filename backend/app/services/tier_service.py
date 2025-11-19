@@ -8,7 +8,7 @@ This service handles:
 - Invite quota tracking
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Literal, Optional, Tuple
 from fastapi import HTTPException
 
@@ -61,42 +61,38 @@ class TierService:
     async def get_invite_count(self, user_id: str) -> int:
         """
         Get total number of invites sent by user (all time)
-        
+
         Args:
             user_id: User's ID
-            
+
         Returns:
             Total invite count
         """
-        from prisma.models import InviteLink
-        
-        count = await InviteLink.prisma().count(
+        count = await self.db.invitelink.count(
             where={"inviterId": user_id}
         )
-        
+
         return count
     
     async def get_invites_last_hour(self, user_id: str) -> int:
         """
         Get number of invites sent in the last hour (rate limiting)
-        
+
         Args:
             user_id: User's ID
-            
+
         Returns:
             Invite count in last hour
         """
-        from prisma.models import InviteLink
-        
-        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
-        
-        count = await InviteLink.prisma().count(
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+
+        count = await self.db.invitelink.count(
             where={
                 "inviterId": user_id,
                 "createdAt": {"gte": one_hour_ago}
             }
         )
-        
+
         return count
     
     async def can_send_invite(
@@ -166,112 +162,132 @@ class TierService:
         return max(0, remaining)
     
     async def check_ip_abuse(
-        self, 
-        ip_address: str, 
+        self,
+        ip_address: str,
         time_window_hours: int = 24,
         max_invites: int = 20
     ) -> bool:
         """
         Check if an IP address is creating too many invites (abuse detection)
-        
+
         Args:
             ip_address: IP address to check
             time_window_hours: Time window to check (default 24 hours)
             max_invites: Maximum allowed invites in window
-            
+
         Returns:
             True if abuse detected, False otherwise
         """
-        from prisma.models import InviteLink
-        
-        cutoff_time = datetime.utcnow() - timedelta(hours=time_window_hours)
-        
-        count = await InviteLink.prisma().count(
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=time_window_hours)
+
+        count = await self.db.invitelink.count(
             where={
                 "ipAddress": ip_address,
                 "createdAt": {"gte": cutoff_time}
             }
         )
-        
+
         return count >= max_invites
     
     async def check_duplicate_invite(
-        self, 
-        user_id: str, 
+        self,
+        user_id: str,
         friend_email: Optional[str]
     ) -> Optional[str]:
         """
         Check if user already invited this email
-        
+
         Args:
             user_id: User's ID
             friend_email: Friend's email address
-            
+
         Returns:
             Existing invite code if found, None otherwise
         """
         if not friend_email:
             return None
-        
-        from prisma.models import InviteLink
-        
+
         # Find existing invite that's not expired
-        existing = await InviteLink.prisma().find_first(
+        existing = await self.db.invitelink.find_first(
             where={
                 "inviterId": user_id,
                 "friendEmail": friend_email,
                 "status": {"in": ["pending", "completed"]},
-                "expiresAt": {"gt": datetime.utcnow()}
+                "expiresAt": {"gt": datetime.now(timezone.utc)}
             },
             order={"createdAt": "desc"}
         )
-        
+
         if existing:
             return existing.inviteCode
-        
+
         return None
 
 
 # Convenience function for use in API endpoints
 async def enforce_invite_limits(
+    prisma,
     user_id: str,
     friend_email: Optional[str],
-    ip_address: str,
-    db_session
-) -> Tuple[bool, Optional[str], Optional[str]]:
+    ip_address: str
+) -> Dict:
     """
     Enforce all invite limits and checks
-    
+
     Args:
-        user_id: User's ID
+        prisma: Prisma database client
+        user_id: User's database ID (not Clerk ID)
         friend_email: Friend's email (optional)
         ip_address: Request IP address
-        db_session: Database session
-        
+
     Returns:
-        Tuple of (allowed, error_message, existing_code)
-        - If existing_code is set, return that instead of creating new
-        - If allowed is False, raise error with error_message
+        Dictionary with:
+        - allowed: bool - Whether invite creation is allowed
+        - reason: Optional[str] - Error message if not allowed
+        - existing_invite: Optional[InviteLink] - Existing invite if duplicate
+        - remaining_invites: int - Number of remaining invites in quota
     """
-    service = TierService(db_session)
-    
-    # Check for duplicate invite
+    service = TierService(prisma)
+
+    # Check for duplicate invite first
     existing_code = await service.check_duplicate_invite(user_id, friend_email)
     if existing_code:
-        return (True, None, existing_code)
-    
+        # Get the existing invite object
+        existing_invite = await prisma.invitelink.find_unique(
+            where={"inviteCode": existing_code}
+        )
+        remaining = await service.get_remaining_invites(user_id)
+        return {
+            "allowed": False,
+            "reason": "You've already invited this person",
+            "existing_invite": existing_invite,
+            "remaining_invites": remaining
+        }
+
     # Check IP abuse
     is_abuse = await service.check_ip_abuse(ip_address)
     if is_abuse:
-        return (
-            False,
-            "Too many invites from this network. Please try again later.",
-            None
-        )
-    
+        remaining = await service.get_remaining_invites(user_id)
+        return {
+            "allowed": False,
+            "reason": "Too many invites from this IP address",
+            "remaining_invites": remaining
+        }
+
     # Check user tier limits
     can_send, error_msg = await service.can_send_invite(user_id)
     if not can_send:
-        return (False, error_msg, None)
-    
-    return (True, None, None)
+        remaining = await service.get_remaining_invites(user_id)
+        return {
+            "allowed": False,
+            "reason": error_msg,
+            "remaining_invites": remaining
+        }
+
+    # All checks passed
+    remaining = await service.get_remaining_invites(user_id) - 1  # Account for the invite about to be created
+    return {
+        "allowed": True,
+        "reason": None,
+        "remaining_invites": remaining
+    }

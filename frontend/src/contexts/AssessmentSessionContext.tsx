@@ -501,16 +501,22 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
     // Don't protect results route - users might have direct links to their results
   }, [pathname, session.hasStartedAssessment, router, isHydrated]);
 
-  // Prevent page unload for anonymous users with progress
+  // Prevent page unload ONLY when on assessment wizard page with in-progress session
   useEffect(() => {
     if (!isHydrated) return;
-    
-    // Only show warning for anonymous users with progress
-    // TODO: Skip this for logged-in users (their progress is saved in database)
-    const shouldWarnBeforeUnload = 
-      session.hasStartedAssessment && 
-      session.sessionId && 
+
+    // Only show warning when:
+    // 1. User is on the assessment wizard page
+    // 2. Session is in-progress (not completed)
+    // 3. User has progress to lose (has responses or demographics)
+    const isWizardPage = pathname?.includes("/assessment/wizard");
+    const isInProgress = session.status === "in-progress";
+    const hasProgress =
+      session.hasStartedAssessment &&
+      session.sessionId &&
       (Object.keys(session.responses).length > 0 || Object.keys(session.demographics).length > 0);
+
+    const shouldWarnBeforeUnload = isWizardPage && isInProgress && hasProgress;
 
     if (!shouldWarnBeforeUnload) return;
 
@@ -535,7 +541,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [session, isHydrated, saveProgress]);
+  }, [session, isHydrated, saveProgress, pathname]);
 
   const canAccessWizard = session.hasStartedAssessment;
 

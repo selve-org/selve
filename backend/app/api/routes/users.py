@@ -7,18 +7,15 @@ import os
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Request, Header
 from pydantic import BaseModel, EmailStr, Field
-from prisma import Prisma
 from svix.webhooks import Webhook, WebhookVerificationError
 
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from app.db import prisma
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
 webhooks_router = APIRouter(prefix="/webhooks", tags=["webhooks"])
-
-# Get Prisma client (shared global instance)
-prisma = Prisma()
 
 
 # Request/Response Models

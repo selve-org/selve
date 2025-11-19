@@ -31,10 +31,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
  * - POST /api/assessment/answer - Submit answers
  * - Adaptive testing automatically selects next questions
  */
-export function useQuestionnaire() {
+export function useQuestionnaire(inviteCode?: string) {
   const { updateProgress, currentProgress } = useAssessmentProgress();
   const { getToken } = useAuth();
-  
+
   // Extract only the sessionId to prevent infinite re-renders
   const existingSessionId = currentProgress.sessionId;
   
@@ -203,7 +203,11 @@ export function useQuestionnaire() {
           headers,
           body: JSON.stringify({
             user_id: null, // Clerk ID will be extracted from token on backend
-            metadata: { source: "web", restored_session: false },
+            metadata: {
+              source: "web",
+              restored_session: false,
+              invite_code: inviteCode || null,
+            },
           }),
         });
 
@@ -431,6 +435,19 @@ export function useQuestionnaire() {
         if (is_complete) {
           setIsComplete(true);
           setState((prev) => ({ ...prev, isLoading: false }));
+
+          // Mark invite as completed if this was from an invite
+          if (inviteCode) {
+            try {
+              await fetch(`${API_BASE}/api/invites/${inviteCode}/mark-completed`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+              });
+            } catch (error) {
+              console.error("Failed to mark invite as completed:", error);
+              // Don't block completion if this fails
+            }
+          }
 
           // Redirect to results page after showing all loading stages (~5.5 seconds)
           setTimeout(() => {

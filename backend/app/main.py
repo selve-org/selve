@@ -3,15 +3,13 @@ SELVE Backend - FastAPI Application
 Main entry point for the psychology profiling backend
 """
 
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from prisma import Prisma
+from app.db import prisma
 from app.api.routes import questions, assessment, invites
 from app.api.routes.users import router as users_router, webhooks_router
-
-# Global Prisma client
-prisma = Prisma()
 
 
 @asynccontextmanager
@@ -41,12 +39,13 @@ app = FastAPI(
 )
 
 # CORS configuration - Allow Next.js frontend to call this API
+# Get CORS origins from environment variable
+cors_origins_str = os.getenv('CORS_ORIGINS', 'http://localhost:3000')
+cors_origins = [origin.strip() for origin in cors_origins_str.split(',')]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js dev server
-        "http://localhost:3001",  # Alternative port
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

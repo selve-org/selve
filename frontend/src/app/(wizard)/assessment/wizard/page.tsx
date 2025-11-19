@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ArtisticCanvas } from "@/components/wizard/ArtisticCanvas";
@@ -29,8 +30,12 @@ import { useQuestionnaire } from "@/hooks/useQuestionnaire";
  * - Back navigation with warning
  * - Responsive design
  * - Beautiful animations
+ * - Support for friend assessment invites
  */
 export default function WizardPage() {
+  const searchParams = useSearchParams();
+  const inviteCode = searchParams.get("invite");
+
   const {
     currentQuestion,
     isLoading,
@@ -48,7 +53,7 @@ export default function WizardPage() {
     continueFromCheckpoint,
     validateAnswer,
     getAnswer,
-  } = useQuestionnaire();
+  } = useQuestionnaire(inviteCode || undefined);
 
   const [currentAnswer, setCurrentAnswer] = useState<unknown>(null);
   const [validationError, setValidationError] = useState<string | null>(null);

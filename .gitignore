@@ -9,6 +9,7 @@ frontend/build
 
 # Backend dependencies
 backend/venv/
+backend/node_modules/
 backend/__pycache__/
 backend/**/__pycache__/
 backend/**/*.pyc

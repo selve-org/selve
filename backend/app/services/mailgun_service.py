@@ -18,20 +18,33 @@ from datetime import datetime
 
 class MailgunService:
     """Service for sending transactional emails via Mailgun"""
-    
+
     def __init__(self):
         """Initialize Mailgun service with configuration"""
         self.api_key = os.getenv('MAILGUN_API_KEY')
         if not self.api_key:
             raise ValueError("MAILGUN_API_KEY environment variable is required")
-        
+
+        # Environment configuration
+        self.environment = os.getenv('ENVIRONMENT', 'development')
+        self.is_production = self.environment == 'production'
+
         # Use production domain when ready, sandbox for testing
         self.domain = os.getenv('MAILGUN_DOMAIN', 'sandboxd8f97eaf0d0047738c071c1b4975ee4f.mailgun.org')
-        
+
         self.base_url = os.getenv('MAILGUN_BASE_URL', 'https://api.mailgun.net')
-        
+
         # Production domain for reference
         self.prod_domain = 'mg.selve.me'
+
+        # Frontend URL (for invite links)
+        self.frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
+        # Logo URLs based on environment
+        self.logo_url = (
+            "https://selve.me/logo/selve-logo-text.png" if self.is_production
+            else "https://res.cloudinary.com/dbjsmvbkl/image/upload/v1763536849/selve-logo-text_fb3k38.png"
+        )
         
     def _get_endpoint(self) -> str:
         """Get the full API endpoint for sending messages"""
@@ -61,8 +74,9 @@ class MailgunService:
         Raises:
             requests.HTTPError: If email sending fails
         """
-        # Construct invite URL
-        invite_url = f"https://selve.me/invite/{invite_code}"
+        # Construct invite URL (environment-aware)
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        invite_url = f"{base_url}/invite/{invite_code}"
         
         # Personalize greeting based on relationship
         relationship_context = ""
@@ -97,7 +111,7 @@ class MailgunService:
                     <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 20px; text-align: center;">
-                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0; font-weight: 600;">SELVE</h1>
+                            <img src="{self.logo_url}" alt="SELVE" style="height: 32px; width: auto; display: inline-block;">
                         </td>
                     </tr>
                     
@@ -151,11 +165,11 @@ class MailgunService:
                         </td>
                     </tr>
                 </table>
-                
+
                 <!-- Unsubscribe footer -->
                 <p style="color: #999; font-size: 11px; margin: 20px 0 0; text-align: center;">
                     SELVE · Personality Assessment Platform<br>
-                    <a href="https://selve.me" style="color: #999;">selve.me</a>
+                    <a href="{base_url}" style="color: #999;">{base_url.replace('http://', '').replace('https://', '')}</a>
                 </p>
             </td>
         </tr>
@@ -163,7 +177,7 @@ class MailgunService:
 </body>
 </html>
         """
-        
+
         # Plain text fallback
         text_body = f"""
 Hey there!
@@ -183,7 +197,7 @@ Thanks for helping them out 💛
 — The SELVE Team
 
 SELVE · Personality Assessment Platform
-https://selve.me
+{base_url}
         """
         
         # Prepare request data

@@ -4,23 +4,20 @@ Handles creating, managing, and tracking friend assessment invites
 """
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
-from prisma import Prisma
 from prisma.errors import PrismaError
 
 # Import services
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from app.db import prisma
 from app.services.tier_service import TierService, enforce_invite_limits
 from app.services.mailgun_service import MailgunService
 
 router = APIRouter(prefix="/invites", tags=["invites"])
-
-# Get Prisma client (shared global instance)
-prisma = Prisma()
 
 
 class CreateInviteRequest(BaseModel):
@@ -175,7 +172,7 @@ async def create_invite(
     
     # Get user info from database
     try:
-        user = await prisma.user.find_unique(where={"id": user_id})
+        user = await prisma.user.find_unique(where={"clerkId": user_id})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
     except PrismaError as e:
@@ -204,7 +201,7 @@ async def create_invite(
     try:
         limits_check = await enforce_invite_limits(
             prisma=prisma,
-            user_id=user_id,
+            user_id=user.id,
             friend_email=invite_data.friend_email,
             ip_address=client_ip
         )
@@ -230,7 +227,12 @@ async def create_invite(
                 # Return existing invite code
                 existing_invite = limits_check.get("existing_invite")
                 if existing_invite:
-                    invite_url = f"https://selve.me/invite/{existing_invite.inviteCode}"
+                    # Use environment-aware URL
+                    environment = os.getenv('ENVIRONMENT', 'development')
+                    is_production = environment == 'production'
+                    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+                    base_url = "https://selve.me" if is_production else frontend_url
+                    invite_url = f"{base_url}/invite/{existing_invite.inviteCode}"
                     return CreateInviteResponse(
                         invite_code=existing_invite.inviteCode,
                         invite_url=invite_url,
@@ -249,16 +251,16 @@ async def create_invite(
     
     # Generate invite code
     invite_code = generate_invite_code()
-    
+
     # Set expiration (7 days from now)
-    expires_at = datetime.utcnow() + timedelta(days=7)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
     
     # Create invite record in database
     try:
         invite = await prisma.invitelink.create(
             data={
                 "inviteCode": invite_code,
-                "inviterId": user_id,
+                "inviterId": user.id,
                 "friendEmail": invite_data.friend_email,
                 "friendNickname": invite_data.friend_nickname,
                 "relationshipType": invite_data.relationship_type,
@@ -266,7 +268,7 @@ async def create_invite(
                 "expiresAt": expires_at,
                 "ipAddress": client_ip,
                 "userAgent": user_agent,
-                "createdAt": datetime.utcnow(),
+                "createdAt": datetime.now(timezone.utc),
             }
         )
     except PrismaError as e:
@@ -275,15 +277,24 @@ async def create_invite(
             detail=f"Failed to create invite: {str(e)}"
         )
     
-    # Construct invite URL
-    invite_url = f"https://selve.me/invite/{invite_code}"
+    # Construct invite URL (environment-aware)
+    environment = os.getenv('ENVIRONMENT', 'development')
+    is_production = environment == 'production'
+    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+    base_url = "https://selve.me" if is_production else frontend_url
+    invite_url = f"{base_url}/invite/{invite_code}"
     
     # Send email (non-blocking - don't fail if email fails)
     email_sent = False
     try:
+        # Use nickname if provided and not empty, otherwise use email
+        friend_display_name = (invite_data.friend_nickname.strip()
+                               if invite_data.friend_nickname and invite_data.friend_nickname.strip()
+                               else invite_data.friend_email)
+
         result = mailgun_service.send_invite_email(
             to_email=invite_data.friend_email,
-            to_name=invite_data.friend_nickname or invite_data.friend_email,
+            to_name=friend_display_name,
             inviter_name=user.name or user.email,
             invite_code=invite_code,
             relationship_type=invite_data.relationship_type
@@ -328,9 +339,9 @@ async def get_invite(invite_code: str):
         
         if not invite:
             raise HTTPException(status_code=404, detail="Invite not found")
-        
+
         # Check if expired
-        if invite.expiresAt < datetime.utcnow():
+        if invite.expiresAt < datetime.now(timezone.utc):
             raise HTTPException(status_code=410, detail="This invite has expired")
         
         # Check if already completed
@@ -368,7 +379,7 @@ async def mark_invite_opened(invite_code: str, request: Request):
         await prisma.invitelink.update(
             where={"inviteCode": invite_code},
             data={
-                "openedAt": datetime.utcnow(),
+                "openedAt": datetime.now(timezone.utc),
                 "deviceType": device_type,
             }
         )
@@ -386,7 +397,7 @@ async def mark_invite_started(invite_code: str):
     try:
         await prisma.invitelink.update(
             where={"inviteCode": invite_code},
-            data={"startedAt": datetime.utcnow()}
+            data={"startedAt": datetime.now(timezone.utc)}
         )
         return {"message": "Invite marked as started"}
     except PrismaError as e:
@@ -414,7 +425,7 @@ async def mark_invite_completed(invite_code: str):
         await prisma.invitelink.update(
             where={"inviteCode": invite_code},
             data={
-                "completedAt": datetime.utcnow(),
+                "completedAt": datetime.now(timezone.utc),
                 "status": "completed"
             }
         )
@@ -423,8 +434,14 @@ async def mark_invite_completed(invite_code: str):
         try:
             mailgun_service = MailgunService()
             friend_name = invite.friendNickname or invite.friendEmail or "Your friend"
-            results_url = "https://selve.me/dashboard"  # TODO: Link to specific results page
-            
+
+            # Use environment-aware URL
+            environment = os.getenv('ENVIRONMENT', 'development')
+            is_production = environment == 'production'
+            frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+            base_url = "https://selve.me" if is_production else frontend_url
+            results_url = f"{base_url}/dashboard"  # TODO: Link to specific results page
+
             mailgun_service.send_completion_notification(
                 to_email=invite.inviter.email,
                 to_name=invite.inviter.name or invite.inviter.email,
