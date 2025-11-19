@@ -6,16 +6,18 @@ import {
   UserCircleIcon,
   UserGroupIcon,
   CreditCardIcon,
-  ChartBarIcon,
   ShieldCheckIcon,
+  LinkIcon,
+  ComputerDesktopIcon,
 } from "@heroicons/react/24/outline";
 
 import { TabNavigation } from "./components/TabNavigation";
 import { GeneralTab } from "./components/tabs/GeneralTab";
+import { SecurityPrivacyTab } from "./components/tabs/SecurityPrivacyTab";
+import { AccountConnectionsTab } from "./components/tabs/AccountConnectionsTab";
+import { SessionsTab } from "./components/tabs/SessionsTab";
 import { InvitesTab } from "./components/tabs/InvitesTab";
-import { BillingTab } from "./components/tabs/BillingTab";
-import { UsageTab } from "./components/tabs/UsageTab";
-import { PrivacyTab } from "./components/tabs/PrivacyTab";
+import { PlanUsageTab } from "./components/tabs/PlanUsageTab";
 import { useInvites } from "./hooks/useInvites";
 import { TabType, Tab } from "./types";
 
@@ -43,10 +45,11 @@ export default function ProfilePage() {
 
   const tabs: Tab[] = [
     { id: "general", label: "General", icon: UserCircleIcon },
+    { id: "security", label: "Security & Privacy", icon: ShieldCheckIcon },
+    { id: "accounts", label: "Account Connections", icon: LinkIcon },
+    { id: "sessions", label: "Sessions", icon: ComputerDesktopIcon },
     { id: "invites", label: "Invites", icon: UserGroupIcon },
-    { id: "billing", label: "Billing", icon: CreditCardIcon },
-    { id: "usage", label: "Usage", icon: ChartBarIcon },
-    { id: "privacy", label: "Privacy", icon: ShieldCheckIcon },
+    { id: "plan", label: "Plan & Usage", icon: CreditCardIcon },
   ];
 
   if (!isLoaded) {
@@ -76,9 +79,18 @@ export default function ProfilePage() {
         {/* Tab Navigation */}
         <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
+        {/* Thin horizontal divider */}
+        <div className="h-px bg-gray-200 dark:bg-gray-800 my-6 sm:my-8"></div>
+
         {/* Tab Content */}
         <div className="space-y-6">
           {activeTab === "general" && <GeneralTab user={user} tier={tier} />}
+
+          {activeTab === "security" && <SecurityPrivacyTab />}
+
+          {activeTab === "accounts" && <AccountConnectionsTab />}
+
+          {activeTab === "sessions" && <SessionsTab />}
 
           {activeTab === "invites" && (
             <InvitesTab
@@ -91,11 +103,7 @@ export default function ProfilePage() {
             />
           )}
 
-          {activeTab === "billing" && <BillingTab tier={tier} />}
-
-          {activeTab === "usage" && <UsageTab tier={tier} invites={invites} />}
-
-          {activeTab === "privacy" && <PrivacyTab />}
+          {activeTab === "plan" && <PlanUsageTab tier={tier} invites={invites} />}
         </div>
       </div>
     </div>

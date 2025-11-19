@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   SignedIn,
   SignedOut,
-  UserButton,
   SignInButton,
   SignUpButton,
 } from "@clerk/nextjs";
@@ -16,6 +15,7 @@ import { navLinks } from "./navigation/navLinks";
 import { AnimatedHamburgerIcon } from "@/components/icons/HamburgerButton";
 import { IdentifyUser } from "@/components/IdentifyUser";
 import { SyncClerkToDB } from "@/components/SyncClerkToDB";
+import { CustomUserMenu } from "./CustomUserMenu";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,7 +46,7 @@ export const Header = () => {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <UserButton />
+              <CustomUserMenu />
               <IdentifyUser />
               <SyncClerkToDB />
             </SignedIn>
@@ -108,7 +108,7 @@ export const Header = () => {
               </SignedOut>
               <SignedIn>
                 <div className="flex-1 flex justify-center">
-                  <UserButton />
+                  <CustomUserMenu />
                 </div>
                 <IdentifyUser />
                 <SyncClerkToDB />

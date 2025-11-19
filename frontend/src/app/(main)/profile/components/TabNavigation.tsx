@@ -27,9 +27,9 @@ export function TabNavigation({ tabs, activeTab, onTabChange }: TabNavigationPro
   }, [activeTab, tabs]);
 
   return (
-    <div className="relative mb-6 sm:mb-8">
-      {/* Scrollable container with border */}
-      <div className="relative border-b border-gray-200 dark:border-gray-800 overflow-x-auto scrollbar-hide">
+    <div className="relative">
+      {/* Scrollable container */}
+      <div className="relative overflow-x-auto scrollbar-hide">
         <nav className="relative flex space-x-6 sm:space-x-8 min-w-max" aria-label="Tabs">
           {tabs.map((tab, index) => {
             const Icon = tab.icon;

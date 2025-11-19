@@ -12,13 +12,6 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === 'production',
   nodeEnv: process.env.NODE_ENV || 'development',
 
-  // Database URLs
-  database: {
-    dev: process.env.DATABASE_URL_DEV,
-    prod: process.env.DATABASE_URL_PROD,
-    current: process.env.DATABASE_URL,
-  },
-
   // Clerk
   clerk: {
     publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
@@ -34,30 +27,14 @@ export const ENV = {
   sentry: {
     dsn: process.env.SENTRY_DSN,
   },
+
+  // Backend API
+  api: {
+    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  },
+
+  // Geoapify (country autocomplete)
+  geoapify: {
+    key: process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
+  },
 } as const;
-
-/**
- * Get the current database URL based on environment
- */
-export function getDatabaseUrl(): string {
-  if (ENV.isDevelopment && ENV.database.dev) {
-    return ENV.database.dev;
-  }
-  
-  if (ENV.isProduction && ENV.database.prod) {
-    return ENV.database.prod;
-  }
-
-  // Fallback to current DATABASE_URL
-  return ENV.database.current || '';
-}
-
-/**
- * Log current environment configuration (useful for debugging)
- */
-export function logEnvironment() {
-  if (ENV.isDevelopment) {
-    console.log('🔧 Environment:', ENV.nodeEnv);
-    console.log('🗄️  Database:', ENV.database.current?.includes('rapid-band') ? 'Development (development branch)' : 'Production (production branch)');
-  }
-}

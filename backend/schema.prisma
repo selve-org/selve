@@ -15,6 +15,9 @@ model User {
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   clerkId             String       @unique
+  isArchived          Boolean      @default(false)
+  archivedAt          DateTime?
+  archiveMetadata     Json?
   inviteLinksSent     InviteLink[] @relation("InviterRelation")
   inviteLinksReceived InviteLink[] @relation("TargetRelation")
   profile             Profile?

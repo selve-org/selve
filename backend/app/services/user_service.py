@@ -357,33 +357,46 @@ class UserService:
         """
         Handle user.deleted webhook from Clerk
 
+        Archives the user instead of deleting to maintain data integrity
+        and allow for potential account recovery.
+
         Args:
             clerk_id: Clerk user ID
 
         Returns:
-            Deletion confirmation
+            Archive confirmation
         """
         try:
-            # Delete user (cascade will handle profile, invites, etc.)
-            await self.db.user.delete(
-                where={"clerkId": clerk_id}
+            # Archive user instead of deleting
+            user = await self.db.user.update(
+                where={"clerkId": clerk_id},
+                data={
+                    "isArchived": True,
+                    "archivedAt": datetime.utcnow(),
+                    "archiveMetadata": {
+                        "reason": "user_initiated_deletion",
+                        "deletedFromClerk": True,
+                        "archivedAt": datetime.utcnow().isoformat(),
+                    }
+                }
             )
 
             return {
                 "success": True,
-                "action": "deleted",
-                "clerkId": clerk_id
+                "action": "archived",
+                "clerkId": clerk_id,
+                "archivedAt": user.archivedAt.isoformat() if user.archivedAt else None
             }
 
         except PrismaError as e:
             # If user doesn't exist, consider it a success (idempotent)
-            if "Record to delete does not exist" in str(e):
+            if "Record to update not found" in str(e):
                 return {
                     "success": True,
-                    "action": "already_deleted",
+                    "action": "already_archived",
                     "clerkId": clerk_id
                 }
             raise HTTPException(
                 status_code=500,
-                detail=f"Database error deleting user: {str(e)}"
+                detail=f"Database error archiving user: {str(e)}"
             )

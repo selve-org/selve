@@ -16,7 +16,13 @@ export interface InviteLink {
   completedAt: string | null;
 }
 
-export type TabType = "general" | "invites" | "billing" | "usage" | "privacy";
+export type TabType =
+  | "general"
+  | "security"
+  | "accounts"
+  | "sessions"
+  | "invites"
+  | "plan";
 
 export type TierType = "free" | "premium";
 
