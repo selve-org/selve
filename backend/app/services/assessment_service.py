@@ -429,7 +429,7 @@ class AssessmentService:
             .where(AssessmentSession.isCurrent == True)
             .order_by(AssessmentSession.createdAt.desc())
         )
-        return result.scalar_one_or_none()
+        return result.scalars().first()
     
     async def get_current_result(
         self, 
@@ -450,7 +450,7 @@ class AssessmentService:
             .where(AssessmentResult.isCurrent == True)
             .order_by(AssessmentResult.createdAt.desc())
         )
-        return result.scalar_one_or_none()
+        return result.scalars().first()
     
     async def get_assessment_history(
         self, 
