@@ -42,7 +42,7 @@ export function CustomUserMenu() {
       {/* Avatar Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+        className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
         aria-label="User menu"
       >
         <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-purple-500 transition-all">
@@ -52,11 +52,6 @@ export function CustomUserMenu() {
             className="w-full h-full object-cover"
           />
         </div>
-        <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
       </button>
 
       {/* Dropdown Menu */}

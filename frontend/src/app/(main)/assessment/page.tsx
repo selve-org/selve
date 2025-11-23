@@ -78,48 +78,86 @@ export default function AssessmentPage() {
         {/* CTA */}
         <div className="mt-12 md:mt-16">
           {isCompleted ? (
-            <div className="space-y-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
               {/* Assessment Already Completed */}
-              <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 rounded-2xl">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <div className="relative p-8 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950/30 dark:via-green-950/20 dark:to-teal-950/30 border-2 border-emerald-200/80 dark:border-emerald-700/50 rounded-3xl shadow-lg shadow-emerald-100/50 dark:shadow-emerald-950/50 overflow-hidden">
+                {/* Decorative background elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-200/20 dark:bg-emerald-700/10 rounded-full blur-3xl -z-0" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-200/20 dark:bg-teal-700/10 rounded-full blur-3xl -z-0" />
+                
+                <div className="relative z-10 flex flex-col items-center text-center gap-6">
+                  {/* Success Icon with animation */}
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 15,
+                      delay: 0.2 
+                    }}
+                    className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30"
+                  >
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                      <motion.path 
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        d="M5 13l4 4L19 7" 
+                      />
                     </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  </motion.div>
+                  
+                  {/* Title */}
+                  <div>
+                    <h3 
+                      className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-emerald-700 to-green-700 dark:from-emerald-400 dark:to-green-400 bg-clip-text text-transparent mb-2"
+                      style={{ fontFamily: '"Tiempos Headline", ui-serif, Georgia, serif' }}
+                    >
                       Assessment Completed!
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      You completed this assessment on {new Date(session.completedAt!).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
+                    <p className="text-base text-slate-600 dark:text-slate-400 font-light" style={{ fontFamily: 'var(--font-inter)' }}>
+                      You completed this assessment on{' '}
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {new Date(session.completedAt!).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                      </span>
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Link 
-                        href={`/results/${session.sessionId}`}
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-colors"
-                      >
-                        <span>View Your Results</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-                      <motion.button
-                        onClick={() => setShowRestartConfirm(true)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
-                        style={{ fontFamily: 'var(--font-inter)' }}
-                      >
-                        <span>Take Again</span>
-                      </motion.button>
-                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-2">
+                    <Link 
+                      href={`/results/${session.sessionId}`}
+                      className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-2xl font-semibold transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/35 hover:scale-[1.02] active:scale-[0.98]"
+                      style={{ fontFamily: 'var(--font-inter)' }}
+                    >
+                      <span>View Your Results</span>
+                      <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                    <motion.button
+                      onClick={() => setShowRestartConfirm(true)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-2 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-2xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+                      style={{ fontFamily: 'var(--font-inter)' }}
+                    >
+                      <span>Take Again</span>
+                    </motion.button>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ) : hasProgress ? (
             <div className="space-y-4">{/* Continue Assessment Button */}
               <motion.button
