@@ -4,6 +4,7 @@ Main entry point for the psychology profiling backend
 """
 
 import os
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -68,8 +69,23 @@ async def lifespan(app: FastAPI):
         print("🔐 Using development Clerk keys (pretty-boxer-70)")
         print("🤖 Using development OpenAI key")
     
-    await prisma.connect()
-    print("✅ Connected to database")
+    # Connect to database with retries (Neon compute may need time to wake up)
+    print("🔌 Connecting to database (this may take a moment if compute is waking up)...")
+    max_retries = 3
+    retry_delay = 5
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            await prisma.connect()
+            print("✅ Connected to database")
+            break
+        except Exception as e:
+            if attempt < max_retries:
+                print(f"⚠️  Connection attempt {attempt} failed, retrying in {retry_delay}s...")
+                await asyncio.sleep(retry_delay)
+            else:
+                print(f"❌ Failed to connect after {max_retries} attempts")
+                raise
 
     yield
 
