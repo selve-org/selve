@@ -65,7 +65,8 @@ export default function FriendAssessmentPage() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(`/api/invites/${code}/questions`);
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${API_BASE}/api/invites/${code}/questions`);
         
         if (!res.ok) {
           const errorData = await res.json();
@@ -74,9 +75,8 @@ export default function FriendAssessmentPage() {
 
         const data = await res.json();
         
-        // Extract inviter name from first question
-        const firstName = data.questions[0]?.text.split(" ")[0] || "Your friend";
-        setInviterName(firstName);
+        // Use inviter name from API response
+        setInviterName(data.inviter_name || "your friend");
         
         setQuestions(data.questions);
         setQuestionStartTime(performance.now());
@@ -151,7 +151,8 @@ export default function FriendAssessmentPage() {
         privacy_accepted: true,
       };
 
-      const res = await fetch(`/api/invites/${code}/responses`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_BASE}/api/invites/${code}/responses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

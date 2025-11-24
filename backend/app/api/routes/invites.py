@@ -451,9 +451,15 @@ async def get_friend_questions(invite_code: str):
         questions = []
         for dimension, items in item_pool.items():
             for item in items:
+                # Replace {Name} with inviter name
+                text = item['text'].replace('{Name}', inviter_name)
+                # Capitalize first letter if sentence starts with "your friend"
+                if text.startswith('your friend'):
+                    text = 'Your friend' + text[11:]
+                
                 question = {
                     'item_id': item['item'],
-                    'text': item['text'].replace('{Name}', inviter_name),
+                    'text': text,
                     'dimension': item['dimension'],
                     'reversed': item['reversed']
                 }
