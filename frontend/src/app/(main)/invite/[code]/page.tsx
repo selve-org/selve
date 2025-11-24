@@ -64,12 +64,12 @@ export default function InvitePage() {
         headers: { "Content-Type": "application/json" },
       });
 
-      // Redirect to assessment wizard with invite code
-      router.push(`/assessment/wizard?invite=${inviteCode}`);
+      // Redirect to friend assessment wizard
+      router.push(`/assessment/friend/${inviteCode}`);
     } catch (err) {
       console.error("Error starting assessment:", err);
       // Still redirect even if analytics fails
-      router.push(`/assessment/wizard?invite=${inviteCode}`);
+      router.push(`/assessment/friend/${inviteCode}`);
     }
   };
 

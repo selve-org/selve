@@ -12,6 +12,7 @@ import {
   ScaleSlider,
   NumberInput,
   Radio,
+  LikertScale,
 } from "./inputs";
 import { CountrySelect } from "./inputs/CountrySelect";
 
@@ -127,6 +128,26 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           />
         );
 
+      case "likert-5-not-sure":
+        return (
+          <LikertScale
+            value={value as number | "not-sure" | null}
+            onChange={onChange}
+            config={renderConfig}
+            showNotSure={true}
+          />
+        );
+
+      case "likert-scale":
+        return (
+          <LikertScale
+            value={value as number | null}
+            onChange={onChange}
+            config={renderConfig}
+            showNotSure={false}
+          />
+        );
+
       // TODO: Add more input type handlers as components are created
       case "checkbox":
       case "dropdown":
@@ -135,7 +156,6 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       case "color-picker":
       case "range-slider":
       case "toggle":
-      case "likert-scale":
         return (
           <div className="p-8 bg-gray-800 rounded-lg text-center text-gray-400">
             <p className="mb-2">

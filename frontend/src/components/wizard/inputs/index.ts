@@ -12,6 +12,7 @@ export { DateInput } from "./DateInput";
 export { ScaleSlider } from "./ScaleSlider";
 export { NumberInput } from "./NumberInput";
 export { Radio } from "./Radio";
+export { LikertScale } from "./LikertScale";
 
 // TODO: Add more input types as needed:
 // - NumberInput

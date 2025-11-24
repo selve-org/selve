@@ -1769,3 +1769,117 @@ async def get_current_result(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch current result: {str(e)}")
 
+
+@router.get("/assessment/{session_id}/friend-insights")
+async def get_friend_insights(
+    session_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get friend insights for a completed assessment session
+    
+    Returns:
+        - friendResponses: List of friend responses with quality scores
+        - aggregatedScores: Average scores from friends per dimension
+        - lastRegeneration: When profile was last updated with friend data
+    """
+    from app.db import prisma
+    
+    try:
+        # Get the session to find the user
+        session = await prisma.assessmentsession.find_unique(
+            where={"id": session_id}
+        )
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Get all friend responses for this user's invites
+        invites = await prisma.friendinvite.find_many(
+            where={"userId": session.userId},
+            include={"response": True}
+        )
+        
+        # Filter to completed invites only
+        friend_responses = []
+        for invite in invites:
+            if invite.response:
+                friend_responses.append({
+                    "id": invite.response.id,
+                    "inviteId": invite.response.inviteId,
+                    "responses": invite.response.responses,
+                    "qualityScore": invite.response.qualityScore,
+                    "totalTime": invite.response.totalTime,
+                    "completedAt": invite.response.completedAt.isoformat()
+                })
+        
+        # Calculate aggregated scores if we have friend responses
+        aggregated_scores = {}
+        if friend_responses:
+            # Get the friend item pool to map questions to dimensions
+            import json
+            item_pool_path = os.path.join(
+                os.path.dirname(__file__), 
+                "../../../data/selve_friend_item_pool.json"
+            )
+            
+            with open(item_pool_path, "r") as f:
+                friend_items_by_dim = json.load(f)
+            
+            # Flatten the structure and map item_id to dimensions
+            item_to_dim = {}
+            for dimension, items in friend_items_by_dim.items():
+                for item in items:
+                    item_to_dim[item["item_id"]] = dimension
+            
+            # Aggregate scores by dimension
+            dimension_scores = {}
+            dimension_counts = {}
+            
+            for response in friend_responses:
+                quality_weight = 1.0
+                if response["qualityScore"] >= 70:
+                    quality_weight = 1.0
+                elif response["qualityScore"] >= 50:
+                    quality_weight = 0.5
+                else:
+                    quality_weight = 0.1
+                
+                responses_dict = response["responses"]
+                for item_code, value in responses_dict.items():
+                    if isinstance(value, (int, float)) and item_code in item_to_dim:
+                        dim = item_to_dim[item_code]
+                        
+                        if dim not in dimension_scores:
+                            dimension_scores[dim] = 0
+                            dimension_counts[dim] = 0
+                        
+                        # Convert 1-5 scale to 0-100 (like self-assessment)
+                        normalized_score = ((value - 1) / 4) * 100
+                        
+                        dimension_scores[dim] += normalized_score * quality_weight
+                        dimension_counts[dim] += quality_weight
+            
+            # Calculate averages
+            for dim in dimension_scores:
+                if dimension_counts[dim] > 0:
+                    aggregated_scores[dim] = dimension_scores[dim] / dimension_counts[dim]
+        
+        # Get last regeneration timestamp (from Result table)
+        last_result = await prisma.result.find_first(
+            where={"sessionId": session_id},
+            order_by={"createdAt": "desc"}
+        )
+        
+        return {
+            "friendResponses": friend_responses,
+            "aggregatedScores": aggregated_scores,
+            "lastRegeneration": last_result.createdAt.isoformat() if last_result else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch friend insights: {str(e)}")
+
+

@@ -69,37 +69,77 @@ model Response {
   question         Question @relation(fields: [questionId], references: [id])
 }
 
-model InviteLink {
+// Friend Assessment Response - Using SELVE Item Pool
+model FriendResponse {
   id               String    @id @default(uuid())
-  inviteCode       String    @unique  // NanoID(28) for security
+  inviteId         String    @unique  // One-to-one with InviteLink
+  
+  // Response Data
+  responses        Json      // Array of {item_id, value, not_sure, response_time}
+  qualityScore     Float     // 0-100 calculated quality score
+  totalTime        Int       // Total completion time in milliseconds
+  
+  // Metadata
+  completedAt      DateTime
+  ipAddress        String?
+  userAgent        String?
+  
+  createdAt        DateTime  @default(now())
+  
+  invite           InviteLink @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  
+  @@index([completedAt])
+}
+
+// UI Notifications
+model Notification {
+  id               String    @id @default(uuid())
+  userId           String
+  type             String    // "friend_completed" | "invite_reminder" | "profile_updated"
+  title            String
+  message          String
+  link             String?   // Navigation link (e.g., "/profile")
+  read             Boolean   @default(false)
+  readAt           DateTime?
+  
+  createdAt        DateTime  @default(now())
+  
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+model InviteLink {
+  id               String           @id @default(uuid())
+  inviteCode       String           @unique  // NanoID(28) for security
   inviterId        String
   targetId         String?
   
   // Status & Expiration
-  status           String    @default("pending")  // "pending" | "completed" | "expired" | "abandoned"
-  expiresAt        DateTime                       // Auto-expire after 7 days (extendable)
+  status           String           @default("pending")  // "pending" | "completed" | "expired" | "abandoned"
+  expiresAt        DateTime                              // Auto-expire after 7 days (extendable)
   completedAt      DateTime?
   
   // Friend Metadata
   friendEmail      String?
   friendNickname   String?
-  relationshipType String?   // "friend" | "sibling" | "parent" | "partner" | "coworker"
+  relationshipType String?          // "friend" | "sibling" | "parent" | "partner" | "coworker"
   
   // Analytics & Tracking
   openedAt         DateTime?
   startedAt        DateTime?
   abandonedAt      DateTime?
-  deviceType       String?   // "mobile" | "desktop" | "tablet"
+  deviceType       String?          // "mobile" | "desktop" | "tablet"
   
   // Abuse Prevention
   ipAddress        String?
   userAgent        String?
   
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
   
-  inviter          User      @relation("InviterRelation", fields: [inviterId], references: [id])
-  target           User?     @relation("TargetRelation", fields: [targetId], references: [id])
+  inviter          User             @relation("InviterRelation", fields: [inviterId], references: [id])
+  target           User?            @relation("TargetRelation", fields: [targetId], references: [id])
+  friendResponse   FriendResponse?  // One-to-one relation to friend response
   
   @@index([inviterId, status])
   @@index([expiresAt])

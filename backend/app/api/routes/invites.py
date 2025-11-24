@@ -4,8 +4,9 @@ Handles creating, managing, and tracking friend assessment invites
 """
 
 import os
+import json
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 from prisma.errors import PrismaError
@@ -16,8 +17,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from app.db import prisma
 from app.services.tier_service import TierService, enforce_invite_limits
 from app.services.mailgun_service import MailgunService
+from app.services.quality_scoring import QualityScoringService
+from app.services.regeneration_service import RegenerationService
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/invites", tags=["invites"])
+
+# Initialize services
+quality_service = QualityScoringService()
+regeneration_service = RegenerationService()
+notification_service = NotificationService()
 
 
 class CreateInviteRequest(BaseModel):
@@ -404,9 +413,270 @@ async def mark_invite_started(invite_code: str):
         raise HTTPException(status_code=500, detail=f"Error updating invite: {str(e)}")
 
 
+@router.get("/{invite_code}/questions")
+async def get_friend_questions(invite_code: str):
+    """
+    Get friend assessment questions for a specific invite.
+    Substitutes {Name} placeholder with inviter's name.
+    
+    **Returns**:
+    - questions: List of questions with {Name} substituted
+    - inviter_name: Name of person being assessed
+    """
+    try:
+        # Get invite with inviter info
+        invite = await prisma.invitelink.find_unique(
+            where={"inviteCode": invite_code},
+            include={"inviter": True}
+        )
+        
+        if not invite:
+            raise HTTPException(status_code=404, detail="Invite not found")
+        
+        # Validate invite status
+        if invite.expiresAt < datetime.now(timezone.utc):
+            raise HTTPException(status_code=410, detail="This invite has expired")
+        
+        if invite.status == "completed":
+            raise HTTPException(status_code=410, detail="This invite has already been completed")
+        
+        # Load friend item pool
+        with open('app/data/selve_friend_item_pool.json', 'r') as f:
+            item_pool = json.load(f)
+        
+        # Get inviter's name
+        inviter_name = invite.inviter.name or "your friend"
+        
+        # Flatten and substitute {Name}
+        questions = []
+        for dimension, items in item_pool.items():
+            for item in items:
+                question = {
+                    'item_id': item['item'],
+                    'text': item['text'].replace('{Name}', inviter_name),
+                    'dimension': item['dimension'],
+                    'reversed': item['reversed']
+                }
+                questions.append(question)
+        
+        return {
+            'questions': questions,
+            'inviter_name': inviter_name,
+            'total_questions': len(questions)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading questions: {str(e)}")
+
+
+class FriendResponseItem(BaseModel):
+    """Single response item"""
+    item_id: str
+    value: int  # 1-5 Likert scale
+    not_sure: bool = False
+    response_time: int  # milliseconds
+
+
+class FriendResponseSubmission(BaseModel):
+    """Complete friend response submission"""
+    responses: List[FriendResponseItem]
+    total_time: int  # Total completion time in milliseconds
+    privacy_accepted: bool = True
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "responses": [
+                    {"item_id": "lumen_1", "value": 4, "not_sure": False, "response_time": 5200},
+                    {"item_id": "aether_1", "value": 3, "not_sure": False, "response_time": 4800}
+                ],
+                "total_time": 180000,
+                "privacy_accepted": True
+            }
+        }
+
+
+@router.post("/{invite_code}/responses")
+async def submit_friend_responses(
+    invite_code: str,
+    submission: FriendResponseSubmission,
+    request: Request
+):
+    """
+    Submit friend assessment responses.
+    
+    **Process**:
+    1. Validate invite (exists, not expired, not completed)
+    2. Calculate quality score
+    3. Store responses in database
+    4. Update invite status
+    5. Trigger profile regeneration
+    6. Send notifications
+    
+    **Returns**:
+    - success: Boolean
+    - quality_score: Quality score (0-100)
+    - message: Success message
+    """
+    try:
+        # Get invite with inviter info
+        invite = await prisma.invitelink.find_unique(
+            where={"inviteCode": invite_code},
+            include={"inviter": True}
+        )
+        
+        if not invite:
+            raise HTTPException(status_code=404, detail="Invite not found")
+        
+        # Validate invite status
+        if invite.expiresAt < datetime.now(timezone.utc):
+            raise HTTPException(status_code=410, detail="This invite has expired")
+        
+        if invite.status == "completed":
+            raise HTTPException(
+                status_code=409,
+                detail="This invite has already been completed"
+            )
+        
+        # Validate privacy acceptance
+        if not submission.privacy_accepted:
+            raise HTTPException(
+                status_code=400,
+                detail="Privacy policy must be accepted"
+            )
+        
+        # Convert responses to dict format for quality scoring
+        response_dicts = [
+            {
+                'item_id': r.item_id,
+                'value': r.value,
+                'not_sure': r.not_sure,
+                'response_time': r.response_time
+            }
+            for r in submission.responses
+        ]
+        
+        # Calculate quality score
+        quality_score = quality_service.calculate_quality_score(
+            responses=response_dicts,
+            total_time=submission.total_time
+        )
+        
+        print(f"✅ Quality score calculated: {quality_score}")
+        
+        # Get client metadata
+        client_ip = get_client_ip(request)
+        user_agent = request.headers.get("User-Agent", "unknown")
+        
+        # Store responses in database
+        friend_response = await prisma.friendresponse.create(
+            data={
+                "inviteId": invite.id,
+                "responses": response_dicts,  # Store as JSON
+                "qualityScore": quality_score,
+                "totalTime": submission.total_time,
+                "completedAt": datetime.now(timezone.utc),
+                "ipAddress": client_ip,
+                "userAgent": user_agent
+            }
+        )
+        
+        print(f"✅ Friend response stored: {friend_response.id}")
+        
+        # Update invite status
+        await prisma.invitelink.update(
+            where={"inviteCode": invite_code},
+            data={
+                "completedAt": datetime.now(timezone.utc),
+                "status": "completed"
+            }
+        )
+        
+        print(f"✅ Invite marked as completed")
+        
+        # Trigger profile regeneration (async, non-blocking)
+        try:
+            # Get user's self-assessment responses
+            # TODO: Implement fetching user's assessment session responses
+            # For now, we'll skip regeneration if no self-assessment exists
+            print("⚠️  Profile regeneration: Fetching user assessment...")
+            
+            # Get user's assessment results
+            user_assessment = await prisma.assessmentresult.find_first(
+                where={
+                    "clerkUserId": invite.inviter.clerkId,
+                    "isCurrent": True
+                },
+                include={"session": True}
+            )
+            
+            if user_assessment and user_assessment.session:
+                # Get all friend responses for this user
+                all_friend_responses = await prisma.friendresponse.find_many(
+                    where={"invite": {"inviterId": invite.inviterId}},
+                    include={"invite": True}
+                )
+                
+                # Convert to format expected by regeneration service
+                friend_response_data = [
+                    {
+                        'responses': fr.responses,
+                        'quality_score': fr.qualityScore
+                    }
+                    for fr in all_friend_responses
+                ]
+                
+                # Regenerate profile
+                print(f"✅ Regenerating profile with {len(friend_response_data)} friend responses...")
+                # TODO: Implement profile regeneration
+                # await regeneration_service.regenerate_profile_with_friend_data(...)
+                
+            else:
+                print("⚠️  User has not completed self-assessment yet. Skipping profile regeneration.")
+        
+        except Exception as e:
+            print(f"⚠️  Profile regeneration failed: {str(e)}")
+            # Don't fail the request if regeneration fails
+        
+        # Send notifications
+        try:
+            friend_name = invite.friendNickname or invite.friendEmail or "Your friend"
+            await notification_service.notify_friend_completed(
+                user_id=invite.inviter.clerkId,
+                user_email=invite.inviter.email,
+                friend_name=friend_name,
+                invite_code=invite_code,
+                db=prisma
+            )
+            print(f"✅ Notifications sent")
+        except Exception as e:
+            print(f"⚠️  Failed to send notifications: {str(e)}")
+        
+        return {
+            "success": True,
+            "quality_score": quality_score,
+            "message": "Thank you for completing the assessment! Your responses have been recorded."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error submitting friend responses: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error submitting responses: {str(e)}"
+        )
+
+
 @router.post("/{invite_code}/mark-completed")
 async def mark_invite_completed(invite_code: str):
     """
+    DEPRECATED: Use POST /{invite_code}/responses instead.
+    
     Mark invite as completed
     Called when friend finishes assessment
     Triggers completion notification email to inviter

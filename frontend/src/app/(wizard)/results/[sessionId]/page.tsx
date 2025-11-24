@@ -16,6 +16,7 @@ import {
   DIMENSION_DETAILS,
   type AssessmentResults 
 } from "./components";
+import { FriendInsights } from "@/components/FriendInsights";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -211,6 +212,9 @@ export default function ResultsPage() {
         {hasOldFormat && !isIntegratedFormat && (
           <OldFormatResults narrative={narrative} scores={scores} />
         )}
+
+        {/* Friend Insights - Show before dimension scores */}
+        <FriendInsights sessionId={sessionId} selfScores={scores} />
 
         {/* Dimension Scores - Show for both formats */}
         <motion.section
