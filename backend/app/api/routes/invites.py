@@ -10,6 +10,7 @@ from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 from prisma.errors import PrismaError
+from prisma import fields
 
 # Import services
 import sys
@@ -579,8 +580,12 @@ async def submit_friend_responses(
         # Store responses in database
         friend_response = await prisma.friendresponse.create(
             data={
-                "inviteId": invite.id,
-                "responses": response_dicts,  # Store as JSON
+                "invite": {
+                    "connect": {
+                        "id": invite.id
+                    }
+                },
+                "responses": fields.Json(response_dicts),  # Wrap with Prisma Json type
                 "qualityScore": quality_score,
                 "totalTime": submission.total_time,
                 "completedAt": datetime.now(timezone.utc),

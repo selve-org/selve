@@ -42,6 +42,9 @@ export default function FriendAssessmentPage() {
   const router = useRouter();
   const code = params.code as string;
 
+  // localStorage key for this specific invite
+  const STORAGE_KEY = `friend_assessment_${code}`;
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [inviterName, setInviterName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -58,6 +61,69 @@ export default function FriendAssessmentPage() {
 
   const currentQuestion = questions[currentIndex];
   const progress = questions.length > 0 ? ((currentIndex + 1) / questions.length) * 100 : 0;
+
+  /**
+   * Load saved progress from localStorage on mount
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const { responses: savedResponses, currentIndex: savedIndex, timestamp } = JSON.parse(saved);
+        
+        // Check if saved data is less than 7 days old (match invite expiry)
+        const age = Date.now() - timestamp;
+        const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+        
+        if (age < maxAge && savedResponses && savedResponses.length > 0) {
+          setResponses(savedResponses);
+          setCurrentIndex(savedIndex || savedResponses.length);
+          
+          toast.success("Progress restored", {
+            description: `Continuing from question ${(savedIndex || savedResponses.length) + 1}`,
+            duration: 4000,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to restore progress:", err);
+    }
+  }, [STORAGE_KEY]);
+
+  /**
+   * Save progress to localStorage whenever responses change
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined' || responses.length === 0) return;
+    
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        responses,
+        currentIndex,
+        timestamp: Date.now(),
+      }));
+    } catch (err) {
+      console.warn("Failed to save progress:", err);
+    }
+  }, [responses, currentIndex, STORAGE_KEY]);
+
+  /**
+   * Warn user before leaving page if they have unsaved responses
+   */
+  useEffect(() => {
+    if (responses.length === 0 || isSubmitting) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // Chrome requires this
+      return ""; // Some browsers require a return value
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [responses.length, isSubmitting]);
 
   /**
    * Fetch questions on mount
@@ -166,6 +232,9 @@ export default function FriendAssessmentPage() {
       }
 
       const result = await res.json();
+
+      // Clear localStorage after successful submission
+      localStorage.removeItem(STORAGE_KEY);
 
       // Show success and redirect to thank you page
       toast.success("Thank you! 🎉", {

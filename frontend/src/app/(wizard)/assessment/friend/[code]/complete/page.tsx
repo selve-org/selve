@@ -64,7 +64,7 @@ export default function FriendCompletePage() {
           transition={{ delay: 0.3 }}
           className="text-4xl lg:text-5xl font-bold text-white mb-4"
         >
-          Thank You! 🎉
+          Thank You!
         </motion.h1>
 
         {/* Description */}
@@ -106,9 +106,9 @@ export default function FriendCompletePage() {
           transition={{ delay: 0.7 }}
           className="space-y-4"
         >
-          <p className="text-white/60">Want to discover your own personality?</p>
+          <p className="text-white/60">Want to discover your own SELVE?</p>
           <button
-            onClick={() => router.push("/assessment/wizard")}
+            onClick={() => router.push("/")}
             className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-lg font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all"
           >
             Take Your Own Assessment
