@@ -9,6 +9,7 @@ interface InvitesTabProps {
   invites: InviteLink[];
   loading: boolean;
   remainingInvites: number | null;
+  hasCompletedAssessment: boolean;
   onSendInvite: (data: {
     friendEmail: string;
     friendNickname: string;
@@ -22,6 +23,7 @@ export function InvitesTab({
   invites,
   loading,
   remainingInvites,
+  hasCompletedAssessment,
   onSendInvite,
   onCopyLink,
   copiedCode,
@@ -42,6 +44,31 @@ export function InvitesTab({
 
   return (
     <div className="space-y-6">
+      {/* Assessment Required Notice */}
+      {!hasCompletedAssessment && (
+        <SettingsCard>
+          <div className="flex items-start space-x-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Complete Your Assessment First
+              </h3>
+              <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
+                Before inviting friends to assess you, you need to complete your own personality assessment. This helps establish a baseline for comparison.
+              </p>
+              <a
+                href="/assessment"
+                className="mt-3 inline-flex items-center px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-md transition-colors"
+              >
+                Start Your Assessment →
+              </a>
+            </div>
+          </div>
+        </SettingsCard>
+      )}
+
       {/* Invite Stats */}
       <SettingsCard>
         <div className="flex items-center justify-between">
@@ -66,7 +93,7 @@ export function InvitesTab({
         {!showInviteForm && (
           <button
             onClick={() => setShowInviteForm(true)}
-            disabled={remainingInvites === 0}
+            disabled={!hasCompletedAssessment || remainingInvites === 0}
             className="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-md text-sm font-medium transition-colors"
           >
             <PaperAirplaneIcon className="w-4 h-4 mr-2" />

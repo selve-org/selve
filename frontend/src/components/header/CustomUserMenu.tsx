@@ -45,7 +45,10 @@ export function CustomUserMenu() {
   const handleNotificationClick = async (notification: any) => {
     await markAsRead(notification.id);
     setShowNotifications(false);
-    if (notification.link) {
+    // Friend completion notifications should go to invites tab
+    if (notification.type === 'friend_completed') {
+      router.push('/profile?tab=invites');
+    } else if (notification.link) {
       router.push(notification.link);
     }
   };
@@ -172,11 +175,11 @@ export function CustomUserMenu() {
                   <button
                     onClick={() => {
                       setShowNotifications(false);
-                      router.push("/profile?tab=notifications");
+                      router.push("/profile?tab=invites");
                     }}
                     className="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
                   >
-                    View all notifications
+                    View Friend Assessments
                   </button>
                 </div>
               )}

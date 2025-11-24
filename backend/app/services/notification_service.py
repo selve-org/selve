@@ -96,7 +96,10 @@ class NotificationService:
             
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                         padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-                <h1 style="color: white; margin: 0; font-size: 28px;">SELVE</h1>
+                <div style="display: inline-flex; align-items: center; gap: 12px;">
+                    <img src="{self.app_url}/logo/selve-logo.png" alt="SELVE" width="40" height="40" style="vertical-align: middle;" />
+                    <img src="{self.app_url}/logo/selve-logo-text.svg" alt="SELVE" width="120" height="30" style="vertical-align: middle; filter: brightness(0) invert(1);" />
+                </div>
             </div>
             
             <h2 style="color: #667eea; margin-bottom: 20px;">New Friend Insights Available</h2>
@@ -146,7 +149,7 @@ class NotificationService:
         
         # Send via Mailgun
         data = {
-            'from': f'SELVE <noreply@{self.mailgun_domain}>',
+            'from': f'SELVE <hello@{self.mailgun_domain}>',
             'to': user_email,
             'subject': subject,
             'html': html_body

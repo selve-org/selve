@@ -111,7 +111,10 @@ class MailgunService:
                     <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 20px; text-align: center;">
-                            <img src="{self.logo_url}" alt="SELVE" style="height: 32px; width: auto; display: inline-block;">
+                            <div style="display: inline-flex; align-items: center; gap: 12px;">
+                                <img src="{base_url}/logo/selve-logo.png" alt="SELVE" width="40" height="40" style="vertical-align: middle; display: inline-block;" />
+                                <img src="{base_url}/logo/selve-logo-text.svg" alt="SELVE" width="120" height="30" style="vertical-align: middle; display: inline-block;" />
+                            </div>
                         </td>
                     </tr>
                     
@@ -258,8 +261,18 @@ SELVE · Personality Assessment Platform
         <tr>
             <td align="center" style="padding: 40px 20px;">
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Header -->
                     <tr>
-                        <td style="padding: 40px;">
+                        <td style="padding: 40px 40px 20px; text-align: center;">
+                            <div style="display: inline-flex; align-items: center; gap: 12px;">
+                                <img src="{results_url.rsplit('/', 1)[0] if results_url.startswith('http') else 'https://selve.me'}/logo/selve-logo.png" alt="SELVE" width="40" height="40" style="vertical-align: middle; display: inline-block;" />
+                                <img src="{results_url.rsplit('/', 1)[0] if results_url.startswith('http') else 'https://selve.me'}/logo/selve-logo-text.svg" alt="SELVE" width="120" height="30" style="vertical-align: middle; display: inline-block;" />
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px 40px;">
                             <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px;">Great news, {to_name}! 🎉</h1>
                             
                             <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">

@@ -24,6 +24,8 @@ import { TabType, Tab } from "./types";
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState<TabType>("general");
+  const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
+  const [checkingAssessment, setCheckingAssessment] = useState(true);
 
   const {
     invites,
@@ -35,6 +37,32 @@ export default function ProfilePage() {
     copyInviteLink,
     copiedCode,
   } = useInvites(user?.id);
+
+  // Check if user has completed their assessment
+  useEffect(() => {
+    async function checkAssessmentStatus() {
+      if (!user?.id) return;
+      
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/assessment/current-result/${user.id}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          setHasCompletedAssessment(!!data.current_result);
+        }
+      } catch (error) {
+        console.error("Failed to check assessment status:", error);
+      } finally {
+        setCheckingAssessment(false);
+      }
+    }
+    
+    if (isLoaded && user) {
+      checkAssessmentStatus();
+    }
+  }, [isLoaded, user]);
 
   // Fetch invites when switching to invites tab
   useEffect(() => {
@@ -97,6 +125,7 @@ export default function ProfilePage() {
               invites={invites}
               loading={loading}
               remainingInvites={remainingInvites}
+              hasCompletedAssessment={hasCompletedAssessment}
               onSendInvite={sendInvite}
               onCopyLink={copyInviteLink}
               copiedCode={copiedCode}
