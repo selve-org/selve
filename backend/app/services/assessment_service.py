@@ -1,15 +1,13 @@
 """
-Assessment Service Layer
-Handles all database operations for the assessment system
+Assessment Service Layer - Prisma Version
+Handles all database operations for the assessment system using Prisma
 """
 
 from typing import Optional, Dict, List, Any
-from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
-from sqlalchemy.orm import selectinload
+from datetime import datetime, timezone
+from prisma import fields
 
-from app.models.assessment import AssessmentSession, AssessmentResult
+from app.db import prisma
 from app.adaptive_testing import AdaptiveTester
 from app.scoring import SelveScorer
 from app.response_validator import ResponseValidator
@@ -18,15 +16,16 @@ from app.response_validator import ResponseValidator
 class AssessmentService:
     """Service for managing assessment sessions and results in database"""
     
-    def __init__(self, db: AsyncSession):
-        self.db = db
+    def __init__(self):
+        """Initialize service with Prisma client"""
+        self.db = prisma
     
     async def create_session(
         self,
         user_id: Optional[str] = None,
         clerk_user_id: Optional[str] = None,
         metadata: Optional[Dict] = None
-    ) -> AssessmentSession:
+    ):
         """
         Create a new assessment session in database
         
@@ -38,39 +37,40 @@ class AssessmentService:
         Returns:
             AssessmentSession object with ID
         """
-        # 🔄 For authenticated users, mark any existing current sessions as NOT current
-        # This ensures only ONE session is current at a time
+        # Mark any existing current sessions as NOT current
         if clerk_user_id:
-            await self.db.execute(
-                update(AssessmentSession)
-                .where(AssessmentSession.clerkUserId == clerk_user_id)
-                .where(AssessmentSession.isCurrent == True)
-                .values(isCurrent=False, archivedAt=datetime.utcnow())
+            await self.db.assessmentsession.update_many(
+                where={
+                    "clerkUserId": clerk_user_id,
+                    "isCurrent": True
+                },
+                data={
+                    "isCurrent": False,
+                    "archivedAt": datetime.now(timezone.utc)
+                }
             )
         
-        session = AssessmentSession(
-            userId=user_id,
-            clerkUserId=clerk_user_id,
-            status="in-progress",
-            isCurrent=True,  # Explicitly mark as current
-            responses={},
-            demographics={},
-            pendingQuestions=[],
-            answerHistory=[],
-            backNavigationCount=0,
-            backNavigationLog=[],
-            sessionData=metadata or {},
+        session = await self.db.assessmentsession.create(
+            data={
+                "userId": user_id,
+                "clerkUserId": clerk_user_id,
+                "status": "in-progress",
+                "isCurrent": True,
+                "responses": fields.Json({}),
+                "demographics": fields.Json({}),
+                "pendingQuestions": fields.Json([]),
+                "answerHistory": fields.Json([]),
+                "backNavigationCount": 0,
+                "backNavigationLog": fields.Json([]),
+                "metadata": fields.Json(metadata or {}),
+            }
         )
-        
-        self.db.add(session)
-        await self.db.commit()
-        await self.db.refresh(session)
         
         return session
     
-    async def get_session(self, session_id: str) -> Optional[AssessmentSession]:
+    async def get_session(self, session_id: str):
         """
-        Get session by ID with eager loading of result
+        Get session by ID with result relation
         
         Args:
             session_id: Session identifier
@@ -78,12 +78,10 @@ class AssessmentService:
         Returns:
             AssessmentSession or None if not found
         """
-        result = await self.db.execute(
-            select(AssessmentSession)
-            .options(selectinload(AssessmentSession.result))
-            .where(AssessmentSession.id == session_id)
+        return await self.db.assessmentsession.find_unique(
+            where={"id": session_id},
+            include={"result": True}
         )
-        return result.scalar_one_or_none()
     
     async def update_session(
         self,
@@ -95,7 +93,7 @@ class AssessmentService:
         back_navigation_count: Optional[int] = None,
         back_navigation_log: Optional[List] = None,
         status: Optional[str] = None,
-    ) -> Optional[AssessmentSession]:
+    ):
         """
         Update session fields
         
@@ -115,17 +113,17 @@ class AssessmentService:
         # Build update dict - only include provided fields
         update_data = {}
         if responses is not None:
-            update_data["responses"] = responses
+            update_data["responses"] = fields.Json(responses)
         if demographics is not None:
-            update_data["demographics"] = demographics
+            update_data["demographics"] = fields.Json(demographics)
         if pending_questions is not None:
-            update_data["pendingQuestions"] = pending_questions
+            update_data["pendingQuestions"] = fields.Json(pending_questions)
         if answer_history is not None:
-            update_data["answerHistory"] = answer_history
+            update_data["answerHistory"] = fields.Json(answer_history)
         if back_navigation_count is not None:
             update_data["backNavigationCount"] = back_navigation_count
         if back_navigation_log is not None:
-            update_data["backNavigationLog"] = back_navigation_log
+            update_data["backNavigationLog"] = fields.Json(back_navigation_log)
         if status is not None:
             update_data["status"] = status
         
@@ -133,20 +131,16 @@ class AssessmentService:
             return await self.get_session(session_id)
         
         # Add updatedAt timestamp
-        update_data["updatedAt"] = datetime.utcnow()
+        update_data["updatedAt"] = datetime.now(timezone.utc)
         
         # Mark as completed if status is completed
         if status == "completed":
-            update_data["completedAt"] = datetime.utcnow()
+            update_data["completedAt"] = datetime.now(timezone.utc)
         
-        await self.db.execute(
-            update(AssessmentSession)
-            .where(AssessmentSession.id == session_id)
-            .values(**update_data)
+        return await self.db.assessmentsession.update(
+            where={"id": session_id},
+            data=update_data
         )
-        await self.db.commit()
-        
-        return await self.get_session(session_id)
     
     async def save_result(
         self,
@@ -160,16 +154,9 @@ class AssessmentService:
         validation_flags: Optional[List] = None,
         generation_cost: Optional[float] = None,
         generation_model: Optional[str] = None,
-    ) -> AssessmentResult:
+    ):
         """
-        Save final assessment results
-        
-        IMPORTANT: This function is IDEMPOTENT - safe to call multiple times.
-        If result already exists, returns the existing result without re-generating.
-        This prevents:
-            - Duplicate database entries on concurrent requests
-            - Unnecessary OpenAI API calls (saves money!)
-            - Race conditions when user refreshes results page
+        Save final assessment results (idempotent)
         
         Args:
             session_id: Session this result belongs to
@@ -186,8 +173,7 @@ class AssessmentService:
         Returns:
             AssessmentResult object (existing or newly created)
         """
-        # 🔒 IDEMPOTENCY CHECK: Return existing result if already saved
-        # Prevents duplicate on concurrent requests (e.g., multiple tabs, rapid refreshes)
+        # Check if result already exists (idempotency)
         existing_result = await self.get_result(session_id)
         if existing_result:
             print(f"⚠️ Result already exists for session {session_id}, returning existing")
@@ -198,63 +184,48 @@ class AssessmentService:
         if not session:
             raise ValueError(f"Session {session_id} not found")
 
-        # 🔄 Mark any existing results for this user as NOT current
+        # Mark any existing results for this user as NOT current
         if session.clerkUserId:
-            await self.db.execute(
-                update(AssessmentResult)
-                .where(AssessmentResult.clerkUserId == session.clerkUserId)
-                .where(AssessmentResult.isCurrent == True)
-                .values(isCurrent=False)
+            await self.db.assessmentresult.update_many(
+                where={
+                    "clerkUserId": session.clerkUserId,
+                    "isCurrent": True
+                },
+                data={"isCurrent": False}
             )
 
-        # Create result (will have isCurrent=True by default from schema)
-        result = AssessmentResult(
-            sessionId=session_id,
-            userId=session.userId,
-            clerkUserId=session.clerkUserId,
-            isCurrent=True,  # Explicitly set as current
-            scoreLumen=scores.get("LUMEN", 0),
-            scoreAether=scores.get("AETHER", 0),
-            scoreOrpheus=scores.get("ORPHEUS", 0),
-            scoreOrin=scores.get("ORIN", 0),
-            scoreLyra=scores.get("LYRA", 0),
-            scoreVara=scores.get("VARA", 0),
-            scoreChronos=scores.get("CHRONOS", 0),
-            scoreKael=scores.get("KAEL", 0),
-            narrative=narrative,
-            archetype=archetype,
-            profilePattern=profile_pattern,
-            consistencyScore=consistency_score,
-            attentionScore=attention_score,
-            validationFlags=validation_flags,
-            generationCost=generation_cost,
-            generationModel=generation_model,
+        # Create result
+        result = await self.db.assessmentresult.create(
+            data={
+                "session": {"connect": {"id": session_id}},
+                "userId": session.userId,
+                "clerkUserId": session.clerkUserId,
+                "isCurrent": True,
+                "scoreLumen": scores.get("LUMEN", 0),
+                "scoreAether": scores.get("AETHER", 0),
+                "scoreOrpheus": scores.get("ORPHEUS", 0),
+                "scoreOrin": scores.get("ORIN", 0),
+                "scoreLyra": scores.get("LYRA", 0),
+                "scoreVara": scores.get("VARA", 0),
+                "scoreChronos": scores.get("CHRONOS", 0),
+                "scoreKael": scores.get("KAEL", 0),
+                "narrative": fields.Json(narrative),
+                "archetype": archetype,
+                "profilePattern": profile_pattern,
+                "consistencyScore": consistency_score,
+                "attentionScore": attention_score,
+                "validationFlags": fields.Json(validation_flags) if validation_flags else None,
+                "generationCost": generation_cost,
+                "generationModel": generation_model,
+            }
         )
-
-        self.db.add(result)
 
         # Update session status to completed
         await self.update_session(session_id, status="completed")
 
-        try:
-            await self.db.commit()
-            await self.db.refresh(result)
-        except Exception as e:
-            # Handle race condition: another request may have inserted the result
-            # between our check and our insert
-            await self.db.rollback()
-            if "duplicate key" in str(e).lower() or "unique constraint" in str(e).lower():
-                print(f"⚠️ Race condition detected: result was created by concurrent request")
-                # Fetch and return the result that was created by the other request
-                existing_result = await self.get_result(session_id)
-                if existing_result:
-                    return existing_result
-            # Re-raise if it's a different error
-            raise
-
         return result
     
-    async def get_result(self, session_id: str) -> Optional[AssessmentResult]:
+    async def get_result(self, session_id: str):
         """
         Get result by session ID
         
@@ -264,18 +235,16 @@ class AssessmentService:
         Returns:
             AssessmentResult or None if not found
         """
-        result = await self.db.execute(
-            select(AssessmentResult)
-            .where(AssessmentResult.sessionId == session_id)
+        return await self.db.assessmentresult.find_first(
+            where={"sessionId": session_id}
         )
-        return result.scalar_one_or_none()
     
     async def get_user_sessions(
         self,
         clerk_user_id: str,
         include_completed: bool = True,
         include_in_progress: bool = True,
-    ) -> List[AssessmentSession]:
+    ):
         """
         Get all sessions for a user
         
@@ -287,26 +256,24 @@ class AssessmentService:
         Returns:
             List of AssessmentSession objects
         """
-        query = select(AssessmentSession).where(
-            AssessmentSession.clerkUserId == clerk_user_id
-        )
+        where_clause = {"clerkUserId": clerk_user_id}
         
         # Filter by status
         if include_completed and not include_in_progress:
-            query = query.where(AssessmentSession.status == "completed")
+            where_clause["status"] = "completed"
         elif include_in_progress and not include_completed:
-            query = query.where(AssessmentSession.status == "in-progress")
+            where_clause["status"] = "in-progress"
         
-        query = query.order_by(AssessmentSession.createdAt.desc())
-        
-        result = await self.db.execute(query)
-        return result.scalars().all()
+        return await self.db.assessmentsession.find_many(
+            where=where_clause,
+            order={"createdAt": "desc"}
+        )
     
     async def transfer_session_to_user(
         self,
         session_id: str,
         clerk_user_id: str
-    ) -> Optional[AssessmentSession]:
+    ):
         """
         Transfer anonymous session to authenticated user
         
@@ -330,23 +297,19 @@ class AssessmentService:
             raise ValueError("Session already belongs to another user")
         
         # Transfer ownership
-        await self.db.execute(
-            update(AssessmentSession)
-            .where(AssessmentSession.id == session_id)
-            .values(
-                clerkUserId=clerk_user_id,
-                updatedAt=datetime.utcnow(),
-                sessionData={
-                    **(session.sessionData or {}),
-                    "transferred_at": datetime.utcnow().isoformat(),
-                }
-            )
+        return await self.db.assessmentsession.update(
+            where={"id": session_id},
+            data={
+                "clerkUserId": clerk_user_id,
+                "updatedAt": datetime.now(timezone.utc),
+                "metadata": fields.Json({
+                    **(session.metadata or {}),
+                    "transferred_at": datetime.now(timezone.utc).isoformat(),
+                })
+            }
         )
-        await self.db.commit()
-        
-        return await self.get_session(session_id)
     
-    async def abandon_session(self, session_id: str) -> Optional[AssessmentSession]:
+    async def abandon_session(self, session_id: str):
         """
         Mark session as abandoned
         
@@ -362,10 +325,9 @@ class AssessmentService:
         self, 
         clerk_user_id: Optional[str] = None,
         user_id: Optional[str] = None
-    ) -> AssessmentSession:
+    ):
         """
         Archive user's current assessment(s) and create a new one.
-        This preserves all previous assessment data while starting fresh.
         
         Args:
             clerk_user_id: Clerk user ID (for authenticated users)
@@ -373,47 +335,37 @@ class AssessmentService:
             
         Returns:
             Newly created AssessmentSession
-            
-        Raises:
-            Exception if database operations fail
         """
-        try:
-            # Archive all current sessions and results for this user
-            if clerk_user_id:
-                # Mark all current sessions as archived
-                await self.db.execute(
-                    update(AssessmentSession)
-                    .where(AssessmentSession.clerkUserId == clerk_user_id)
-                    .where(AssessmentSession.isCurrent == True)
-                    .values(isCurrent=False, archivedAt=datetime.utcnow())
-                )
-                
-                # Mark all current results as archived
-                await self.db.execute(
-                    update(AssessmentResult)
-                    .where(AssessmentResult.clerkUserId == clerk_user_id)
-                    .where(AssessmentResult.isCurrent == True)
-                    .values(isCurrent=False)
-                )
-                
-                await self.db.commit()
-            
-            # Create new session (will have isCurrent=True by default)
-            new_session = await self.create_session(
-                clerk_user_id=clerk_user_id,
-                user_id=user_id
+        # Archive all current sessions and results for this user
+        if clerk_user_id:
+            # Mark all current sessions as archived
+            await self.db.assessmentsession.update_many(
+                where={
+                    "clerkUserId": clerk_user_id,
+                    "isCurrent": True
+                },
+                data={
+                    "isCurrent": False,
+                    "archivedAt": datetime.now(timezone.utc)
+                }
             )
             
-            return new_session
-            
-        except Exception as e:
-            await self.db.rollback()
-            raise Exception(f"Failed to archive and create new session: {str(e)}")
+            # Mark all current results as archived
+            await self.db.assessmentresult.update_many(
+                where={
+                    "clerkUserId": clerk_user_id,
+                    "isCurrent": True
+                },
+                data={"isCurrent": False}
+            )
+        
+        # Create new session (will have isCurrent=True by default)
+        return await self.create_session(
+            clerk_user_id=clerk_user_id,
+            user_id=user_id
+        )
     
-    async def get_current_session(
-        self, 
-        clerk_user_id: str
-    ) -> Optional[AssessmentSession]:
+    async def get_current_session(self, clerk_user_id: str):
         """
         Get user's current (active) assessment session
         
@@ -421,20 +373,17 @@ class AssessmentService:
             clerk_user_id: Clerk user ID
             
         Returns:
-            Current AssessmentSession or None if no current session exists
+            Current AssessmentSession or None
         """
-        result = await self.db.execute(
-            select(AssessmentSession)
-            .where(AssessmentSession.clerkUserId == clerk_user_id)
-            .where(AssessmentSession.isCurrent == True)
-            .order_by(AssessmentSession.createdAt.desc())
+        return await self.db.assessmentsession.find_first(
+            where={
+                "clerkUserId": clerk_user_id,
+                "isCurrent": True
+            },
+            order={"createdAt": "desc"}
         )
-        return result.scalars().first()
     
-    async def get_current_result(
-        self, 
-        clerk_user_id: str
-    ) -> Optional[AssessmentResult]:
+    async def get_current_result(self, clerk_user_id: str):
         """
         Get user's current (latest) assessment result
         
@@ -442,22 +391,22 @@ class AssessmentService:
             clerk_user_id: Clerk user ID
             
         Returns:
-            Current AssessmentResult or None if no current result exists
+            Current AssessmentResult or None
         """
-        result = await self.db.execute(
-            select(AssessmentResult)
-            .where(AssessmentResult.clerkUserId == clerk_user_id)
-            .where(AssessmentResult.isCurrent == True)
-            .order_by(AssessmentResult.createdAt.desc())
+        return await self.db.assessmentresult.find_first(
+            where={
+                "clerkUserId": clerk_user_id,
+                "isCurrent": True
+            },
+            order={"createdAt": "desc"}
         )
-        return result.scalars().first()
     
     async def get_assessment_history(
         self, 
         clerk_user_id: str,
         include_current: bool = True,
         limit: int = 10
-    ) -> List[AssessmentSession]:
+    ):
         """
         Get user's assessment history (all past assessments)
         
@@ -467,19 +416,18 @@ class AssessmentService:
             limit: Maximum number of results
             
         Returns:
-            List of AssessmentSessions ordered by creation date (newest first)
+            List of AssessmentSessions ordered by creation date
         """
-        query = select(AssessmentSession).where(
-            AssessmentSession.clerkUserId == clerk_user_id
-        )
+        where_clause = {"clerkUserId": clerk_user_id}
         
         if not include_current:
-            query = query.where(AssessmentSession.isCurrent == False)
+            where_clause["isCurrent"] = False
         
-        query = query.order_by(AssessmentSession.createdAt.desc()).limit(limit)
-        
-        result = await self.db.execute(query)
-        return list(result.scalars().all())
+        return await self.db.assessmentsession.find_many(
+            where=where_clause,
+            order={"createdAt": "desc"},
+            take=limit
+        )
     
     async def delete_session(self, session_id: str) -> bool:
         """
@@ -495,23 +443,17 @@ class AssessmentService:
         if not session:
             return False
         
-        await self.db.delete(session)
-        await self.db.commit()
+        await self.db.assessmentsession.delete(
+            where={"id": session_id}
+        )
         
         return True
 
 
-# Helper to create session state dict compatible with existing code
-def session_to_state_dict(session: AssessmentSession) -> Dict:
+# Helper functions for backward compatibility
+def session_to_state_dict(session) -> Dict:
     """
     Convert database session to in-memory state dict
-    Used for backward compatibility with existing route code
-    
-    Args:
-        session: Database session object
-        
-    Returns:
-        State dict with tester, scorer, validator instances
     """
     return {
         "tester": AdaptiveTester(),
@@ -520,19 +462,18 @@ def session_to_state_dict(session: AssessmentSession) -> Dict:
         "responses": session.responses or {},
         "demographics": session.demographics or {},
         "pending_questions": set(session.pendingQuestions or []),
-        "current_batch": [],  # Will be populated on next question
-        "batch_history": [],  # Could reconstruct from answer_history if needed
+        "current_batch": [],
+        "batch_history": [],
         "answer_history": session.answerHistory or [],
         "back_navigation_count": session.backNavigationCount or 0,
         "back_navigation_log": session.backNavigationLog or [],
         "started_at": session.createdAt.isoformat(),
         "user_id": session.clerkUserId,
-        "clerk_user": None,  # Not stored in DB
-        "metadata": session.sessionData or {},
+        "clerk_user": None,
+        "metadata": session.metadata or {},
     }
 
 
-# Helper to update database from state dict
 async def update_session_from_state(
     service: AssessmentService,
     session_id: str,
@@ -540,11 +481,6 @@ async def update_session_from_state(
 ) -> None:
     """
     Update database session from in-memory state dict
-    
-    Args:
-        service: AssessmentService instance
-        session_id: Session ID to update
-        state: State dict from route handler
     """
     await service.update_session(
         session_id=session_id,

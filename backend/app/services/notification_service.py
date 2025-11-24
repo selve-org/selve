@@ -9,7 +9,7 @@ Sends multi-channel notifications when friend completes assessment:
 
 import logging
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import aiohttp
 
@@ -175,24 +175,27 @@ class NotificationService:
         Create persistent UI notification record.
         
         Args:
-            user_id: User ID
+            user_id: Clerk user ID
             friend_name: Name of friend who completed
-            db: Database session
+            db: Prisma client instance
         """
-        from app.database import Notification
+        # Get user by clerkId to get internal user ID
+        user = await db.user.find_unique(where={"clerkId": user_id})
+        if not user:
+            logger.warning(f"User not found with clerkId: {user_id}")
+            return
         
-        notification = Notification(
-            userId=user_id,
-            type='friend_completed',
-            title=f'{friend_name} completed their assessment',
-            message=f'Your profile has been updated with new insights from {friend_name}.',
-            link='/profile',
-            read=False,
-            createdAt=datetime.utcnow()
+        # Create notification using Prisma
+        await db.notification.create(
+            data={
+                "userId": user.id,
+                "type": "friend_completed",
+                "title": f"{friend_name} completed their assessment",
+                "message": f"Your profile has been updated with new insights from {friend_name}.",
+                "link": "/profile",
+                "read": False,
+            }
         )
-        
-        db.add(notification)
-        await db.commit()
     
     def _set_toast_flag(
         self,
@@ -209,7 +212,7 @@ class NotificationService:
         # Store flag with expiration (24 hours)
         self._toast_flags[user_id] = {
             'friend_name': friend_name,
-            'expires_at': datetime.utcnow() + timedelta(hours=24)
+            'expires_at': datetime.now(timezone.utc) + timedelta(hours=24)
         }
     
     def get_toast_flag(self, user_id: str) -> Optional[str]:
@@ -228,7 +231,7 @@ class NotificationService:
         flag_data = self._toast_flags[user_id]
         
         # Check expiration
-        if datetime.utcnow() > flag_data['expires_at']:
+        if datetime.now(timezone.utc) > flag_data['expires_at']:
             del self._toast_flags[user_id]
             return None
         
@@ -248,24 +251,23 @@ class NotificationService:
         Get user's UI notifications.
         
         Args:
-            user_id: User ID
-            db: Database session
+            user_id: Internal user ID
+            db: Prisma client instance
             limit: Maximum number of notifications to return
             unread_only: If True, only return unread notifications
         
         Returns:
             List of notification records
         """
-        from app.database import Notification
-        
-        query = db.query(Notification).filter(Notification.userId == user_id)
-        
+        where_clause = {"userId": user_id}
         if unread_only:
-            query = query.filter(Notification.read == False)
+            where_clause["read"] = False
         
-        notifications = await query.order_by(
-            Notification.createdAt.desc()
-        ).limit(limit).all()
+        notifications = await db.notification.find_many(
+            where=where_clause,
+            order={"createdAt": "desc"},
+            take=limit
+        )
         
         return notifications
     
@@ -279,15 +281,12 @@ class NotificationService:
         
         Args:
             notification_id: Notification ID
-            db: Database session
+            db: Prisma client instance
         """
-        from app.database import Notification
-        
-        notification = await db.query(Notification).filter(
-            Notification.id == notification_id
-        ).first()
-        
-        if notification:
-            notification.read = True
-            notification.readAt = datetime.utcnow()
-            await db.commit()
+        await db.notification.update(
+            where={"id": notification_id},
+            data={
+                "read": True,
+                "readAt": datetime.now(timezone.utc)
+            }
+        )

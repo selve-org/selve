@@ -1,12 +1,10 @@
 """
 Database Models
-Exports all SQLAlchemy ORM models
+Now using Prisma - this file kept for backward compatibility with schemas
 """
 
-from app.models.assessment import AssessmentSession, AssessmentResult, AssessmentTemplate
+# SQLAlchemy models removed - all database operations now use Prisma
+# Import Prisma types if needed:
+# from app.db import prisma
 
-__all__ = [
-    "AssessmentSession",
-    "AssessmentResult",
-    "AssessmentTemplate",
-]
+__all__ = []

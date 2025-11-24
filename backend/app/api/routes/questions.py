@@ -3,10 +3,8 @@ Questions API routes
 Handles adaptive questionnaire logic and question delivery
 """
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from app.database import get_db
+from fastapi import APIRouter, HTTPException
+from app.db import prisma
 from app.models.schemas import (
     QuestionResponse,
     NextQuestionRequest,
@@ -124,26 +122,20 @@ async def get_next_question(
 async def save_answer(
     sessionId: str,
     questionId: str,
-    answer: str,
-    db: AsyncSession = Depends(get_db)
+    answer: str
 ):
     """
     Save an answer to the database
     Note: This might be handled by Next.js, but keeping it here for flexibility
     """
     
-    # Save answer to database
-    await db.execute(
-        text("""
-            INSERT INTO "QuestionnaireAnswer" ("sessionId", "questionId", "answer", "createdAt")
-            VALUES (:sessionId, :questionId, :answer, NOW())
-        """),
-        {
-            "sessionId": sessionId,
-            "questionId": questionId,
-            "answer": answer,
-        }
-    )
-    await db.commit()
+    # TODO: Implement with Prisma when QuestionnaireAnswer model is added to schema
+    # await prisma.questionnaireanswer.create(
+    #     data={
+    #         "sessionId": sessionId,
+    #         "questionId": questionId,
+    #         "answer": answer,
+    #     }
+    # )
     
-    return {"success": True, "message": "Answer saved"}
+    return {"success": True, "message": "Answer saved (placeholder)"}

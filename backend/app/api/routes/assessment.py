@@ -24,9 +24,8 @@ from app.narratives import generate_narrative
 from app.narratives.integrated_generator import generate_integrated_narrative
 from app.response_validator import ResponseValidator
 from app.auth import get_current_user
-from app.database import get_db
 from app.services.assessment_service import AssessmentService, session_to_state_dict, update_session_from_state
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db import prisma
 
 router = APIRouter()
 
@@ -159,8 +158,7 @@ class GetResultsResponse(BaseModel):
 @router.post("/assessment/start", response_model=StartAssessmentResponse)
 async def start_assessment(
     request: StartAssessmentRequest,
-    user: Optional[dict] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    user: Optional[dict] = Depends(get_current_user)
 ):
     """
     Start a new adaptive assessment.
@@ -184,7 +182,7 @@ async def start_assessment(
         user_id = request.user_id
     
     # Create database session
-    service = AssessmentService(db)
+    service = AssessmentService()
     db_session = await service.create_session(
         user_id=user_id,
         clerk_user_id=clerk_user_id,
@@ -327,8 +325,7 @@ async def start_assessment(
 
 @router.post("/assessment/answer", response_model=SubmitAnswerResponse)
 async def submit_answer(
-    request: SubmitAnswerRequest,
-    db: AsyncSession = Depends(get_db)
+    request: SubmitAnswerRequest
 ):
     """
     Submit an answer and get next question(s).
@@ -347,7 +344,7 @@ async def submit_answer(
     session = sessions.get(request.session_id)
     if not session:
         # Try to load from database if not in memory
-        service = AssessmentService(db)
+        service = AssessmentService()
         db_session = await service.get_session(request.session_id)
         if not db_session:
             raise HTTPException(status_code=404, detail="Session not found")
@@ -809,7 +806,7 @@ async def submit_answer(
     progress = min(questions_answered / estimated_total, 0.95)  # Cap at 95% until done
     
     # 💾 Persist session state to database
-    service = AssessmentService(db)
+    service = AssessmentService()
     await update_session_from_state(service, request.session_id, session)
     
     return SubmitAnswerResponse(
@@ -1059,7 +1056,7 @@ async def go_back(request: GetPreviousQuestionRequest):
 
 
 @router.get("/assessment/{session_id}/results", response_model=GetResultsResponse)
-async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
+async def get_results(session_id: str):
     """
     Get complete assessment results with narrative.
     
@@ -1077,7 +1074,7 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
       - summary: Executive summary
     """
     # 🔍 STEP 1: Check database FIRST for existing results (caching layer)
-    service = AssessmentService(db)
+    service = AssessmentService()
     existing_result = await service.get_result(session_id)
     
     if existing_result:
@@ -1340,8 +1337,7 @@ class TransferSessionRequest(BaseModel):
 @router.post("/assessment/transfer-session")
 async def transfer_session(
     request: TransferSessionRequest,
-    user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    user: dict = Depends(get_current_user)
 ):
     """
     Transfer an anonymous session to an authenticated user.
@@ -1369,7 +1365,7 @@ async def transfer_session(
     clerk_user_id = user.get("sub")
     
     # Try database transfer first
-    service = AssessmentService(db)
+    service = AssessmentService()
     try:
         db_session = await service.transfer_session_to_user(
             session_id=request.session_id,
@@ -1443,7 +1439,7 @@ async def transfer_session(
 
 
 @router.delete("/assessment/{session_id}")
-async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_session(session_id: str):
     """
     Delete assessment session.
     
@@ -1452,7 +1448,7 @@ async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
     - Session expires
     - User wants to restart
     """
-    service = AssessmentService(db)
+    service = AssessmentService()
     deleted = await service.delete_session(session_id)
     
     # Also remove from memory cache
@@ -1466,7 +1462,7 @@ async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/assessment/session/{session_id}")
-async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db)):
+async def get_session_state(session_id: str):
     """
     Get current session state for recovery/resumption.
     
@@ -1482,7 +1478,7 @@ async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db))
     - questions_answered: Number of questions answered
     - can_resume: Whether session can be resumed
     """
-    service = AssessmentService(db)
+    service = AssessmentService()
     db_session = await service.get_session(session_id)
     
     if not db_session:
@@ -1560,8 +1556,7 @@ async def get_session_state(session_id: str, db: AsyncSession = Depends(get_db))
 
 @router.post("/assessment/archive-and-restart")
 async def archive_and_restart_assessment(
-    clerk_user_id: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    clerk_user_id: Optional[str] = None
 ):
     """
     Archive user's current assessment(s) and create a new one.
@@ -1588,19 +1583,16 @@ async def archive_and_restart_assessment(
         )
     
     try:
-        service = AssessmentService(db)
+        service = AssessmentService()
         
         # Get count of current sessions before archiving
-        from sqlalchemy import func, select
-        from app.models.assessment import AssessmentSession
-        
-        result = await db.execute(
-            select(func.count())
-            .select_from(AssessmentSession)
-            .where(AssessmentSession.clerkUserId == clerk_user_id)
-            .where(AssessmentSession.isCurrent == True)
+        current_sessions = await prisma.assessmentsession.count(
+            where={
+                "clerkUserId": clerk_user_id,
+                "isCurrent": True
+            }
         )
-        archived_count = result.scalar() or 0
+        archived_count = current_sessions or 0
         
         # Archive current and create new
         new_session = await service.archive_current_and_create_new(
@@ -1622,8 +1614,7 @@ async def archive_and_restart_assessment(
 async def get_assessment_history(
     clerk_user_id: str,
     include_current: bool = True,
-    limit: int = 10,
-    db: AsyncSession = Depends(get_db)
+    limit: int = 10
 ):
     """
     Get user's assessment history (all assessments, past and present)
@@ -1636,7 +1627,7 @@ async def get_assessment_history(
     Returns:
         List of assessment sessions with metadata, ordered by date (newest first)
     """
-    service = AssessmentService(db)
+    service = AssessmentService()
     
     try:
         sessions = await service.get_assessment_history(
@@ -1667,8 +1658,7 @@ async def get_assessment_history(
 
 @router.get("/assessment/current/{clerk_user_id}")
 async def get_current_assessment(
-    clerk_user_id: str,
-    db: AsyncSession = Depends(get_db)
+    clerk_user_id: str
 ):
     """
     Get user's current (active) assessment
@@ -1682,7 +1672,7 @@ async def get_current_assessment(
     Note:
         Returns null if session exists but has 0 answers (user started but never submitted anything)
     """
-    service = AssessmentService(db)
+    service = AssessmentService()
     
     try:
         session = await service.get_current_session(clerk_user_id)
@@ -1722,8 +1712,7 @@ async def get_current_assessment(
 
 @router.get("/assessment/current-result/{clerk_user_id}")
 async def get_current_result(
-    clerk_user_id: str,
-    db: AsyncSession = Depends(get_db)
+    clerk_user_id: str
 ):
     """
     Get user's current (latest) assessment result
@@ -1737,7 +1726,7 @@ async def get_current_result(
     Returns:
         Current result with scores and narrative, or null if no current result
     """
-    service = AssessmentService(db)
+    service = AssessmentService()
     
     try:
         result = await service.get_current_result(clerk_user_id)
@@ -1772,8 +1761,7 @@ async def get_current_result(
 
 @router.get("/assessment/{session_id}/friend-insights")
 async def get_friend_insights(
-    session_id: str,
-    db: AsyncSession = Depends(get_db)
+    session_id: str
 ):
     """
     Get friend insights for a completed assessment session
