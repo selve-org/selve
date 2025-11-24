@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { User } from "@clerk/nextjs/server";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import { SettingsCard } from "../ui/SettingsCard";
 import { TierType } from "../../types";
-import { Sun, Moon, Monitor, Palette } from "lucide-react";
+import { Sun, Moon, Monitor, Palette, ArrowRight } from "lucide-react";
 
 interface GeneralTabProps {
   user: {
@@ -13,9 +14,11 @@ interface GeneralTabProps {
     imageUrl?: string;
   };
   tier: TierType;
+  hasCompletedAssessment?: boolean;
+  currentSessionId?: string | null;
 }
 
-export function GeneralTab({ user, tier }: GeneralTabProps) {
+export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionId }: GeneralTabProps) {
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { theme, setTheme } = useTheme();
@@ -73,6 +76,47 @@ export function GeneralTab({ user, tier }: GeneralTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Assessment Results Section */}
+      <SettingsCard title="Your Assessment">
+        {hasCompletedAssessment && currentSessionId ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                You&apos;ve completed your personality assessment
+              </p>
+              <p className="text-gray-900 dark:text-gray-100">
+                View your full personality profile and insights
+              </p>
+            </div>
+            <Link
+              href={`/results/${currentSessionId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
+            >
+              <span>View Results</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                Discover your personality profile
+              </p>
+              <p className="text-gray-900 dark:text-gray-100">
+                Take the assessment to uncover your unique traits
+              </p>
+            </div>
+            <Link
+              href="/assessment"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
+            >
+              <span>Start Assessment</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+      </SettingsCard>
+
       {/* Profile Section */}
       <SettingsCard title="Profile">
         <div className="flex items-center gap-4 mb-6">

@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   UserCircleIcon,
   UserGroupIcon,
@@ -23,9 +24,19 @@ import { TabType, Tab } from "./types";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
   const [checkingAssessment, setCheckingAssessment] = useState(true);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+  // Handle tab URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['general', 'security', 'accounts', 'sessions', 'invites', 'plan'].includes(tabParam)) {
+      setActiveTab(tabParam as TabType);
+    }
+  }, [searchParams]);
 
   const {
     invites,
@@ -44,13 +55,20 @@ export default function ProfilePage() {
       if (!user?.id) return;
       
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/assessment/current-result/${user.id}`
-        );
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/assessment/current-result/${user.id}`;
+        console.log('Checking assessment status for:', user.id);
+        
+        const response = await fetch(url);
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Assessment check response:', data);
           setHasCompletedAssessment(!!data.current_result);
+          if (data.current_result?.session_id) {
+            setCurrentSessionId(data.current_result.session_id);
+          }
+        } else {
+          console.error('Assessment check failed:', response.status);
         }
       } catch (error) {
         console.error("Failed to check assessment status:", error);
@@ -112,7 +130,14 @@ export default function ProfilePage() {
 
         {/* Tab Content */}
         <div className="space-y-6">
-          {activeTab === "general" && <GeneralTab user={user} tier={tier} />}
+          {activeTab === "general" && (
+            <GeneralTab 
+              user={user} 
+              tier={tier} 
+              hasCompletedAssessment={hasCompletedAssessment}
+              currentSessionId={currentSessionId}
+            />
+          )}
 
           {activeTab === "security" && <SecurityPrivacyTab />}
 
@@ -126,6 +151,7 @@ export default function ProfilePage() {
               loading={loading}
               remainingInvites={remainingInvites}
               hasCompletedAssessment={hasCompletedAssessment}
+              checkingAssessment={checkingAssessment}
               onSendInvite={sendInvite}
               onCopyLink={copyInviteLink}
               copiedCode={copiedCode}

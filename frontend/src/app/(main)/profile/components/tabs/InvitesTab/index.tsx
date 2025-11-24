@@ -10,6 +10,7 @@ interface InvitesTabProps {
   loading: boolean;
   remainingInvites: number | null;
   hasCompletedAssessment: boolean;
+  checkingAssessment?: boolean;
   onSendInvite: (data: {
     friendEmail: string;
     friendNickname: string;
@@ -24,6 +25,7 @@ export function InvitesTab({
   loading,
   remainingInvites,
   hasCompletedAssessment,
+  checkingAssessment = false,
   onSendInvite,
   onCopyLink,
   copiedCode,
@@ -44,8 +46,17 @@ export function InvitesTab({
 
   return (
     <div className="space-y-6">
-      {/* Assessment Required Notice */}
-      {!hasCompletedAssessment && (
+      {/* Loading state while checking assessment status */}
+      {checkingAssessment && (
+        <SettingsCard>
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          </div>
+        </SettingsCard>
+      )}
+
+      {/* Assessment Required Notice - only show after check completes */}
+      {!checkingAssessment && !hasCompletedAssessment && (
         <SettingsCard>
           <div className="flex items-start space-x-3 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -93,7 +104,7 @@ export function InvitesTab({
         {!showInviteForm && (
           <button
             onClick={() => setShowInviteForm(true)}
-            disabled={!hasCompletedAssessment || remainingInvites === 0}
+            disabled={checkingAssessment || !hasCompletedAssessment || remainingInvites === 0}
             className="mt-4 w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-md text-sm font-medium transition-colors"
           >
             <PaperAirplaneIcon className="w-4 h-4 mr-2" />

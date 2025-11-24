@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
+import { Share2, Link2, Check, X, Lock } from "lucide-react";
 import { 
   FormattedText,
   LoadingSpinner,
@@ -23,15 +25,46 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 export default function ResultsPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, isLoaded: userLoaded } = useUser();
   const sessionId = params.sessionId as string;
 
   const [results, setResults] = useState<AssessmentResults | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [shareId, setShareId] = useState<string | null>(null);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
 
   useEffect(() => {
     async function fetchResults() {
       try {
+        // First check access
+        const accessResponse = await fetch(
+          `${API_BASE}/api/assessment/${sessionId}/results/check-access?clerk_user_id=${user?.id || ''}`
+        );
+        
+        if (accessResponse.ok) {
+          const accessData = await accessResponse.json();
+          setIsOwner(accessData.isOwner);
+          setIsPublic(accessData.isPublic);
+          setShareId(accessData.publicShareId);
+          
+          if (!accessData.hasAccess) {
+            // Redirect unauthorized users to homepage
+            console.log('🔒 Access denied to results - redirecting to homepage', {
+              sessionId,
+              isOwner: accessData.isOwner,
+              isPublic: accessData.isPublic,
+              userId: user?.id || 'anonymous'
+            });
+            router.replace('/');
+            return;
+          }
+        }
+
         const response = await fetch(
           `${API_BASE}/api/assessment/${sessionId}/results`
         );
@@ -72,10 +105,69 @@ export default function ResultsPage() {
       }
     }
 
-    if (sessionId) {
+    if (sessionId && userLoaded) {
       fetchResults();
     }
-  }, [sessionId]);
+  }, [sessionId, userLoaded, user?.id]);
+
+  const handleShare = async () => {
+    if (!user?.id) return;
+    setShareLoading(true);
+    
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/assessment/${sessionId}/share?clerk_user_id=${user.id}`,
+        { method: 'POST' }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setShareId(data.shareId);
+        setIsPublic(true);
+        
+        // Copy to clipboard
+        const shareUrl = `${window.location.origin}/share/${data.shareId}`;
+        await navigator.clipboard.writeText(shareUrl);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      }
+    } catch (error) {
+      console.error('Failed to create share link:', error);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!shareId) return;
+    const shareUrl = `${window.location.origin}/share/${shareId}`;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  const handleToggleShare = async (enable: boolean) => {
+    if (!user?.id) return;
+    setShareLoading(true);
+    
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/assessment/${sessionId}/share/toggle?clerk_user_id=${user.id}&enable=${enable}`,
+        { method: 'POST' }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsPublic(data.isPublic);
+        setShareId(data.shareId);
+      }
+    } catch (error) {
+      console.error('Failed to toggle sharing:', error);
+    } finally {
+      setShareLoading(false);
+      setShowShareMenu(false);
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -99,6 +191,89 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#1c1c1c]">
       <div className="max-w-4xl mx-auto px-4 py-16">
+        {/* Share Button - Only for owners */}
+        {isOwner && (
+          <div className="flex justify-end mb-6 relative">
+            <button
+              onClick={() => setShowShareMenu(!showShareMenu)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#333] transition-colors shadow-sm"
+            >
+              <Share2 className="w-4 h-4" />
+              <span className="text-sm font-medium">Share</span>
+              {isPublic && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
+                  Public
+                </span>
+              )}
+            </button>
+            
+            {/* Share Menu Dropdown */}
+            {showShareMenu && (
+              <div className="absolute right-0 top-12 w-72 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Share your results</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Anyone with the link can view your personality profile
+                  </p>
+                </div>
+                
+                <div className="p-4 space-y-3">
+                  {isPublic && shareId ? (
+                    <>
+                      <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-[#1a1a1a] rounded-lg">
+                        <Link2 className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs text-gray-600 dark:text-gray-400 truncate flex-1">
+                          {window.location.origin}/share/{shareId}
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={handleCopyLink}
+                        disabled={shareLoading}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      >
+                        {copySuccess ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Link2 className="w-4 h-4" />
+                            Copy Link
+                          </>
+                        )}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleToggleShare(false)}
+                        disabled={shareLoading}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <Lock className="w-4 h-4" />
+                        Make Private
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleShare}
+                      disabled={shareLoading}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                    >
+                      {shareLoading ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Share2 className="w-4 h-4" />
+                      )}
+                      Create Shareable Link
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Metadata banner removed - users don't need to see technical details */}
 
         {/* NEW INTEGRATED FORMAT */}

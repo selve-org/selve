@@ -128,9 +128,16 @@ export function FriendInsights({ sessionId, selfScores }: FriendInsightsProps) {
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
             No Friend Insights Yet
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             Invite friends to complete your assessment to see how their perception compares to yours!
           </p>
+          <a
+            href="/profile?tab=invites"
+            className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Invite Friends
+          </a>
         </div>
       </motion.section>
     );

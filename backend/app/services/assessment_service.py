@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from prisma import fields
 
 from app.db import prisma
+from app.utils.db_retry import with_db_retry
 from app.adaptive_testing import AdaptiveTester
 from app.scoring import SelveScorer
 from app.response_validator import ResponseValidator
@@ -78,9 +79,12 @@ class AssessmentService:
         Returns:
             AssessmentSession or None if not found
         """
-        return await self.db.assessmentsession.find_unique(
-            where={"id": session_id},
-            include={"result": True}
+        return await with_db_retry(
+            lambda: self.db.assessmentsession.find_unique(
+                where={"id": session_id},
+                include={"result": True}
+            ),
+            operation_name="get_session"
         )
     
     async def update_session(
@@ -235,8 +239,11 @@ class AssessmentService:
         Returns:
             AssessmentResult or None if not found
         """
-        return await self.db.assessmentresult.find_first(
-            where={"sessionId": session_id}
+        return await with_db_retry(
+            lambda: self.db.assessmentresult.find_first(
+                where={"sessionId": session_id}
+            ),
+            operation_name="get_result"
         )
     
     async def get_user_sessions(
@@ -375,12 +382,15 @@ class AssessmentService:
         Returns:
             Current AssessmentSession or None
         """
-        return await self.db.assessmentsession.find_first(
-            where={
-                "clerkUserId": clerk_user_id,
-                "isCurrent": True
-            },
-            order={"createdAt": "desc"}
+        return await with_db_retry(
+            lambda: self.db.assessmentsession.find_first(
+                where={
+                    "clerkUserId": clerk_user_id,
+                    "isCurrent": True
+                },
+                order={"createdAt": "desc"}
+            ),
+            operation_name="get_current_session"
         )
     
     async def get_current_result(self, clerk_user_id: str):
@@ -393,12 +403,15 @@ class AssessmentService:
         Returns:
             Current AssessmentResult or None
         """
-        return await self.db.assessmentresult.find_first(
-            where={
-                "clerkUserId": clerk_user_id,
-                "isCurrent": True
-            },
-            order={"createdAt": "desc"}
+        return await with_db_retry(
+            lambda: self.db.assessmentresult.find_first(
+                where={
+                    "clerkUserId": clerk_user_id,
+                    "isCurrent": True
+                },
+                order={"createdAt": "desc"}
+            ),
+            operation_name="get_current_result"
         )
     
     async def get_assessment_history(

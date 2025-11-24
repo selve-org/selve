@@ -1782,23 +1782,38 @@ async def get_friend_insights(
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
         
-        # Get all friend responses for this user's invites
-        invites = await prisma.friendinvite.find_many(
-            where={"userId": session.userId},
-            include={"response": True}
+        # We need the User record to get invites (invites are linked via User.id, not clerkUserId)
+        user = None
+        if session.clerkUserId:
+            user = await prisma.user.find_unique(
+                where={"clerkId": session.clerkUserId}
+            )
+        
+        if not user:
+            # No user found - return empty response (user may not have linked account)
+            return {
+                "friendResponses": [],
+                "aggregatedScores": {},
+                "lastRegeneration": None
+            }
+        
+        # Get all friend responses for this user's invites (using correct model name)
+        invites = await prisma.invitelink.find_many(
+            where={"inviterId": user.id},
+            include={"friendResponse": True}
         )
         
-        # Filter to completed invites only
+        # Filter to completed invites only (relation name is friendResponse, not response)
         friend_responses = []
         for invite in invites:
-            if invite.response:
+            if invite.friendResponse:
                 friend_responses.append({
-                    "id": invite.response.id,
-                    "inviteId": invite.response.inviteId,
-                    "responses": invite.response.responses,
-                    "qualityScore": invite.response.qualityScore,
-                    "totalTime": invite.response.totalTime,
-                    "completedAt": invite.response.completedAt.isoformat()
+                    "id": invite.friendResponse.id,
+                    "inviteId": invite.friendResponse.inviteId,
+                    "responses": invite.friendResponse.responses,
+                    "qualityScore": invite.friendResponse.qualityScore,
+                    "totalTime": invite.friendResponse.totalTime,
+                    "completedAt": invite.friendResponse.completedAt.isoformat()
                 })
         
         # Calculate aggregated scores if we have friend responses
@@ -1853,10 +1868,10 @@ async def get_friend_insights(
                 if dimension_counts[dim] > 0:
                     aggregated_scores[dim] = dimension_scores[dim] / dimension_counts[dim]
         
-        # Get last regeneration timestamp (from Result table)
-        last_result = await prisma.result.find_first(
+        # Get last regeneration timestamp (from AssessmentResult table)
+        last_result = await prisma.assessmentresult.find_first(
             where={"sessionId": session_id},
-            order_by={"createdAt": "desc"}
+            order={"createdAt": "desc"}
         )
         
         return {
@@ -1871,3 +1886,225 @@ async def get_friend_insights(
         raise HTTPException(status_code=500, detail=f"Failed to fetch friend insights: {str(e)}")
 
 
+# ============================================================================
+# Results Privacy & Sharing
+# ============================================================================
+
+@router.get("/assessment/{session_id}/results/check-access")
+async def check_results_access(session_id: str, clerk_user_id: Optional[str] = None):
+    """
+    Check if a user has access to view results.
+    
+    Returns:
+        - hasAccess: Whether the user can view these results
+        - isOwner: Whether this is the user's own results
+        - isPublic: Whether the results are publicly shared
+    """
+    service = AssessmentService()
+    
+    # Get the result
+    result = await service.get_result(session_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Results not found")
+    
+    # Get the session to check ownership
+    db_session = await service.get_session(session_id)
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    is_owner = clerk_user_id and db_session.clerkUserId == clerk_user_id
+    is_public = result.isPublic
+    
+    return {
+        "hasAccess": is_owner or is_public,
+        "isOwner": is_owner,
+        "isPublic": is_public,
+        "publicShareId": result.publicShareId if is_public else None
+    }
+
+
+@router.post("/assessment/{session_id}/share")
+async def create_share_link(session_id: str, clerk_user_id: str):
+    """
+    Generate a public share link for assessment results.
+    Only the owner can create a share link.
+    
+    Returns:
+        - shareId: The public share ID for the URL
+        - shareUrl: The full shareable URL path
+    """
+    import secrets
+    from datetime import datetime
+    
+    service = AssessmentService()
+    
+    # Get the session to verify ownership
+    db_session = await service.get_session(session_id)
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if db_session.clerkUserId != clerk_user_id:
+        raise HTTPException(status_code=403, detail="You can only share your own results")
+    
+    # Get the result
+    result = await service.get_result(session_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Results not found")
+    
+    # If already has a share link, return it
+    if result.publicShareId:
+        return {
+            "shareId": result.publicShareId,
+            "shareUrl": f"/share/{result.publicShareId}",
+            "isNew": False
+        }
+    
+    # Generate a new share ID (URL-safe, 16 chars)
+    share_id = secrets.token_urlsafe(12)  # 16 characters
+    
+    # Update the result with sharing enabled
+    await prisma.assessmentresult.update(
+        where={"id": result.id},
+        data={
+            "isPublic": True,
+            "publicShareId": share_id,
+            "sharedAt": datetime.utcnow()
+        }
+    )
+    
+    return {
+        "shareId": share_id,
+        "shareUrl": f"/share/{share_id}",
+        "isNew": True
+    }
+
+
+@router.delete("/assessment/{session_id}/share")
+async def revoke_share_link(session_id: str, clerk_user_id: str):
+    """
+    Revoke public sharing for assessment results.
+    Only the owner can revoke sharing.
+    """
+    service = AssessmentService()
+    
+    # Get the session to verify ownership
+    db_session = await service.get_session(session_id)
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if db_session.clerkUserId != clerk_user_id:
+        raise HTTPException(status_code=403, detail="You can only manage your own results")
+    
+    # Get the result
+    result = await service.get_result(session_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Results not found")
+    
+    # Disable sharing (keep the shareId for potential re-enable)
+    await prisma.assessmentresult.update(
+        where={"id": result.id},
+        data={"isPublic": False}
+    )
+    
+    return {"success": True, "message": "Share link revoked"}
+
+
+@router.get("/share/{share_id}/results")
+async def get_shared_results(share_id: str):
+    """
+    Get publicly shared assessment results.
+    Anyone with the share link can view these results.
+    
+    Returns the same format as get_results but for public shared results.
+    """
+    # Find the result by share ID
+    result = await prisma.assessmentresult.find_first(
+        where={
+            "publicShareId": share_id,
+            "isPublic": True
+        }
+    )
+    
+    if not result:
+        raise HTTPException(
+            status_code=404, 
+            detail="Shared results not found or sharing has been disabled"
+        )
+    
+    # Get session for demographics (but don't expose user identity)
+    service = AssessmentService()
+    db_session = await service.get_session(result.sessionId)
+    demographics = db_session.demographics if db_session else {}
+    
+    # Remove identifying info from demographics for public view
+    safe_demographics = {
+        k: v for k, v in (demographics or {}).items() 
+        if k not in ['email', 'full_name', 'name']
+    }
+    
+    return {
+        "session_id": result.sessionId,
+        "scores": {
+            "LUMEN": result.scoreLumen,
+            "AETHER": result.scoreAether,
+            "ORPHEUS": result.scoreOrpheus,
+            "ORIN": result.scoreOrin,
+            "LYRA": result.scoreLyra,
+            "VARA": result.scoreVara,
+            "CHRONOS": result.scoreChronos,
+            "KAEL": result.scoreKael,
+        },
+        "narrative": result.narrative,
+        "completed_at": result.createdAt.isoformat(),
+        "demographics": safe_demographics,
+        "profile_pattern": result.profilePattern,
+        "archetype": result.archetype,
+        "is_shared": True
+    }
+
+
+@router.post("/assessment/{session_id}/share/toggle")
+async def toggle_share(session_id: str, clerk_user_id: str, enable: bool):
+    """
+    Toggle sharing on/off without regenerating the share ID.
+    Useful for temporarily disabling then re-enabling sharing.
+    """
+    service = AssessmentService()
+    
+    # Verify ownership
+    db_session = await service.get_session(session_id)
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if db_session.clerkUserId != clerk_user_id:
+        raise HTTPException(status_code=403, detail="You can only manage your own results")
+    
+    result = await service.get_result(session_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Results not found")
+    
+    # If enabling and no share ID exists, create one
+    if enable and not result.publicShareId:
+        import secrets
+        from datetime import datetime
+        share_id = secrets.token_urlsafe(12)
+        await prisma.assessmentresult.update(
+            where={"id": result.id},
+            data={
+                "isPublic": True,
+                "publicShareId": share_id,
+                "sharedAt": datetime.utcnow()
+            }
+        )
+        return {"isPublic": True, "shareId": share_id}
+    
+    # Toggle existing share
+    await prisma.assessmentresult.update(
+        where={"id": result.id},
+        data={"isPublic": enable}
+    )
+    
+    return {
+        "isPublic": enable,
+        "shareId": result.publicShareId if enable else None
+    }

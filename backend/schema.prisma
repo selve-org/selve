@@ -193,6 +193,11 @@ model AssessmentResult {
   clerkUserId          String?             // Clerk user ID for authenticated users
   isCurrent            Boolean             @default(true)  // Whether this is the user's current/latest result
   
+  // Sharing & Privacy
+  isPublic             Boolean             @default(false) // Whether result can be viewed via public link
+  publicShareId        String?             @unique         // Unique ID for public sharing (nanoid)
+  sharedAt             DateTime?                           // When the result was first shared
+  
   // Dimension Scores (0-100)
   scoreLumen           Float               // Mindful Curiosity
   scoreAether          Float               // Rational Reflection
