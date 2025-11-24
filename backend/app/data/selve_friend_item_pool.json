@@ -6,7 +6,8 @@
       "dimension": "LUMEN",
       "reversed": true,
       "correlation": 0.7898036425664714,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "lumen_1"
     },
     {
       "id": "lumen_2",
@@ -14,7 +15,8 @@
       "dimension": "LUMEN",
       "reversed": true,
       "correlation": 0.7466828281389422,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "lumen_2"
     },
     {
       "id": "lumen_3",
@@ -22,7 +24,8 @@
       "dimension": "LUMEN",
       "reversed": false,
       "correlation": 0.7400526334410243,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "lumen_3"
     },
     {
       "id": "lumen_4",
@@ -30,7 +33,8 @@
       "dimension": "LUMEN",
       "reversed": false,
       "correlation": 0.7030915647768476,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "lumen_4"
     }
   ],
   "AETHER": [
@@ -40,7 +44,8 @@
       "dimension": "AETHER",
       "reversed": true,
       "correlation": 0.6914379519915256,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "aether_1"
     },
     {
       "id": "aether_2",
@@ -48,15 +53,17 @@
       "dimension": "AETHER",
       "reversed": true,
       "correlation": 0.647909600001181,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "aether_2"
     },
     {
       "id": "aether_3",
-      "text": "{Name} gets irritated easily. Minor annoyances\u2014someone chewing loudly, slow internet, traffic delays\u2014affect them more than they probably should.",
+      "text": "{Name} gets irritated easily. Minor annoyances—someone chewing loudly, slow internet, traffic delays—affect them more than they probably should.",
       "dimension": "AETHER",
       "reversed": true,
       "correlation": 0.6433962863793045,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "aether_3"
     }
   ],
   "ORPHEUS": [
@@ -66,7 +73,8 @@
       "dimension": "ORPHEUS",
       "reversed": true,
       "correlation": 0.6104442140199234,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "orpheus_1"
     },
     {
       "id": "orpheus_2",
@@ -74,7 +82,8 @@
       "dimension": "ORPHEUS",
       "reversed": false,
       "correlation": 0.6924674641549626,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "orpheus_2"
     },
     {
       "id": "orpheus_3",
@@ -82,17 +91,19 @@
       "dimension": "ORPHEUS",
       "reversed": false,
       "correlation": 0.6312581090236026,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "orpheus_3"
     }
   ],
   "ORIN": [
     {
       "id": "orin_1",
-      "text": "{Name} makes a mess of things. When they dive into a project, their workspace\u2014or even their kitchen\u2014quickly turns chaotic, with papers, tools, utensils or ingredients scattered everywhere until they\u2019ve finished.",
+      "text": "{Name} makes a mess of things. When they dive into a project, their workspace—or even their kitchen—quickly turns chaotic, with papers, tools, utensils or ingredients scattered everywhere until they’ve finished.",
       "dimension": "ORIN",
       "reversed": true,
       "correlation": 0.5440941449359278,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "orin_1"
     },
     {
       "id": "orin_2",
@@ -100,7 +111,8 @@
       "dimension": "ORIN",
       "reversed": true,
       "correlation": 0.5585005552528854,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "orin_2"
     },
     {
       "id": "orin_3",
@@ -108,7 +120,8 @@
       "dimension": "ORIN",
       "reversed": false,
       "correlation": 0.5613489014178037,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "orin_3"
     },
     {
       "id": "orin_4",
@@ -116,7 +129,8 @@
       "dimension": "ORIN",
       "reversed": false,
       "correlation": 0.5399088773685665,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "orin_4"
     }
   ],
   "LYRA": [
@@ -126,7 +140,8 @@
       "dimension": "LYRA",
       "reversed": true,
       "correlation": 0.5151944246886379,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "lyra_1"
     },
     {
       "id": "lyra_2",
@@ -134,7 +149,8 @@
       "dimension": "LYRA",
       "reversed": false,
       "correlation": 0.5895556930551805,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "lyra_2"
     },
     {
       "id": "lyra_3",
@@ -142,7 +158,8 @@
       "dimension": "LYRA",
       "reversed": false,
       "correlation": 0.5349441569121977,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "lyra_3"
     }
   ],
   "VARA": [
@@ -152,7 +169,8 @@
       "dimension": "VARA",
       "reversed": true,
       "correlation": 0.5818502173299451,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "vara_1"
     },
     {
       "id": "vara_2",
@@ -160,7 +178,8 @@
       "dimension": "VARA",
       "reversed": true,
       "correlation": 0.545148440428738,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "vara_2"
     },
     {
       "id": "vara_3",
@@ -168,7 +187,8 @@
       "dimension": "VARA",
       "reversed": true,
       "correlation": 0.5232786175029893,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "vara_3"
     }
   ],
   "CHRONOS": [
@@ -178,7 +198,8 @@
       "dimension": "CHRONOS",
       "reversed": true,
       "correlation": 0.7278751572771077,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "chronos_1"
     },
     {
       "id": "chronos_2",
@@ -186,7 +207,8 @@
       "dimension": "CHRONOS",
       "reversed": true,
       "correlation": 0.6327538723671904,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "chronos_2"
     },
     {
       "id": "chronos_3",
@@ -194,7 +216,8 @@
       "dimension": "CHRONOS",
       "reversed": false,
       "correlation": 0.6301099746288574,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "chronos_3"
     },
     {
       "id": "chronos_4",
@@ -202,7 +225,8 @@
       "dimension": "CHRONOS",
       "reversed": false,
       "correlation": 0.5211774258457111,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "chronos_4"
     }
   ],
   "KAEL": [
@@ -212,7 +236,8 @@
       "dimension": "KAEL",
       "reversed": true,
       "correlation": 0.5578768061650027,
-      "observability": "ambiguous"
+      "observability": "ambiguous",
+      "item": "kael_1"
     },
     {
       "id": "kael_2",
@@ -220,7 +245,8 @@
       "dimension": "KAEL",
       "reversed": false,
       "correlation": 0.6510055285670464,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "kael_2"
     },
     {
       "id": "kael_3",
@@ -228,7 +254,8 @@
       "dimension": "KAEL",
       "reversed": false,
       "correlation": 0.5776122649864508,
-      "observability": "observable"
+      "observability": "observable",
+      "item": "kael_3"
     }
   ]
 }
