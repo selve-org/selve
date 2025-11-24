@@ -1,0 +1,342 @@
+{
+  "LUMEN": [
+    {
+      "item": "LUMEN_SC1",
+      "correlation": 0.72,
+      "reversed": false,
+      "text": "At a restaurant, you're enjoying the conversation so much that you almost never look at the menu until the server arrives to take your order.",
+      "source": "LaHaye-Scenario",
+      "category": "social_dining",
+      "type": "scenario"
+    },
+    {
+      "item": "LUMEN_SC2",
+      "correlation": 0.68,
+      "reversed": false,
+      "text": "When driving, you find yourself wanting to look at your passengers when talking, even while behind the wheel.",
+      "source": "LaHaye-Scenario",
+      "category": "social_behavior",
+      "type": "scenario"
+    },
+    {
+      "item": "LUMEN_SC3",
+      "correlation": 0.65,
+      "reversed": false,
+      "text": "You start yard work with great enthusiasm, but within 30 minutes you're chatting joyfully with a neighbor, leaving the task unfinished.",
+      "source": "LaHaye-Scenario",
+      "category": "social_distraction",
+      "type": "scenario"
+    },
+    {
+      "item": "LUMEN_SC4",
+      "correlation": 0.70,
+      "reversed": true,
+      "text": "In social situations, you rarely thrust yourself into conversations and only respond when specifically asked.",
+      "source": "LaHaye-Scenario",
+      "category": "communication",
+      "type": "scenario"
+    },
+    {
+      "item": "LUMEN_SC5",
+      "correlation": 0.66,
+      "reversed": false,
+      "text": "Your speech is overly expressive and you use exaggeration freely when telling stories.",
+      "source": "LaHaye-Scenario",
+      "category": "communication_style",
+      "type": "scenario"
+    }
+  ],
+  "AETHER": [
+    {
+      "item": "AETHER_SC1",
+      "correlation": 0.65,
+      "reversed": true,
+      "text": "You feel you need to have more power than other people around you.",
+      "source": "LaHaye-Scenario",
+      "category": "power_seeking",
+      "type": "scenario"
+    },
+    {
+      "item": "AETHER_SC2",
+      "correlation": 0.63,
+      "reversed": false,
+      "text": "You pride yourself on having a triple 'A' credit rating and always paying bills on time.",
+      "source": "LaHaye-Scenario",
+      "category": "responsibility",
+      "type": "scenario"
+    },
+    {
+      "item": "AETHER_SC3",
+      "correlation": 0.60,
+      "reversed": true,
+      "text": "When upset, you can be more biting or sarcastic than most people you know.",
+      "source": "LaHaye-Scenario",
+      "category": "emotional_regulation",
+      "type": "scenario"
+    },
+    {
+      "item": "AETHER_SC4",
+      "correlation": 0.62,
+      "reversed": false,
+      "text": "You balance your checkbook to the penny and take pride in financial accuracy.",
+      "source": "LaHaye-Scenario",
+      "category": "conscientiousness",
+      "type": "scenario"
+    }
+  ],
+  "ORPHEUS": [
+    {
+      "item": "ORPHEUS_SC1",
+      "correlation": 0.68,
+      "reversed": false,
+      "text": "After disciplining a child, you immediately take time to comfort and show love to them.",
+      "source": "LaHaye-Scenario",
+      "category": "empathy_expression",
+      "type": "scenario"
+    },
+    {
+      "item": "ORPHEUS_SC2",
+      "correlation": 0.65,
+      "reversed": false,
+      "text": "You find it natural to play with children and feel comfortable spending extended time with them.",
+      "source": "LaHaye-Scenario",
+      "category": "nurturing",
+      "type": "scenario"
+    },
+    {
+      "item": "ORPHEUS_SC3",
+      "correlation": 0.63,
+      "reversed": true,
+      "text": "When someone shares their problems, you want to quickly fix the situation rather than just listen.",
+      "source": "LaHaye-Scenario",
+      "category": "listening_style",
+      "type": "scenario"
+    },
+    {
+      "item": "ORPHEUS_SC4",
+      "correlation": 0.66,
+      "reversed": false,
+      "text": "You have a natural aptitude for 'babying' and talking to your plants, showing care for living things.",
+      "source": "LaHaye-Scenario",
+      "category": "caregiving",
+      "type": "scenario"
+    }
+  ],
+  "ORIN": [
+    {
+      "item": "ORIN_SC1",
+      "correlation": 0.64,
+      "reversed": false,
+      "text": "Before a trip, you study the map well in advance and prepare thoroughly, knowing the best route from start to finish.",
+      "source": "LaHaye-Scenario",
+      "category": "planning",
+      "type": "scenario"
+    },
+    {
+      "item": "ORIN_SC2",
+      "correlation": 0.62,
+      "reversed": false,
+      "text": "You have every receipt for the past five years, even if they're not in perfect order.",
+      "source": "LaHaye-Scenario",
+      "category": "record_keeping",
+      "type": "scenario"
+    },
+    {
+      "item": "ORIN_SC3",
+      "correlation": 0.60,
+      "reversed": false,
+      "text": "You systemize everything and have a detailed budget with matching records.",
+      "source": "LaHaye-Scenario",
+      "category": "organization",
+      "type": "scenario"
+    },
+    {
+      "item": "ORIN_SC4",
+      "correlation": 0.58,
+      "reversed": true,
+      "text": "Your desk is messy and your files disorganized, but you somehow know where everything is.",
+      "source": "LaHaye-Scenario",
+      "category": "orderliness",
+      "type": "scenario"
+    },
+    {
+      "item": "ORIN_SC5",
+      "correlation": 0.61,
+      "reversed": false,
+      "text": "You can be found on your hands and knees, 'manicuring' your lawn and hedges with precision.",
+      "source": "LaHaye-Scenario",
+      "category": "attention_to_detail",
+      "type": "scenario"
+    }
+  ],
+  "LYRA": [
+    {
+      "item": "LYRA_SC1",
+      "correlation": 0.66,
+      "reversed": false,
+      "text": "You have a ferocious appetite for books and spend significant time reading and learning.",
+      "source": "LaHaye-Scenario",
+      "category": "intellectual_curiosity",
+      "type": "scenario"
+    },
+    {
+      "item": "LYRA_SC2",
+      "correlation": 0.63,
+      "reversed": false,
+      "text": "You're drawn to colorful packaging and visual satisfaction when making purchases.",
+      "source": "LaHaye-Scenario",
+      "category": "aesthetic_appreciation",
+      "type": "scenario"
+    },
+    {
+      "item": "LYRA_SC3",
+      "correlation": 0.60,
+      "reversed": false,
+      "text": "You love charts, diagrams, and graphs because you want to understand where everything fits in the bigger picture.",
+      "source": "LaHaye-Scenario",
+      "category": "systems_thinking",
+      "type": "scenario"
+    },
+    {
+      "item": "LYRA_SC4",
+      "correlation": 0.62,
+      "reversed": true,
+      "text": "You prefer getting your news from TV rather than magazines and newspapers.",
+      "source": "LaHaye-Scenario",
+      "category": "information_processing",
+      "type": "scenario"
+    }
+  ],
+  "VARA": [
+    {
+      "item": "VARA_SC1",
+      "correlation": 0.64,
+      "reversed": false,
+      "text": "You compare prices and quality quite carefully when shopping, sometimes creating 'traffic jams' while making decisions.",
+      "source": "LaHaye-Scenario",
+      "category": "deliberation",
+      "type": "scenario"
+    },
+    {
+      "item": "VARA_SC2",
+      "correlation": 0.61,
+      "reversed": false,
+      "text": "You never start speaking until you've thought out precisely what you want to say.",
+      "source": "LaHaye-Scenario",
+      "category": "thoughtfulness",
+      "type": "scenario"
+    },
+    {
+      "item": "VARA_SC3",
+      "correlation": 0.59,
+      "reversed": false,
+      "text": "When you order at a restaurant, it takes you a long time to decide, but once the food arrives you savor every bite.",
+      "source": "LaHaye-Scenario",
+      "category": "deliberate_enjoyment",
+      "type": "scenario"
+    },
+    {
+      "item": "VARA_SC4",
+      "correlation": 0.60,
+      "reversed": true,
+      "text": "In your grocery cart, visual appeal matters more than careful price comparison.",
+      "source": "LaHaye-Scenario",
+      "category": "impulsiveness",
+      "type": "scenario"
+    }
+  ],
+  "CHRONOS": [
+    {
+      "item": "CHRONOS_SC1",
+      "correlation": 0.65,
+      "reversed": false,
+      "text": "You're the slowest eater among your friends and are invariably the last one finished at meals.",
+      "source": "LaHaye-Scenario",
+      "category": "pace",
+      "type": "scenario"
+    },
+    {
+      "item": "CHRONOS_SC2",
+      "correlation": 0.62,
+      "reversed": false,
+      "text": "You're the last one to leave an intersection and rarely change lanes while driving.",
+      "source": "LaHaye-Scenario",
+      "category": "cautiousness",
+      "type": "scenario"
+    },
+    {
+      "item": "CHRONOS_SC3",
+      "correlation": 0.64,
+      "reversed": false,
+      "text": "Late on Saturday morning, you can still be found sipping your third cup of coffee before starting tasks.",
+      "source": "LaHaye-Scenario",
+      "category": "leisurely_approach",
+      "type": "scenario"
+    },
+    {
+      "item": "CHRONOS_SC4",
+      "correlation": 0.63,
+      "reversed": true,
+      "text": "When you hate a task, you do it with vengeance at a frenzied pace to get it over with.",
+      "source": "LaHaye-Scenario",
+      "category": "urgency",
+      "type": "scenario"
+    },
+    {
+      "item": "CHRONOS_SC5",
+      "correlation": 0.60,
+      "reversed": false,
+      "text": "You work best under pressure, though you claim you don't like it.",
+      "source": "LaHaye-Scenario",
+      "category": "deadline_response",
+      "type": "scenario"
+    }
+  ],
+  "KAEL": [
+    {
+      "item": "KAEL_SC1",
+      "correlation": 0.67,
+      "reversed": false,
+      "text": "You're a daring driver who darts in and out of traffic to make up time between appointments.",
+      "source": "LaHaye-Scenario",
+      "category": "boldness",
+      "type": "scenario"
+    },
+    {
+      "item": "KAEL_SC2",
+      "correlation": 0.65,
+      "reversed": false,
+      "text": "You bolt down food in big chunks, often talking while chewing.",
+      "source": "LaHaye-Scenario",
+      "category": "assertive_behavior",
+      "type": "scenario"
+    },
+    {
+      "item": "KAEL_SC3",
+      "correlation": 0.63,
+      "reversed": false,
+      "text": "You're a debater who gets right to the point and isn't afraid to argue.",
+      "source": "LaHaye-Scenario",
+      "category": "directness",
+      "type": "scenario"
+    },
+    {
+      "item": "KAEL_SC4",
+      "correlation": 0.64,
+      "reversed": false,
+      "text": "When shopping, you want to purchase what you need and get out as quickly as possible.",
+      "source": "LaHaye-Scenario",
+      "category": "efficiency",
+      "type": "scenario"
+    },
+    {
+      "item": "KAEL_SC5",
+      "correlation": 0.61,
+      "reversed": true,
+      "text": "Before making decisions, you carefully avoid any unpleasant confrontations.",
+      "source": "LaHaye-Scenario",
+      "category": "conflict_avoidance",
+      "type": "scenario"
+    }
+  ]
+}

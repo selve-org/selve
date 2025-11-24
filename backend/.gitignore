@@ -44,3 +44,6 @@ htmlcov/
 
 # Logs
 *.log
+
+# Allow data directory
+!app/data/

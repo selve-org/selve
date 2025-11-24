@@ -1,0 +1,234 @@
+{
+  "LUMEN": [
+    {
+      "id": "lumen_1",
+      "text": "{Name} doesn't talk a lot. At parties, they find themselves observing conversations from the sidelines rather than jumping in.",
+      "dimension": "LUMEN",
+      "reversed": true,
+      "correlation": 0.7898036425664714,
+      "observability": "observable"
+    },
+    {
+      "id": "lumen_2",
+      "text": "{Name} says little.",
+      "dimension": "LUMEN",
+      "reversed": true,
+      "correlation": 0.7466828281389422,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "lumen_3",
+      "text": "{Name} talks a lot.",
+      "dimension": "LUMEN",
+      "reversed": false,
+      "correlation": 0.7400526334410243,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "lumen_4",
+      "text": "{Name} talks to a lot of different people at parties.",
+      "dimension": "LUMEN",
+      "reversed": false,
+      "correlation": 0.7030915647768476,
+      "observability": "ambiguous"
+    }
+  ],
+  "AETHER": [
+    {
+      "id": "aether_1",
+      "text": "{Name} gets upset easily.",
+      "dimension": "AETHER",
+      "reversed": true,
+      "correlation": 0.6914379519915256,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "aether_2",
+      "text": "{Name} gets stressed out easily. When multiple demands pile up, they feel their stress level rising faster than it seems to affect those around them.",
+      "dimension": "AETHER",
+      "reversed": true,
+      "correlation": 0.647909600001181,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "aether_3",
+      "text": "{Name} gets irritated easily. Minor annoyances\u2014someone chewing loudly, slow internet, traffic delays\u2014affect them more than they probably should.",
+      "dimension": "AETHER",
+      "reversed": true,
+      "correlation": 0.6433962863793045,
+      "observability": "ambiguous"
+    }
+  ],
+  "ORPHEUS": [
+    {
+      "id": "orpheus_1",
+      "text": "{Name} is not interested in other people's problems. When someone vents about their difficulties, they seem more focused on their own issues rather than showing deep concern for others.",
+      "dimension": "ORPHEUS",
+      "reversed": true,
+      "correlation": 0.6104442140199234,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "orpheus_2",
+      "text": "{Name} sympathizes with others' feelings.",
+      "dimension": "ORPHEUS",
+      "reversed": false,
+      "correlation": 0.6924674641549626,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "orpheus_3",
+      "text": "{Name} feels others' emotions.",
+      "dimension": "ORPHEUS",
+      "reversed": false,
+      "correlation": 0.6312581090236026,
+      "observability": "ambiguous"
+    }
+  ],
+  "ORIN": [
+    {
+      "id": "orin_1",
+      "text": "{Name} makes a mess of things. When they dive into a project, their workspace\u2014or even their kitchen\u2014quickly turns chaotic, with papers, tools, utensils or ingredients scattered everywhere until they\u2019ve finished.",
+      "dimension": "ORIN",
+      "reversed": true,
+      "correlation": 0.5440941449359278,
+      "observability": "observable"
+    },
+    {
+      "id": "orin_2",
+      "text": "{Name} often forgets to put things back in their proper place.",
+      "dimension": "ORIN",
+      "reversed": true,
+      "correlation": 0.5585005552528854,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "orin_3",
+      "text": "{Name} gets chores done right away.",
+      "dimension": "ORIN",
+      "reversed": false,
+      "correlation": 0.5613489014178037,
+      "observability": "observable"
+    },
+    {
+      "id": "orin_4",
+      "text": "{Name} is always prepared.",
+      "dimension": "ORIN",
+      "reversed": false,
+      "correlation": 0.5399088773685665,
+      "observability": "ambiguous"
+    }
+  ],
+  "LYRA": [
+    {
+      "id": "lyra_1",
+      "text": "{Name} has difficulty understanding abstract ideas.",
+      "dimension": "LYRA",
+      "reversed": true,
+      "correlation": 0.5151944246886379,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "lyra_2",
+      "text": "{Name} is full of ideas.",
+      "dimension": "LYRA",
+      "reversed": false,
+      "correlation": 0.5895556930551805,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "lyra_3",
+      "text": "{Name} has a rich vocabulary.",
+      "dimension": "LYRA",
+      "reversed": false,
+      "correlation": 0.5349441569121977,
+      "observability": "ambiguous"
+    }
+  ],
+  "VARA": [
+    {
+      "id": "vara_1",
+      "text": "{Name} cheats to get ahead. When there's a chance to move ahead faster, even if it means cutting corners or breaking a few rules, they do it because they believe results matter more than how they get them.",
+      "dimension": "VARA",
+      "reversed": true,
+      "correlation": 0.5818502173299451,
+      "observability": "observable"
+    },
+    {
+      "id": "vara_2",
+      "text": "{Name} tells other people what they want to hear so that they will do what {Name} wants them to do.",
+      "dimension": "VARA",
+      "reversed": true,
+      "correlation": 0.545148440428738,
+      "observability": "observable"
+    },
+    {
+      "id": "vara_3",
+      "text": "{Name} uses flattery to get ahead.",
+      "dimension": "VARA",
+      "reversed": true,
+      "correlation": 0.5232786175029893,
+      "observability": "ambiguous"
+    }
+  ],
+  "CHRONOS": [
+    {
+      "id": "chronos_1",
+      "text": "{Name} gets angry easily. It doesn't take much to ignite their temper—they go from calm to angry faster than most people they know.",
+      "dimension": "CHRONOS",
+      "reversed": true,
+      "correlation": 0.7278751572771077,
+      "observability": "observable"
+    },
+    {
+      "id": "chronos_2",
+      "text": "{Name} finds it hard to forgive others. When someone wrongs them, the memory stays fresh and they struggle to let it go, even when they apologize.",
+      "dimension": "CHRONOS",
+      "reversed": true,
+      "correlation": 0.6327538723671904,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "chronos_3",
+      "text": "{Name} seldom gets mad.",
+      "dimension": "CHRONOS",
+      "reversed": false,
+      "correlation": 0.6301099746288574,
+      "observability": "observable"
+    },
+    {
+      "id": "chronos_4",
+      "text": "{Name} tries to forgive and forget.",
+      "dimension": "CHRONOS",
+      "reversed": false,
+      "correlation": 0.5211774258457111,
+      "observability": "observable"
+    }
+  ],
+  "KAEL": [
+    {
+      "id": "kael_1",
+      "text": "{Name} would be afraid to give a speech in public.",
+      "dimension": "KAEL",
+      "reversed": true,
+      "correlation": 0.5578768061650027,
+      "observability": "ambiguous"
+    },
+    {
+      "id": "kael_2",
+      "text": "{Name} is good at making impromptu speeches.",
+      "dimension": "KAEL",
+      "reversed": false,
+      "correlation": 0.6510055285670464,
+      "observability": "observable"
+    },
+    {
+      "id": "kael_3",
+      "text": "{Name} has a strong personality.",
+      "dimension": "KAEL",
+      "reversed": false,
+      "correlation": 0.5776122649864508,
+      "observability": "observable"
+    }
+  ]
+}
