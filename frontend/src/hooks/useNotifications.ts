@@ -38,7 +38,8 @@ export function useNotifications() {
 
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data.notifications || []);
+        // API returns array directly, not wrapped in { notifications: [] }
+        setNotifications(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
