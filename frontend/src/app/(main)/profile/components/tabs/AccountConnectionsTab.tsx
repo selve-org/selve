@@ -86,10 +86,15 @@ export function AccountConnectionsTab() {
       return;
     }
 
+    if (!user) {
+      setEmailError("User not loaded");
+      return;
+    }
+
     setEmailLoading(true);
 
     try {
-      await user?.createEmailAddress({ email: newEmail });
+      await user.createEmailAddress({ email: newEmail });
       setEmailSuccess("Email added! Check your inbox to verify.");
       setNewEmail("");
       setShowAddEmail(false);
@@ -105,13 +110,19 @@ export function AccountConnectionsTab() {
   // Handle removing email
   const handleRemoveEmail = async (emailAddressId: string) => {
     setEmailError("");
+
+    const emailAddress = user?.emailAddresses.find(
+      (e) => e.id === emailAddressId
+    );
+    if (!emailAddress) {
+      setEmailError("Email not found");
+      return;
+    }
+
     setEmailLoading(true);
 
     try {
-      const emailAddress = user?.emailAddresses.find(
-        (e) => e.id === emailAddressId
-      );
-      await emailAddress?.destroy();
+      await emailAddress.destroy();
       setEmailSuccess("Email removed successfully");
 
       setTimeout(() => setEmailSuccess(""), 3000);
@@ -125,10 +136,16 @@ export function AccountConnectionsTab() {
   // Handle setting primary email
   const handleSetPrimary = async (emailAddressId: string) => {
     setEmailError("");
+
+    if (!user) {
+      setEmailError("User not loaded");
+      return;
+    }
+
     setEmailLoading(true);
 
     try {
-      await user?.update({ primaryEmailAddressId: emailAddressId });
+      await user.update({ primaryEmailAddressId: emailAddressId });
       setEmailSuccess("Primary email updated");
 
       setTimeout(() => setEmailSuccess(""), 3000);
@@ -142,13 +159,19 @@ export function AccountConnectionsTab() {
   // Handle resending verification email
   const handleResendVerification = async (emailAddressId: string) => {
     setEmailError("");
+
+    const emailAddress = user?.emailAddresses.find(
+      (e) => e.id === emailAddressId
+    );
+    if (!emailAddress) {
+      setEmailError("Email not found");
+      return;
+    }
+
     setEmailLoading(true);
 
     try {
-      const emailAddress = user?.emailAddresses.find(
-        (e) => e.id === emailAddressId
-      );
-      await emailAddress?.prepareVerification({ strategy: "email_code" });
+      await emailAddress.prepareVerification({ strategy: "email_code" });
       setEmailSuccess("Verification email sent! Check your inbox.");
 
       setTimeout(() => setEmailSuccess(""), 3000);
@@ -170,13 +193,19 @@ export function AccountConnectionsTab() {
     }
 
     setOauthError("");
+
+    const externalAccount = user?.externalAccounts.find(
+      (acc) => acc.id === externalAccountId
+    );
+    if (!externalAccount) {
+      setOauthError("Account not found");
+      return;
+    }
+
     setOauthLoading(true);
 
     try {
-      const externalAccount = user?.externalAccounts.find(
-        (acc) => acc.id === externalAccountId
-      );
-      await externalAccount?.destroy();
+      await externalAccount.destroy();
       setOauthSuccess(`${provider} account disconnected successfully`);
 
       setTimeout(() => setOauthSuccess(""), 3000);
@@ -193,10 +222,11 @@ export function AccountConnectionsTab() {
     { id: "oauth_linkedin_oidc", name: "LinkedIn", icon: providerIcons.linkedin },
   ];
 
-  // Get connected provider IDs
-  const connectedProviderIds = user?.externalAccounts.map((acc) =>
-    acc.verification?.strategy?.replace("oauth_", "")
-  ) || [];
+  // Get connected provider IDs (filter out undefined strategies)
+  const connectedProviderIds = user?.externalAccounts
+    .map((acc) => acc.verification?.strategy)
+    .filter(Boolean)
+    .map((s) => s!.replace("oauth_", "")) || [];
 
   return (
     <div className="space-y-6">
