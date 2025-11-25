@@ -7,6 +7,21 @@ import { useFooterVisibility } from "@/context/FooterVisibilityContext";
 import { SelveLogo } from "@/components/logo/SelveLogo";
 import { footerLinks } from "./footerLinks";
 import { FooterLink } from "./FooterLink";
+import { 
+  FaLinkedinIn, 
+  FaInstagram, 
+  FaYoutube, 
+  FaXTwitter, 
+  FaTiktok 
+} from "react-icons/fa6";
+
+const socialLinks = [
+  { icon: FaLinkedinIn, href: "https://linkedin.com/company/selve", label: "LinkedIn" },
+  { icon: FaInstagram, href: "https://instagram.com/selve.app", label: "Instagram" },
+  { icon: FaYoutube, href: "https://youtube.com/@selve", label: "YouTube" },
+  { icon: FaXTwitter, href: "https://x.com/selve_app", label: "X (Twitter)" },
+  { icon: FaTiktok, href: "https://tiktok.com/@selve.app", label: "TikTok" },
+];
 
 export const Footer = () => {
   const footerRef = useRef<HTMLElement>(null);
@@ -79,6 +94,39 @@ export const Footer = () => {
                 </ul>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar with Copyright and Social Icons */}
+      <div className="border-t border-neutral-200 dark:border-neutral-800">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <span>© {new Date().getFullYear()} SELVE</span>
+              <Link href="/terms" className="hover:text-foreground transition-colors">
+                Terms
+              </Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">
+                Privacy
+              </Link>
+            </div>
+            
+            {/* Social Media Icons */}
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <social.icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>

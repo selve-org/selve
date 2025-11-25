@@ -1,0 +1,272 @@
+/* Blog Prose Styles */
+.blog-prose {
+  color: var(--color-foreground);
+  line-height: 1.8;
+  font-size: 1.125rem;
+}
+
+/* Headings */
+.blog-prose h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 3rem;
+  margin-bottom: 1.25rem;
+  color: var(--color-foreground);
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 0.5rem;
+}
+
+.blog-prose h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--color-foreground);
+}
+
+.blog-prose h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-foreground);
+}
+
+/* Paragraphs */
+.blog-prose p {
+  margin-bottom: 1.5rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Strong text */
+.blog-prose strong {
+  color: var(--color-foreground);
+  font-weight: 600;
+}
+
+/* Links */
+.blog-prose a {
+  color: rgb(147, 51, 234);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.blog-prose a:hover {
+  border-bottom-color: rgb(147, 51, 234);
+}
+
+:is(.dark) .blog-prose a {
+  color: rgb(192, 132, 252);
+}
+
+:is(.dark) .blog-prose a:hover {
+  border-bottom-color: rgb(192, 132, 252);
+}
+
+/* Lists */
+.blog-prose ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+}
+
+.blog-prose ul li {
+  position: relative;
+  padding-left: 1.75rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.blog-prose ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(147, 51, 234);
+}
+
+.blog-prose ol {
+  list-style: none;
+  counter-reset: list-counter;
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+}
+
+.blog-prose ol li {
+  position: relative;
+  padding-left: 2.25rem;
+  margin-bottom: 0.75rem;
+  counter-increment: list-counter;
+  color: hsl(var(--muted-foreground));
+}
+
+.blog-prose ol li::before {
+  content: counter(list-counter) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 600;
+  color: rgb(147, 51, 234);
+}
+
+/* Nested lists */
+.blog-prose ul ul,
+.blog-prose ol ul,
+.blog-prose ul ol,
+.blog-prose ol ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Blockquotes */
+.blog-prose blockquote {
+  border-left: 4px solid rgb(147, 51, 234);
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Code blocks */
+.blog-prose code {
+  background: hsl(var(--muted));
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.blog-prose pre {
+  background: hsl(var(--muted));
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.blog-prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+/* Horizontal rules */
+.blog-prose hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--border)),
+    transparent
+  );
+  margin: 3rem 0;
+}
+
+/* Images */
+.blog-prose img {
+  border-radius: 0.75rem;
+  margin: 2rem auto;
+  max-width: 100%;
+}
+
+/* Tables */
+.blog-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+}
+
+.blog-prose th,
+.blog-prose td {
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  text-align: left;
+}
+
+.blog-prose th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+/* Emphasis boxes - for sections like "High LUMEN Traits" */
+.blog-prose h3 + ul,
+.blog-prose h4 + ul {
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Animations for list items */
+.blog-prose ul li,
+.blog-prose ol li {
+  animation: fadeInUp 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.blog-prose ul li:nth-child(1),
+.blog-prose ol li:nth-child(1) { animation-delay: 0.1s; }
+.blog-prose ul li:nth-child(2),
+.blog-prose ol li:nth-child(2) { animation-delay: 0.15s; }
+.blog-prose ul li:nth-child(3),
+.blog-prose ol li:nth-child(3) { animation-delay: 0.2s; }
+.blog-prose ul li:nth-child(4),
+.blog-prose ol li:nth-child(4) { animation-delay: 0.25s; }
+.blog-prose ul li:nth-child(5),
+.blog-prose ol li:nth-child(5) { animation-delay: 0.3s; }
+.blog-prose ul li:nth-child(6),
+.blog-prose ol li:nth-child(6) { animation-delay: 0.35s; }
+.blog-prose ul li:nth-child(7),
+.blog-prose ol li:nth-child(7) { animation-delay: 0.4s; }
+.blog-prose ul li:nth-child(8),
+.blog-prose ol li:nth-child(8) { animation-delay: 0.45s; }
+.blog-prose ul li:nth-child(9),
+.blog-prose ol li:nth-child(9) { animation-delay: 0.5s; }
+.blog-prose ul li:nth-child(10),
+.blog-prose ol li:nth-child(10) { animation-delay: 0.55s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Section headers animation */
+.blog-prose h2,
+.blog-prose h3 {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Hover effects for list items */
+.blog-prose ul li:hover,
+.blog-prose ol li:hover {
+  transform: translateX(4px);
+  transition: transform 0.2s ease;
+}
+
+/* Special styling for the dimension-specific content */
+.blog-prose h3 + ul li::before {
+  background: linear-gradient(135deg, rgb(147, 51, 234), rgb(192, 132, 252));
+}
