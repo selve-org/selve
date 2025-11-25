@@ -201,7 +201,7 @@ export default function WizardPage() {
       
       {/* Main Assessment Interface - Only show when not initializing */}
       {!isInitializing && (
-        <div className="flex min-h-screen bg-[#1c1c1c] dark:bg-[#1c1c1c] bg-white text-foreground">
+        <div className="flex min-h-screen bg-white dark:bg-[#1c1c1c] text-foreground">
       {/* Left Side: Artistic Canvas (hidden on mobile/tablet) */}
       <div className="hidden lg:block lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:h-screen">
         <ArtisticCanvas />
