@@ -40,11 +40,10 @@ class MailgunService:
         # Frontend URL (for invite links)
         self.frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
-        # Logo URLs based on environment
-        self.logo_url = (
-            "https://selve.me/logo/selve-logo-text.png" if self.is_production
-            else "https://res.cloudinary.com/dbjsmvbkl/image/upload/v1763536849/selve-logo-text_fb3k38.png"
-        )
+        # Logo URLs - Always use Cloudinary for email compatibility (works in all email clients)
+        # These are publicly accessible and don't depend on localhost or production server
+        self.logo_icon_url = "https://res.cloudinary.com/dbjsmvbkl/image/upload/v1763536804/selve-logo_mjr8it.png"
+        self.logo_text_url = "https://res.cloudinary.com/dbjsmvbkl/image/upload/v1732536849/selve-logo-text_fb3k38.png"
         
     def _get_endpoint(self) -> str:
         """Get the full API endpoint for sending messages"""
@@ -111,10 +110,18 @@ class MailgunService:
                     <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 20px; text-align: center;">
-                            <div style="display: inline-flex; align-items: center; gap: 12px;">
-                                <img src="{base_url}/logo/selve-logo.png" alt="SELVE" width="40" height="40" style="vertical-align: middle; display: inline-block;" />
-                                <img src="{base_url}/logo/selve-logo-text.svg" alt="SELVE" width="120" height="30" style="vertical-align: middle; display: inline-block;" />
-                            </div>
+                            <a href="{base_url}" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
                         </td>
                     </tr>
                     
@@ -264,10 +271,18 @@ SELVE · Personality Assessment Platform
                     <!-- Header -->
                     <tr>
                         <td style="padding: 40px 40px 20px; text-align: center;">
-                            <div style="display: inline-flex; align-items: center; gap: 12px;">
-                                <img src="{results_url.rsplit('/', 1)[0] if results_url.startswith('http') else 'https://selve.me'}/logo/selve-logo.png" alt="SELVE" width="40" height="40" style="vertical-align: middle; display: inline-block;" />
-                                <img src="{results_url.rsplit('/', 1)[0] if results_url.startswith('http') else 'https://selve.me'}/logo/selve-logo-text.svg" alt="SELVE" width="120" height="30" style="vertical-align: middle; display: inline-block;" />
-                            </div>
+                            <a href="https://selve.me" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
                         </td>
                     </tr>
                     
