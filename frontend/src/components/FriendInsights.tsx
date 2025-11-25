@@ -210,6 +210,23 @@ export function FriendInsights({ sessionId, selfScores }: FriendInsightsProps) {
         </div>
       </div>
 
+      {/* Invite More Friends CTA */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800/50 rounded-2xl text-center">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Want more perspectives?
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          The more friends who respond, the clearer your blind spots become.
+        </p>
+        <a
+          href="/profile?tab=invites"
+          className="inline-flex items-center px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Invite More Friends
+        </a>
+      </div>
+
       {/* AI-Generated Narrative Summary */}
       {narrativeSummary && (
         <motion.div

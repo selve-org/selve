@@ -301,7 +301,7 @@ export default function FriendAssessmentPage() {
    */
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="dark min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center space-y-4">
           <SoundWaveLoader />
           <p className="text-white/70 animate-pulse">Loading questions...</p>
@@ -315,7 +315,7 @@ export default function FriendAssessmentPage() {
    */
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="dark min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
         <div className="max-w-md bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-white mb-2">Unable to Load Assessment</h1>
@@ -336,7 +336,7 @@ export default function FriendAssessmentPage() {
    */
   if (isSubmitting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="dark min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center space-y-4">
           <SoundWaveLoader />
           <p className="text-white/70 animate-pulse">Submitting your responses...</p>
@@ -349,7 +349,7 @@ export default function FriendAssessmentPage() {
    * Main Wizard
    */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    <div className="dark min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
       {/* Split Screen Layout */}
       <div className="flex h-screen">
         {/* Left Side - Artistic Canvas (hidden on mobile/tablet) */}
