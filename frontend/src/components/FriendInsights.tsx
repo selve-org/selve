@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, AlertTriangle, Sparkles, TrendingUp } from "lucide-react";
+import { Users, AlertTriangle, Sparkles, TrendingUp, MessageCircle, RefreshCw } from "lucide-react";
 
 interface FriendResponse {
   id: string;
@@ -30,30 +30,33 @@ interface FriendInsightsProps {
 }
 
 const DIMENSION_NAMES: Record<string, string> = {
-  O: "Openness",
-  C: "Conscientiousness", 
-  E: "Extraversion",
-  A: "Agreeableness",
-  N: "Neuroticism",
-  H: "Honesty-Humility",
-  X: "Emotionality",
-  K: "Kael"
+  LUMEN: "Social Presence",
+  AETHER: "Emotional Steadiness",
+  ORPHEUS: "Warmth & Connection",
+  VARA: "Authenticity",
+  CHRONOS: "Flexibility",
+  KAEL: "Initiative",
+  ORIN: "Reliability",
+  LYRA: "Openness",
 };
 
 const DIMENSION_EMOJIS: Record<string, string> = {
-  O: "🔮",
-  C: "📋",
-  E: "🎉",
-  A: "🤝",
-  N: "🌊",
-  H: "✨",
-  X: "❤️",
-  K: "⚡"
+  LUMEN: "✨",
+  AETHER: "🌊",
+  ORPHEUS: "💜",
+  VARA: "🎯",
+  CHRONOS: "⏳",
+  KAEL: "⚡",
+  ORIN: "📋",
+  LYRA: "🎨",
 };
 
 export function FriendInsights({ sessionId, selfScores }: FriendInsightsProps) {
   const [friendResponses, setFriendResponses] = useState<FriendResponse[]>([]);
   const [insights, setInsights] = useState<FriendInsight[]>([]);
+  const [narrativeSummary, setNarrativeSummary] = useState<string | null>(null);
+  const [narrativeError, setNarrativeError] = useState<string | null>(null);
+  const [narrativeFriendCount, setNarrativeFriendCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,6 +73,15 @@ export function FriendInsights({ sessionId, selfScores }: FriendInsightsProps) {
 
         const data = await response.json();
         
+        // Set narrative data
+        if (data.narrativeSummary) {
+          setNarrativeSummary(data.narrativeSummary);
+          setNarrativeFriendCount(data.narrativeFriendCount || 0);
+        }
+        if (data.narrativeError) {
+          setNarrativeError(data.narrativeError);
+        }
+        
         if (data.friendResponses && data.friendResponses.length > 0) {
           setFriendResponses(data.friendResponses);
           
@@ -79,14 +91,14 @@ export function FriendInsights({ sessionId, selfScores }: FriendInsightsProps) {
           
           for (const [dim, selfScore] of Object.entries(selfScores)) {
             const friendScore = friendScores[dim] || selfScore;
-            const difference = Math.abs(friendScore - selfScore);
+            const difference = Math.abs(friendScore - (selfScore as number));
             const isBlindSpot = difference >= 15;
             
             insightsData.push({
               dimension: dim,
               dimensionName: DIMENSION_NAMES[dim] || dim,
               emoji: DIMENSION_EMOJIS[dim] || "🔍",
-              selfScore: Math.round(selfScore),
+              selfScore: Math.round(selfScore as number),
               friendScore: Math.round(friendScore),
               difference: Math.round(difference),
               isBlindSpot,
@@ -197,6 +209,54 @@ export function FriendInsights({ sessionId, selfScores }: FriendInsightsProps) {
           </div>
         </div>
       </div>
+
+      {/* AI-Generated Narrative Summary */}
+      {narrativeSummary && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85 }}
+          className="mb-8 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 
+                     dark:from-indigo-900/20 dark:to-purple-900/20 
+                     border border-indigo-200 dark:border-indigo-800/50 rounded-2xl"
+        >
+          <div className="flex items-start gap-3 mb-4">
+            <MessageCircle className="w-6 h-6 text-indigo-500 mt-1 flex-shrink-0" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              What Your Friends See
+            </h3>
+          </div>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            {narrativeSummary.split('\n\n').map((paragraph, i) => (
+              <p key={i} className="text-gray-700 dark:text-gray-300 mb-3 last:mb-0 leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+          <div className="mt-4 text-xs text-gray-500 dark:text-gray-500">
+            Based on {narrativeFriendCount || friendResponses.length} friend response{(narrativeFriendCount || friendResponses.length) !== 1 ? 's' : ''}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Narrative Error/Loading Fallback */}
+      {!narrativeSummary && narrativeError && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85 }}
+          className="mb-8 p-6 bg-gradient-to-br from-gray-50 to-slate-50 
+                     dark:from-gray-900/20 dark:to-slate-900/20 
+                     border border-gray-200 dark:border-gray-700/50 rounded-2xl"
+        >
+          <div className="flex items-center gap-3">
+            <RefreshCw className="w-5 h-5 text-gray-400 animate-spin" />
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              {narrativeError}
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Blind Spots Section */}
       {blindSpots.length > 0 && (
