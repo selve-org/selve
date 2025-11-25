@@ -486,15 +486,16 @@ export default function ResultsPage() {
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-200/50 to-transparent dark:from-indigo-600/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
             
             <div className="relative">
-              {/* Icon */}
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-6 shadow-lg shadow-purple-500/25">
-                <MessageCircle className="w-8 h-8 text-white" />
-              </div>
-              
-              {/* Coming Soon Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium mb-4 ml-2">
-                <Sparkles className="w-3 h-3" />
-                Coming Soon
+              {/* Icon and Coming Soon Badge */}
+              <div className="flex flex-col items-center justify-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25 mb-3">
+                  <MessageCircle className="w-8 h-8 text-white" />
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+                  <Sparkles className="w-3 h-3" />
+                  Coming Soon
+                </div>
               </div>
               
               {/* Title */}
