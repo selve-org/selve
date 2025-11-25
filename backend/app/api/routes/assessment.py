@@ -1769,9 +1769,14 @@ async def get_friend_insights(
     Returns:
         - friendResponses: List of friend responses with quality scores
         - aggregatedScores: Average scores from friends per dimension
+        - narrativeSummary: AI-generated narrative (or null if unavailable)
+        - narrativeGeneratedAt: When the narrative was generated
+        - narrativeFriendCount: Number of friends included in narrative
+        - narrativeError: Error message if generation failed
         - lastRegeneration: When profile was last updated with friend data
     """
     from app.db import prisma
+    from app.services.friend_insights_service import FriendInsightsService, get_fallback_message
     
     try:
         # Get the session to find the user
@@ -1794,6 +1799,10 @@ async def get_friend_insights(
             return {
                 "friendResponses": [],
                 "aggregatedScores": {},
+                "narrativeSummary": None,
+                "narrativeGeneratedAt": None,
+                "narrativeFriendCount": 0,
+                "narrativeError": None,
                 "lastRegeneration": None
             }
         
@@ -1805,6 +1814,7 @@ async def get_friend_insights(
         
         # Filter to completed invites only (relation name is friendResponse, not response)
         friend_responses = []
+        friend_response_ids = []
         for invite in invites:
             if invite.friendResponse:
                 friend_responses.append({
@@ -1815,6 +1825,7 @@ async def get_friend_insights(
                     "totalTime": invite.friendResponse.totalTime,
                     "completedAt": invite.friendResponse.completedAt.isoformat()
                 })
+                friend_response_ids.append(invite.friendResponse.id)
         
         # Calculate aggregated scores if we have friend responses
         aggregated_scores = {}
@@ -1905,9 +1916,56 @@ async def get_friend_insights(
             order={"createdAt": "desc"}
         )
         
+        # Generate or retrieve narrative if we have friend responses
+        narrative_summary = None
+        narrative_generated_at = None
+        narrative_friend_count = 0
+        narrative_error = None
+        
+        if friend_responses and aggregated_scores:
+            # Get self scores from the result
+            self_scores = {}
+            if last_result:
+                self_scores = {
+                    "LUMEN": last_result.scoreLumen,
+                    "AETHER": last_result.scoreAether,
+                    "ORPHEUS": last_result.scoreOrpheus,
+                    "ORIN": last_result.scoreOrin,
+                    "LYRA": last_result.scoreLyra,
+                    "VARA": last_result.scoreVara,
+                    "CHRONOS": last_result.scoreChronos,
+                    "KAEL": last_result.scoreKael,
+                }
+            
+            if self_scores:
+                try:
+                    # Use the friend insights service
+                    insights_service = FriendInsightsService(prisma)
+                    result = await insights_service.get_or_generate_narrative(
+                        session_id=session_id,
+                        self_scores=self_scores,
+                        friend_scores=aggregated_scores,
+                        friend_response_ids=friend_response_ids
+                    )
+                    
+                    narrative_summary = result.get("narrative")
+                    narrative_generated_at = result.get("generatedAt")
+                    narrative_friend_count = result.get("friendCount", len(friend_responses))
+                    
+                    if result.get("hasError"):
+                        narrative_error = get_fallback_message("error")
+                        
+                except Exception as e:
+                    print(f"⚠️ Failed to generate friend insights narrative: {e}")
+                    narrative_error = get_fallback_message("error")
+        
         return {
             "friendResponses": friend_responses,
             "aggregatedScores": aggregated_scores,
+            "narrativeSummary": narrative_summary,
+            "narrativeGeneratedAt": narrative_generated_at,
+            "narrativeFriendCount": narrative_friend_count,
+            "narrativeError": narrative_error,
             "lastRegeneration": last_result.createdAt.isoformat() if last_result else None
         }
         

@@ -181,9 +181,54 @@ model AssessmentSession {
   completedAt          DateTime?
   archivedAt           DateTime?           // When this assessment was archived (user started a new one)
   result               AssessmentResult?   // One-to-one relation to results
+  friendInsightGenerations FriendInsightGeneration[] // History of AI-generated friend insights
   
   @@index([clerkUserId, isCurrent])       // Fast lookup for user's current assessment
   @@index([clerkUserId, completedAt])     // Fast lookup for user's assessment history
+}
+
+// ============================================================================
+// Friend Insight AI-Generated Narratives
+// ============================================================================
+
+model FriendInsightGeneration {
+  id                   String              @id @default(cuid())
+  sessionId            String
+  session              AssessmentSession   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // Inputs (frozen at generation time for reproducibility)
+  selfScores           Json                // { LUMEN: 72, AETHER: 45, ... }
+  friendScores         Json                // Aggregated: { LUMEN: 65, AETHER: 58, ... }
+  blindSpots           Json                // [{ dimension: "AETHER", selfScore: 45, friendScore: 58, diff: 13 }]
+  friendCount          Int                 // Number of friends included
+  friendResponseIds    String[]            // Array of FriendResponse IDs used
+  
+  // Change detection (avoids re-comparing arrays each request)
+  inputHash            String              // SHA256 of sorted(friendResponseIds) + selfScores + friendScores
+  
+  // Timestamps for when scores were captured (for analytics when user retakes)
+  selfScoresFrozenAt   DateTime
+  friendScoresFrozenAt DateTime
+  
+  // Output
+  narrative            String?             // The generated text (nullable if generation failed)
+  
+  // Generation metadata
+  generationModel      String?             // e.g., "gpt-4o-mini"
+  promptTokens         Int?                // Input tokens used
+  completionTokens     Int?                // Output tokens used
+  generationCost       Float?              // OpenAI cost in USD
+  generationError      String?             // Error message if failed
+  
+  // Tracking
+  regeneratedBecause   String?             // "new-friend-response" | "self-retake" | "manual" | "initial"
+  tone                 String              @default("friendly") // Future: "gentle", "mentor", etc.
+  
+  createdAt            DateTime            @default(now())
+  isCurrent            Boolean             @default(true) // Whether this is the active generation
+  
+  @@index([sessionId])
+  @@index([inputHash])
 }
 
 model AssessmentResult {
