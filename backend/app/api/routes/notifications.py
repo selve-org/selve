@@ -26,8 +26,11 @@ class NotificationResponse(BaseModel):
     message: str
     link: Optional[str]
     read: bool
-    read_at: Optional[datetime]
-    created_at: datetime
+    readAt: Optional[datetime] = None
+    createdAt: datetime
+    
+    class Config:
+        populate_by_name = True
 
 
 @router.get("", response_model=List[NotificationResponse])
@@ -79,8 +82,8 @@ async def get_notifications(
                 message=n.message,
                 link=n.link,
                 read=n.read,
-                read_at=n.readAt,
-                created_at=n.createdAt
+                readAt=n.readAt,
+                createdAt=n.createdAt
             )
             for n in notifications
         ]

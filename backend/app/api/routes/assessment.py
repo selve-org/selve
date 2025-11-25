@@ -1821,13 +1821,18 @@ async def get_friend_insights(
         if friend_responses:
             # Get the friend item pool to map questions to dimensions
             import json
+            # Path to data folder is at project root, not in backend
             item_pool_path = os.path.join(
                 os.path.dirname(__file__), 
-                "../../../data/selve_friend_item_pool.json"
+                "../../../../data/selve_friend_item_pool.json"
             )
             
-            with open(item_pool_path, "r") as f:
-                friend_items_by_dim = json.load(f)
+            try:
+                with open(item_pool_path, "r") as f:
+                    friend_items_by_dim = json.load(f)
+            except FileNotFoundError:
+                print(f"⚠️ Friend item pool not found at: {item_pool_path}")
+                friend_items_by_dim = {}
             
             # Flatten the structure and map item_id to dimensions
             item_to_dim = {}
@@ -1848,20 +1853,46 @@ async def get_friend_insights(
                 else:
                     quality_weight = 0.1
                 
-                responses_dict = response["responses"]
-                for item_code, value in responses_dict.items():
-                    if isinstance(value, (int, float)) and item_code in item_to_dim:
-                        dim = item_to_dim[item_code]
+                # responses is a list of {item_id, value, ...} objects
+                responses_list = response["responses"]
+                if isinstance(responses_list, list):
+                    for item in responses_list:
+                        item_id = item.get("item_id", "")
+                        value = item.get("value")
                         
-                        if dim not in dimension_scores:
-                            dimension_scores[dim] = 0
-                            dimension_counts[dim] = 0
-                        
-                        # Convert 1-5 scale to 0-100 (like self-assessment)
-                        normalized_score = ((value - 1) / 4) * 100
-                        
-                        dimension_scores[dim] += normalized_score * quality_weight
-                        dimension_counts[dim] += quality_weight
+                        if isinstance(value, (int, float)):
+                            # Extract dimension from item_id prefix (e.g., "lumen_1" -> "LUMEN")
+                            dim = item_id.split("_")[0].upper() if "_" in item_id else None
+                            
+                            # Also check the item pool mapping for original format items
+                            if not dim and item_id in item_to_dim:
+                                dim = item_to_dim[item_id]
+                            
+                            if dim:
+                                if dim not in dimension_scores:
+                                    dimension_scores[dim] = 0
+                                    dimension_counts[dim] = 0
+                                
+                                # Convert 1-5 scale to 0-100 (like self-assessment)
+                                normalized_score = ((value - 1) / 4) * 100
+                                
+                                dimension_scores[dim] += normalized_score * quality_weight
+                                dimension_counts[dim] += quality_weight
+                else:
+                    # Legacy format: dict of {item_code: value}
+                    for item_code, value in responses_list.items():
+                        if isinstance(value, (int, float)) and item_code in item_to_dim:
+                            dim = item_to_dim[item_code]
+                            
+                            if dim not in dimension_scores:
+                                dimension_scores[dim] = 0
+                                dimension_counts[dim] = 0
+                            
+                            # Convert 1-5 scale to 0-100 (like self-assessment)
+                            normalized_score = ((value - 1) / 4) * 100
+                            
+                            dimension_scores[dim] += normalized_score * quality_weight
+                            dimension_counts[dim] += quality_weight
             
             # Calculate averages
             for dim in dimension_scores:
