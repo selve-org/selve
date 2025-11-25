@@ -5,7 +5,7 @@ import { PostHogProvider } from "../../../providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "Assessment Wizard – Selve",
+  title: "Assessment Wizard – SELVE",
   description: "Complete your psychological profile assessment",
 };
 

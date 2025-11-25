@@ -357,6 +357,167 @@ View your results: {results_url}
         response.raise_for_status()
         return response.json()
 
+    def send_invites_exhausted_email(
+        self,
+        to_email: str,
+        to_name: str,
+        max_invites: int = 3
+    ) -> Dict[str, Any]:
+        """
+        Notify free-tier user when they've exhausted their invite quota
+        
+        Args:
+            to_email: User's email address
+            to_name: User's name
+            max_invites: Maximum invites allowed on free tier (for messaging)
+            
+        Returns:
+            Mailgun API response dict
+        """
+        # Use environment-aware URL
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        upgrade_url = f"{base_url}/profile?tab=plan"
+        
+        subject = "You've used all your friend invites on SELVE"
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center;">
+                            <a href="{base_url}" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px 40px;">
+                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px; text-align: center;">You've Used All Your Invites</h1>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                Hey {to_name}! 👋
+                            </p>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                You've sent all <strong>{max_invites} friend invites</strong> included in your free plan. That's awesome — the more friends who complete the assessment, the richer your personality insights become!
+                            </p>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
+                                Want to invite more friends and unlock even deeper insights? Upgrade to Pro for unlimited invites and premium features.
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{upgrade_url}" 
+                                           style="display: inline-block; padding: 14px 32px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
+                                            Upgrade to Pro →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
+                            
+                            <!-- Benefits list -->
+                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0 0 15px; font-weight: 600;">
+                                Pro includes:
+                            </p>
+                            <ul style="color: #666; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                                <li>Unlimited friend invites</li>
+                                <li>Advanced personality insights</li>
+                                <li>Detailed blind spot analysis</li>
+                                <li>Priority support</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+                                Keep exploring who you are 💜<br>
+                                — The SELVE Team
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Unsubscribe footer -->
+                <p style="color: #999; font-size: 11px; margin: 20px 0 0; text-align: center;">
+                    SELVE · Personality Assessment Platform<br>
+                    <a href="{base_url}" style="color: #999;">{base_url.replace('http://', '').replace('https://', '')}</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        """
+        
+        text_body = f"""
+Hey {to_name}! 👋
+
+You've Used All Your Invites
+
+You've sent all {max_invites} friend invites included in your free plan. That's awesome — the more friends who complete the assessment, the richer your personality insights become!
+
+Want to invite more friends and unlock even deeper insights? Upgrade to Pro for unlimited invites and premium features.
+
+Upgrade to Pro: {upgrade_url}
+
+Pro includes:
+• Unlimited friend invites
+• Advanced personality insights
+• Detailed blind spot analysis
+• Priority support
+
+Keep exploring who you are 💜
+— The SELVE Team
+
+SELVE · Personality Assessment Platform
+{base_url}
+        """
+        
+        data = {
+            "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
+            "to": f"{to_name} <{to_email}>",
+            "subject": subject,
+            "text": text_body,
+            "html": html_body,
+            "o:tracking": "yes",
+            "o:tag": ["invites-exhausted", "upsell"],
+        }
+        
+        response = requests.post(
+            self._get_endpoint(),
+            auth=("api", self.api_key),
+            data=data
+        )
+        
+        response.raise_for_status()
+        return response.json()
+
 
 # Convenience function for use in API endpoints
 async def send_friend_invite_email(
@@ -396,4 +557,36 @@ async def send_friend_invite_email(
     except Exception as e:
         # Log error but don't fail the invite creation
         print(f"Failed to send email: {str(e)}")
+        return False
+
+
+async def send_invites_exhausted_notification(
+    user_email: str,
+    user_name: str,
+    max_invites: int = 3
+) -> bool:
+    """
+    Send notification when user exhausts their invite quota on free tier
+    
+    Args:
+        user_email: User's email address
+        user_name: User's name
+        max_invites: Maximum invites allowed (for messaging)
+        
+    Returns:
+        True if sent successfully, False otherwise
+    """
+    try:
+        service = MailgunService()
+        result = service.send_invites_exhausted_email(
+            to_email=user_email,
+            to_name=user_name,
+            max_invites=max_invites
+        )
+        
+        print(f"✅ Invites exhausted notification sent. Message ID: {result.get('id')}")
+        return True
+        
+    except Exception as e:
+        print(f"⚠️ Failed to send invites exhausted notification: {str(e)}")
         return False

@@ -17,7 +17,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from app.db import prisma
 from app.services.tier_service import TierService, enforce_invite_limits
-from app.services.mailgun_service import MailgunService
+from app.services.mailgun_service import MailgunService, send_invites_exhausted_notification
 from app.services.quality_scoring import QualityScoringService
 from app.services.regeneration_service import RegenerationService
 from app.services.notification_service import NotificationService
@@ -318,6 +318,22 @@ async def create_invite(
     
     # Get remaining invites
     remaining_invites = limits_check.get("remaining_invites", 0)
+    
+    # Check if user just exhausted their invites (free tier only)
+    # Send upsell notification email
+    if remaining_invites == 0:
+        tier = await tier_service.get_user_tier(user.id)
+        if tier == "free":
+            try:
+                from app.services.tier_service import TIERS
+                max_invites = TIERS["free"]["max_invites"]
+                await send_invites_exhausted_notification(
+                    user_email=user.email,
+                    user_name=user.name or user.email.split('@')[0],
+                    max_invites=max_invites
+                )
+            except Exception as e:
+                print(f"⚠️ Failed to send invites exhausted email: {str(e)}")
     
     # Return response
     return CreateInviteResponse(

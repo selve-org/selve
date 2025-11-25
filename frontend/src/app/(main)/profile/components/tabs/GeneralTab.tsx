@@ -183,7 +183,7 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
       <SettingsCard title="Appearance" icon={Palette}>
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Choose how Selve looks to you. Select a single theme, or sync with your system
+            Choose how SELVE looks to you. Select a single theme, or sync with your system
             and automatically switch between day and night themes.
           </p>
 

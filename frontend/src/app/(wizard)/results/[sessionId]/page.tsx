@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Share2, Link2, Check, X, Lock } from "lucide-react";
+import { Share2, Link2, Check, X, Lock, MessageCircle, Sparkles } from "lucide-react";
 import { 
   FormattedText,
   LoadingSpinner,
@@ -19,6 +19,7 @@ import {
   type AssessmentResults 
 } from "./components";
 import { FriendInsights } from "@/components/FriendInsights";
+import { Header } from "@/components/header/Header";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -190,7 +191,10 @@ export default function ResultsPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#1c1c1c]">
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      {/* Header with nav links and profile */}
+      <Header />
+      
+      <div className="max-w-4xl mx-auto px-4 py-16 pt-24">
         {/* Share Button - Only for owners */}
         {isOwner && (
           <div className="flex justify-end mb-6 relative">
@@ -468,6 +472,58 @@ export default function ResultsPage() {
             Return Home
           </button>
         </div>
+
+        {/* Coming Soon: AI Chat Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+          className="mt-20 mb-8"
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-800/50 p-8 text-center">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200/50 to-transparent dark:from-purple-600/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-200/50 to-transparent dark:from-indigo-600/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+            
+            <div className="relative">
+              {/* Icon */}
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 mb-6 shadow-lg shadow-purple-500/25">
+                <MessageCircle className="w-8 h-8 text-white" />
+              </div>
+              
+              {/* Coming Soon Badge */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium mb-4 ml-2">
+                <Sparkles className="w-3 h-3" />
+                Coming Soon
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                Explore Yourself Deeper
+              </h3>
+              
+              {/* Description */}
+              <p className="text-gray-600 dark:text-gray-300 max-w-lg mx-auto leading-relaxed">
+                Chat with your personal AI guide to dive deeper into your personality. 
+                Share your thoughts, explore patterns, and get to know yourself even better 
+                through meaningful conversation.
+              </p>
+              
+              {/* Teaser features */}
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2a] rounded-full text-sm text-gray-600 dark:text-gray-300 shadow-sm">
+                  💬 Personal insights
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2a] rounded-full text-sm text-gray-600 dark:text-gray-300 shadow-sm">
+                  🎯 Growth guidance
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2a] rounded-full text-sm text-gray-600 dark:text-gray-300 shadow-sm">
+                  🔮 Pattern exploration
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.section>
       </div>
     </div>
   );
