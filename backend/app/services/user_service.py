@@ -8,11 +8,17 @@ This service handles:
 - Clerk webhook event processing
 """
 
+import logging
 from datetime import datetime
 from typing import Optional, Dict, Any
 from prisma import Prisma
 from prisma.errors import PrismaError
 from fastapi import HTTPException
+
+from app.services.mailgun_service import MailgunService
+
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -276,6 +282,27 @@ class UserService:
                     }
                 }
             )
+
+            # Send welcome email to new user (fire and forget)
+            try:
+                mailgun = MailgunService()
+                mailgun.send_welcome_email(
+                    to_email=email,
+                    to_name=name or "there"
+                )
+                logger.info(f"Welcome email sent to {email}")
+            except Exception as mail_error:
+                # Don't fail user creation if email fails
+                logger.warning(f"Failed to send welcome email to {email}: {mail_error}")
+
+            # Link or auto-subscribe to newsletter (fire and forget)
+            try:
+                from app.api.routes.newsletter import link_user_to_newsletter
+                await link_user_to_newsletter(clerk_id, email)
+                logger.info(f"Newsletter linked/subscribed for {email}")
+            except Exception as newsletter_error:
+                # Don't fail user creation if newsletter linking fails
+                logger.warning(f"Failed to link newsletter for {email}: {newsletter_error}")
 
             return {
                 "success": True,

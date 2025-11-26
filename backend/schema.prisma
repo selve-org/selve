@@ -335,3 +335,35 @@ model Testimonial {
   @@index([isApproved, isPlaceholder])
   @@index([createdAt])
 }
+
+// ============================================================================
+// Newsletter Subscribers
+// ============================================================================
+
+model NewsletterSubscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  
+  // Link to registered user (if they have an account)
+  clerkUserId      String?
+  
+  // Subscription status
+  status           String    @default("active")  // "active" | "unsubscribed" | "bounced"
+  
+  // Timestamps
+  subscribedAt     DateTime  @default(now())
+  unsubscribedAt   DateTime?
+  
+  // Email preferences (for future use)
+  preferences      Json?     // { newsletters: true, productUpdates: true, etc. }
+  
+  // Tracking
+  source           String?   // "website" | "signup" | "import" etc.
+  ipAddress        String?
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  @@index([status])
+  @@index([clerkUserId])
+}

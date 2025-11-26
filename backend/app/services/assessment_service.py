@@ -3,6 +3,7 @@ Assessment Service Layer - Prisma Version
 Handles all database operations for the assessment system using Prisma
 """
 
+import logging
 from typing import Optional, Dict, List, Any
 from datetime import datetime, timezone
 from prisma import fields
@@ -12,6 +13,9 @@ from app.utils.db_retry import with_db_retry
 from app.adaptive_testing import AdaptiveTester
 from app.scoring import SelveScorer
 from app.response_validator import ResponseValidator
+
+
+logger = logging.getLogger(__name__)
 
 
 class AssessmentService:
@@ -226,6 +230,33 @@ class AssessmentService:
 
         # Update session status to completed
         await self.update_session(session_id, status="completed")
+
+        # Send assessment completion email (fire and forget)
+        try:
+            if session.clerkUserId:
+                # Get user info for email
+                user = await self.db.user.find_unique(
+                    where={"clerkId": session.clerkUserId}
+                )
+                
+                if user and user.email:
+                    from app.services.mailgun_service import MailgunService
+                    import os
+                    
+                    base_url = os.getenv("FRONTEND_URL", "https://selve.me")
+                    results_url = f"{base_url}/results/{session_id}"
+                    
+                    mailgun = MailgunService()
+                    mailgun.send_assessment_complete_email(
+                        to_email=user.email,
+                        to_name=user.name or "there",
+                        archetype=archetype or "Your Unique Profile",
+                        results_url=results_url
+                    )
+                    logger.info(f"Assessment completion email sent to {user.email}")
+        except Exception as email_error:
+            # Don't fail result saving if email fails
+            logger.warning(f"Failed to send assessment completion email: {email_error}")
 
         return result
     

@@ -357,6 +357,473 @@ View your results: {results_url}
         response.raise_for_status()
         return response.json()
 
+    def send_newsletter_welcome_email(
+        self,
+        to_email: str,
+        is_resubscribe: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Send welcome email to new newsletter subscriber
+        
+        Args:
+            to_email: Subscriber's email address
+            is_resubscribe: Whether this is a re-subscription
+            
+        Returns:
+            Mailgun API response dict
+        """
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        unsubscribe_url = f"{base_url}/newsletter/unsubscribe?email={to_email}"
+        
+        if is_resubscribe:
+            subject = "Welcome back to the SELVE newsletter! 👋"
+            greeting = "Welcome back!"
+            intro = "We're glad to have you back. You'll continue receiving our insights on self-discovery, mental models, and personal growth."
+        else:
+            subject = "Welcome to the SELVE newsletter! ✨"
+            greeting = "You're in!"
+            intro = "Thanks for subscribing to our newsletter. Twice a month, we'll send you actionable insights on self-discovery, mental models, and personal growth."
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center;">
+                            <a href="{base_url}" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px 40px;">
+                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px; text-align: center;">{greeting}</h1>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                {intro}
+                            </p>
+                            
+                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0 0 15px; font-weight: 600;">
+                                What to expect:
+                            </p>
+                            <ul style="color: #666; font-size: 14px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
+                                <li>Mental models for better decision-making</li>
+                                <li>Self-awareness strategies and exercises</li>
+                                <li>Relationship insights based on personality</li>
+                                <li>Early access to new SELVE features</li>
+                            </ul>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{base_url}/assessment" 
+                                           style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
+                                            Take the Assessment →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+                                Welcome to the journey 💜<br>
+                                — The SELVE Team
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Unsubscribe footer -->
+                <p style="color: #999; font-size: 11px; margin: 20px 0 0; text-align: center;">
+                    SELVE · Personality Assessment Platform<br>
+                    <a href="{unsubscribe_url}" style="color: #999;">Unsubscribe</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        """
+        
+        text_body = f"""
+{greeting}
+
+{intro}
+
+What to expect:
+• Mental models for better decision-making
+• Self-awareness strategies and exercises
+• Relationship insights based on personality
+• Early access to new SELVE features
+
+Take the Assessment: {base_url}/assessment
+
+Welcome to the journey 💜
+— The SELVE Team
+
+Unsubscribe: {unsubscribe_url}
+        """
+        
+        data = {
+            "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
+            "to": to_email,
+            "subject": subject,
+            "text": text_body,
+            "html": html_body,
+            "o:tracking": "yes",
+            "o:tag": ["newsletter-welcome", "resubscribe" if is_resubscribe else "new-subscriber"],
+        }
+        
+        response = requests.post(
+            self._get_endpoint(),
+            auth=("api", self.api_key),
+            data=data
+        )
+        
+        response.raise_for_status()
+        return response.json()
+
+    def send_welcome_email(
+        self,
+        to_email: str,
+        to_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send welcome email to newly registered user
+        
+        Args:
+            to_email: User's email address
+            to_name: User's name
+            
+        Returns:
+            Mailgun API response dict
+        """
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        
+        # Use first name if available
+        first_name = to_name.split()[0] if to_name else "there"
+        
+        subject = f"Welcome to SELVE, {first_name}! 🎉"
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center;">
+                            <a href="{base_url}" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px 40px;">
+                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px;">Welcome to SELVE! 🎉</h1>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                Hey {first_name}! 👋
+                            </p>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                Thanks for joining SELVE — the personality platform designed to help you truly understand yourself.
+                            </p>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                Our assessment combines modern psychology with real insights from the people who know you best. Here's what you can do:
+                            </p>
+                            
+                            <ul style="color: #666; font-size: 14px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
+                                <li><strong>Take the assessment</strong> — Discover your unique personality profile across 8 dimensions</li>
+                                <li><strong>Invite friends</strong> — Get outside perspective on how others see you</li>
+                                <li><strong>Uncover blind spots</strong> — See where self-perception meets reality</li>
+                            </ul>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{base_url}/assessment" 
+                                           style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
+                                            Start Your Assessment →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
+                                Takes 11-17 minutes · Results saved forever · Free to start
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+                                We're excited to have you 💜<br>
+                                — The SELVE Team
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer -->
+                <p style="color: #999; font-size: 11px; margin: 20px 0 0; text-align: center;">
+                    SELVE · Personality Assessment Platform<br>
+                    <a href="{base_url}" style="color: #999;">{base_url.replace('http://', '').replace('https://', '')}</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        """
+        
+        text_body = f"""
+Welcome to SELVE! 🎉
+
+Hey {first_name}! 👋
+
+Thanks for joining SELVE — the personality platform designed to help you truly understand yourself.
+
+Our assessment combines modern psychology with real insights from the people who know you best. Here's what you can do:
+
+• Take the assessment — Discover your unique personality profile across 8 dimensions
+• Invite friends — Get outside perspective on how others see you
+• Uncover blind spots — See where self-perception meets reality
+
+Start Your Assessment: {base_url}/assessment
+
+Takes 11-17 minutes · Results saved forever · Free to start
+
+We're excited to have you 💜
+— The SELVE Team
+
+SELVE · Personality Assessment Platform
+{base_url}
+        """
+        
+        data = {
+            "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
+            "to": f"{to_name} <{to_email}>",
+            "subject": subject,
+            "text": text_body,
+            "html": html_body,
+            "o:tracking": "yes",
+            "o:tag": ["welcome", "new-user"],
+        }
+        
+        response = requests.post(
+            self._get_endpoint(),
+            auth=("api", self.api_key),
+            data=data
+        )
+        
+        response.raise_for_status()
+        return response.json()
+
+    def send_assessment_complete_email(
+        self,
+        to_email: str,
+        to_name: str,
+        archetype: str,
+        results_url: str
+    ) -> Dict[str, Any]:
+        """
+        Send email when user completes their assessment
+        
+        Args:
+            to_email: User's email address
+            to_name: User's name
+            archetype: User's primary archetype (e.g., "The Pioneer")
+            results_url: URL to view full results
+            
+        Returns:
+            Mailgun API response dict
+        """
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        
+        first_name = to_name.split()[0] if to_name else "there"
+        
+        subject = f"Your SELVE results are ready! You're {archetype} ✨"
+        
+        html_body = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center;">
+                            <a href="{base_url}" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px 40px;">
+                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px; text-align: center;">Your Results Are Ready! 🎉</h1>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                Congratulations, {first_name}!
+                            </p>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                                You've completed your SELVE assessment. Your primary archetype is:
+                            </p>
+                            
+                            <!-- Archetype highlight -->
+                            <div style="background: linear-gradient(135deg, #9333ea15 0%, #db277715 100%); border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+                                <p style="color: #7c3aed; font-size: 28px; font-weight: 600; margin: 0;">{archetype}</p>
+                            </div>
+                            
+                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 20px 0 30px;">
+                                Your full personality profile reveals insights across all 8 dimensions. Dive in to discover your strengths, growth areas, and unique patterns.
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{results_url}" 
+                                           style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
+                                            View Your Full Results →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
+                            
+                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0;">
+                                <strong>Next step:</strong> Invite friends to assess you and unlock deeper insights about how others perceive you. The more perspectives, the richer your profile becomes!
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+                                Keep exploring who you are 💜<br>
+                                — The SELVE Team
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer -->
+                <p style="color: #999; font-size: 11px; margin: 20px 0 0; text-align: center;">
+                    SELVE · Personality Assessment Platform<br>
+                    <a href="{base_url}" style="color: #999;">{base_url.replace('http://', '').replace('https://', '')}</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+        """
+        
+        text_body = f"""
+Your Results Are Ready! 🎉
+
+Congratulations, {first_name}!
+
+You've completed your SELVE assessment. Your primary archetype is:
+
+✨ {archetype} ✨
+
+Your full personality profile reveals insights across all 8 dimensions. Dive in to discover your strengths, growth areas, and unique patterns.
+
+View Your Full Results: {results_url}
+
+---
+
+Next step: Invite friends to assess you and unlock deeper insights about how others perceive you. The more perspectives, the richer your profile becomes!
+
+Keep exploring who you are 💜
+— The SELVE Team
+
+SELVE · Personality Assessment Platform
+{base_url}
+        """
+        
+        data = {
+            "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
+            "to": f"{to_name} <{to_email}>",
+            "subject": subject,
+            "text": text_body,
+            "html": html_body,
+            "o:tracking": "yes",
+            "o:tag": ["assessment-complete", f"archetype:{archetype}"],
+        }
+        
+        response = requests.post(
+            self._get_endpoint(),
+            auth=("api", self.api_key),
+            data=data
+        )
+        
+        response.raise_for_status()
+        return response.json()
+
     def send_invites_exhausted_email(
         self,
         to_email: str,
