@@ -7,6 +7,7 @@ export const footerLinks = {
   ],
   Resources: [
     { label: "Blog", href: "/blog" },
+    { label: "Share Your Story", href: "/share-your-story" },
     { label: "Support", href: "mailto:hello@selve.me" },
   ],
   Legal: [

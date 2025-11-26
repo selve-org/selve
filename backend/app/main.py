@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db import prisma
-from app.api.routes import questions, assessment, invites, notifications
+from app.api.routes import questions, assessment, invites, notifications, testimonials
 from app.api.routes.users import router as users_router, webhooks_router
 
 
@@ -120,6 +120,7 @@ app.include_router(questions.router, prefix="/api", tags=["questions"])
 app.include_router(assessment.router, prefix="/api", tags=["assessment"])
 app.include_router(invites.router, prefix="/api", tags=["invites"])
 app.include_router(notifications.router, prefix="/api", tags=["notifications"])
+app.include_router(testimonials.router, prefix="/api", tags=["testimonials"])
 app.include_router(users_router, prefix="/api", tags=["users"])
 app.include_router(webhooks_router, prefix="/api", tags=["webhooks"])
 

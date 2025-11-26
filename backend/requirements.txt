@@ -21,6 +21,9 @@ cryptography==43.0.3
 python-jose[cryptography]==3.3.0
 svix==1.36.0
 
+# NLP / Sentiment Analysis
+textblob==0.18.0.post0
+
 # Future: AI and Psychology Libraries (to be added in later phases)
 # numpy==2.0.2
 # scikit-learn==1.5.2

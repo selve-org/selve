@@ -33,6 +33,7 @@
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
     "require-in-the-middle": "^7.5.2",
+    "sentiment": "^5.0.2",
     "sonner": "^2.0.7",
     "svix": "^1.81.0",
     "zustand": "^5.0.8"
@@ -44,6 +45,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sentiment": "^5.0.4",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "localtunnel": "^2.0.2",

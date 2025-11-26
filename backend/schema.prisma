@@ -298,3 +298,40 @@ model AssessmentTemplate {
   
   @@index([isActive])
 }
+
+// ============================================================================
+// User Testimonials - "Share Your Story" Feature
+// ============================================================================
+
+model Testimonial {
+  id               String    @id @default(cuid())
+  
+  // User Info
+  firstName        String                    // Required - display name
+  lastName         String?                   // Optional - only show initial
+  role             String?                   // e.g., "Product Manager"
+  company          String?                   // e.g., "Google"
+  email            String?                   // For follow-up (not displayed)
+  
+  // Content
+  message          String                    // The testimonial text (required)
+  rating           Int?                      // 1-5 stars (optional)
+  
+  // Sentiment Analysis (using npm 'sentiment' package)
+  sentimentScore   Float?                    // -5 to +5 score
+  sentimentLabel   String?                   // "positive" | "neutral" | "negative"
+  
+  // Moderation & Display
+  isPlaceholder    Boolean   @default(false) // Seed/dummy data flag
+  isApproved       Boolean   @default(false) // Must be approved to show on homepage
+  isFeatured       Boolean   @default(false) // Highlighted testimonials
+  
+  // User linking (optional - for authenticated users)
+  userId           String?                   // Clerk user ID if submitted by authenticated user
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  @@index([isApproved, isPlaceholder])
+  @@index([createdAt])
+}
