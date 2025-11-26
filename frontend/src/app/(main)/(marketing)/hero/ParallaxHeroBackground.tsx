@@ -14,7 +14,7 @@ import {
 const allObjects = [
   { emoji: "🎭", layer: 1, top: "10%", left: "15%", size: "text-4xl" },
   { emoji: "🚲", layer: 2, top: "20%", left: "80%", size: "text-5xl" },
-  { emoji: "☕️", layer: 1, top: "75%", left: "10%", size: "text-3xl" },
+  { emoji: "(☞ ͡° ͜ʖ ͡°)☞", layer: 1, top: "75%", left: "10%", size: "text-3xl" },
   { emoji: "¯\\_(ツ)_/¯", layer: 3, top: "35%", left: "25%", size: "text-5xl" },
   { emoji: "💬", layer: 3, top: "50%", left: "50%", size: "text-6xl" },
   { emoji: "📞", layer: 1, top: "80%", left: "90%", size: "text-4xl" },

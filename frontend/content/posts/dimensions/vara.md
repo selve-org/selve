@@ -1,7 +1,7 @@
 ---
 title: "VARA: The Foundation of Integrity"
 description: "Explore the dimension that sets SELVE apart—your authentic relationship with truth, fairness, and genuine humility."
-date: "2025-01-15"
+date: "2025-11-26"
 emoji: "⚖️"
 dimension: "VARA"
 color: "#4ECDC4"

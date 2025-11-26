@@ -1,7 +1,7 @@
 ---
 title: "LUMEN: The Light of Social Energy"
 description: "Discover how your social energy shapes your world—from the spark of connection to the power of presence."
-date: "2025-01-15"
+date: "2025-11-26"
 emoji: "✨"
 dimension: "LUMEN"
 color: "#FFD700"
