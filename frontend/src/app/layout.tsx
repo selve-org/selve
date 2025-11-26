@@ -12,6 +12,7 @@ import { PostHogProvider } from "./providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AssessmentSessionProvider } from "@/contexts/AssessmentSessionContext";
 import { FriendCompletionToast } from "@/components/FriendCompletionToast";
+import { ConsoleBranding } from "@/components/ConsoleBranding";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -83,6 +84,7 @@ export default function RootLayout({
                 {children}
                 <Toaster position="top-right" richColors closeButton />
                 <FriendCompletionToast />
+                <ConsoleBranding />
               </AssessmentSessionProvider>
             </ThemeProvider>
           </ClerkProvider>
