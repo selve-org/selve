@@ -32,7 +32,7 @@ const CanvasButton: React.FC = () => {
   // --- Configuration ---
   const config: CanvasButtonConfig = {
     text: "Get Started - It's free",
-    url: "https://heyboss.ai/login",
+    url: "/assessment",
     font: "bold 18px sans-serif",
     padding: { x: 32, y: 16 },
     colors: {
