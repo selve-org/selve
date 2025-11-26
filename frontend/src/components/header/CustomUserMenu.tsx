@@ -92,7 +92,7 @@ export function CustomUserMenu() {
               fetchNotifications();
             }
           }}
-          className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+          className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all cursor-pointer"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -143,7 +143,7 @@ export function CustomUserMenu() {
                       <button
                         key={notification.id}
                         onClick={() => handleNotificationClick(notification)}
-                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-gray-800 ${
+                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-gray-800 cursor-pointer ${
                           !notification.read ? "bg-purple-50/50 dark:bg-purple-950/20" : ""
                         }`}
                       >
@@ -177,7 +177,7 @@ export function CustomUserMenu() {
                       setShowNotifications(false);
                       router.push("/profile?tab=invites");
                     }}
-                    className="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
+                    className="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium cursor-pointer"
                   >
                     View Friend Assessments
                   </button>
@@ -192,7 +192,7 @@ export function CustomUserMenu() {
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group cursor-pointer"
           aria-label="User menu"
         >
           <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-purple-500 transition-all">
@@ -283,7 +283,7 @@ export function CustomUserMenu() {
                   signOut();
                   setIsOpen(false);
                 }}
-                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors group"
+                className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors group cursor-pointer"
               >
                 <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/20 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
                   <LogOut className="w-4 h-4" />

@@ -74,7 +74,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({
             onClick={() => handleSelect(optionValue)}
             className={`
               px-[17px] py-[9px] rounded-full text-xs leading-4 transition-all duration-200
-              border
+              border cursor-pointer
               ${
                 selected
                   ? "bg-purple-600 text-white border-purple-600"

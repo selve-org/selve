@@ -99,7 +99,7 @@ export const Checkpoint: React.FC<CheckpointProps> = ({
           onClick={onContinue}
           className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-full
             shadow-lg shadow-purple-600/30 transition-all duration-200
-            hover:scale-105 active:scale-95"
+            hover:scale-105 active:scale-95 cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
@@ -112,7 +112,7 @@ export const Checkpoint: React.FC<CheckpointProps> = ({
         {/* Skip option */}
         <motion.button
           onClick={onContinue}
-          className="text-sm text-gray-500 hover:text-gray-400 transition-colors"
+          className="text-sm text-gray-500 hover:text-gray-400 transition-colors cursor-pointer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}

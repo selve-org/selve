@@ -35,12 +35,12 @@ export const Header = () => {
           <div className="hidden lg:flex items-center justify-end space-x-2">
             <SignedOut>
               <SignInButton>
-                <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">
                   Log in
                 </button>
               </SignInButton>
               <SignUpButton>
-                <button className="px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors">
+                <button className="px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors cursor-pointer">
                   Sign up
                 </button>
               </SignUpButton>
@@ -55,7 +55,7 @@ export const Header = () => {
           <div className="lg:hidden col-start-3 flex justify-end">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-foreground focus:outline-none p-2"
+              className="text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 p-2 rounded-md cursor-pointer"
               aria-label="Toggle menu"
             >
               <AnimatedHamburgerIcon isOpen={isMenuOpen} />
@@ -96,12 +96,12 @@ export const Header = () => {
             <div className="flex items-center space-x-2 pt-2">
               <SignedOut>
                 <SignInButton>
-                  <button className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                  <button className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">
                     Log in
                   </button>
                 </SignInButton>
                 <SignUpButton>
-                  <button className="flex-1 text-center px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors">
+                  <button className="flex-1 text-center px-4 py-2 text-sm font-medium bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 rounded-lg hover:bg-neutral-700 dark:hover:bg-neutral-200 transition-colors cursor-pointer">
                     Sign up
                   </button>
                 </SignUpButton>

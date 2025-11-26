@@ -75,7 +75,8 @@ export function InviteCard({ invite, onCopy, isCopied }: InviteCardProps) {
 
         <button
           onClick={() => onCopy(invite.inviteCode)}
-          className="flex-shrink-0 inline-flex items-center px-3 py-1.5 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+          className="flex-shrink-0 inline-flex items-center px-3 py-1.5 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
+          aria-label="Copy invite link"
         >
           {isCopied ? (
             <>

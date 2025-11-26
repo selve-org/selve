@@ -149,7 +149,7 @@ export default function AssessmentPage() {
                       onClick={() => setShowRestartConfirm(true)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-2 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-2xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+                      className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-2 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-2xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
                       style={{ fontFamily: 'var(--font-inter)' }}
                     >
                       <span>Take Again</span>

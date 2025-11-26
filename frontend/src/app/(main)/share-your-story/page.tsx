@@ -149,7 +149,7 @@ export default function ShareYourStoryPage() {
               </p>
               <button
                 onClick={() => setSubmitStatus("idle")}
-                className="mt-6 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-neutral-800 dark:to-neutral-800 text-white hover:from-purple-600 hover:to-pink-600 dark:hover:bg-neutral-700 rounded-lg transition-all"
+                className="mt-6 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-neutral-800 dark:to-neutral-800 text-white hover:from-purple-600 hover:to-pink-600 dark:hover:bg-neutral-700 rounded-lg transition-all cursor-pointer"
               >
                 Share Another Story
               </button>
@@ -263,13 +263,15 @@ export default function ShareYourStoryPage() {
                 <label className="block text-sm font-medium mb-2">
                   How would you rate your SELVE experience?
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2" role="group" aria-label="Rate your experience from 1 to 5 stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => handleRatingChange(star)}
-                      className={`text-3xl transition-transform hover:scale-110 ${
+                      aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                      aria-pressed={star <= formData.rating}
+                      className={`text-3xl transition-transform hover:scale-110 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 rounded ${
                         star <= formData.rating ? "text-yellow-500" : "text-purple-200 dark:text-neutral-600"
                       }`}
                     >
@@ -331,7 +333,7 @@ export default function ShareYourStoryPage() {
               <button
                 type="submit"
                 disabled={!isFormValid || isSubmitting || sentimentWarning}
-                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-primary dark:to-primary text-white dark:text-primary-foreground font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 dark:hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25 dark:shadow-none"
+                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-primary dark:to-primary text-white dark:text-primary-foreground font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 dark:hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25 dark:shadow-none cursor-pointer"
               >
                 {isSubmitting ? "Submitting..." : "Share My Story"}
               </button>

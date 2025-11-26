@@ -95,13 +95,13 @@ export function ConfirmDialog({
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-4 py-2.5 rounded-xl border-2 border-purple-200 dark:border-purple-800 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-xl border-2 border-purple-200 dark:border-purple-800 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 font-medium transition-colors cursor-pointer"
                 >
                   {cancelText}
                 </button>
                 <button
                   onClick={handleConfirm}
-                  className={`flex-1 px-4 py-2.5 rounded-xl ${confirmBg} text-white font-medium transition-colors shadow-lg shadow-purple-500/20`}
+                  className={`flex-1 px-4 py-2.5 rounded-xl ${confirmBg} text-white font-medium transition-colors shadow-lg shadow-purple-500/20 cursor-pointer`}
                 >
                   {confirmText}
                 </button>

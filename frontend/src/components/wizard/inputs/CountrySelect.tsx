@@ -182,7 +182,7 @@ export function CountrySelect({
               <button
                 key={country.country_code}
                 onClick={() => handleSelect(country)}
-                className={`w-full px-4 py-3 text-left transition-colors ${
+                className={`w-full px-4 py-3 text-left transition-colors cursor-pointer ${
                   index === selectedIndex
                     ? "bg-purple-100 dark:bg-purple-900/20"
                     : "hover:bg-gray-100 dark:hover:bg-[#3e3e3e]"

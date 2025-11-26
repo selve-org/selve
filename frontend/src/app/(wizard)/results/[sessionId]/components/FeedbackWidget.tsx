@@ -165,7 +165,7 @@ export default function FeedbackWidget({ sessionId, className = "" }: FeedbackWi
                     onClick={() => handleRatingClick(option.value)}
                     className={`
                       w-12 h-12 rounded-full border-2 border-gray-200 dark:border-[#3e3e3e] 
-                      flex items-center justify-center
+                      flex items-center justify-center cursor-pointer
                       transition-all duration-200 transform
                       ${option.hoverColor}
                       hover:border-gray-300 dark:hover:border-[#4e4e4e]
@@ -271,7 +271,7 @@ export default function FeedbackWidget({ sessionId, className = "" }: FeedbackWi
                 disabled={isSubmitting || !selectedRating}
                 className="
                   w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 
-                  text-white font-medium rounded-lg transition-all duration-200
+                  text-white font-medium rounded-lg transition-all duration-200 cursor-pointer
                   disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]
                   focus:outline-none focus:ring-2 focus:ring-purple-500/50
                 "

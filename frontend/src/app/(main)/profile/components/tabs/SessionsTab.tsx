@@ -223,7 +223,7 @@ export function SessionsTab() {
                       <button
                         onClick={() => handleRevokeSession(session.id)}
                         disabled={revokeLoading === session.id}
-                        className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition-colors disabled:opacity-50 flex-shrink-0"
+                        className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition-colors disabled:opacity-50 flex-shrink-0 cursor-pointer disabled:cursor-not-allowed"
                       >
                         {revokeLoading === session.id ? "Signing out..." : "Sign out"}
                       </button>

@@ -45,7 +45,8 @@ export function InviteForm({ onSubmit, onCancel, sending }: InviteFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+          aria-label="Close form"
         >
           <XMarkIcon className="w-5 h-5" />
         </button>
@@ -100,14 +101,14 @@ export function InviteForm({ onSubmit, onCancel, sending }: InviteFormProps) {
           <button
             type="submit"
             disabled={sending}
-            className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors"
+            className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-md text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
             {sending ? "Sending..." : "Send Invite"}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-white dark:bg-[#0c0c0c] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium transition-colors"
+            className="px-4 py-2 bg-white dark:bg-[#0c0c0c] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium transition-colors cursor-pointer"
           >
             Cancel
           </button>

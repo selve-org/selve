@@ -61,7 +61,7 @@ export function BackWarningModal({
               {/* Close button */}
               <button
                 onClick={onCancel}
-                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400"
                 aria-label="Close"
               >
                 <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -93,7 +93,7 @@ export function BackWarningModal({
                 {/* Cancel button */}
                 <motion.button
                   onClick={onCancel}
-                  className="flex-1 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -103,7 +103,7 @@ export function BackWarningModal({
                 {/* Confirm button */}
                 <motion.button
                   onClick={onConfirm}
-                  className="flex-1 px-6 py-3 rounded-xl font-medium bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all"
+                  className="flex-1 px-6 py-3 rounded-xl font-medium bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all cursor-pointer"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

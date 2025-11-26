@@ -41,7 +41,7 @@ export const Radio: React.FC<RadioProps> = ({
             className={`
               w-full p-4 rounded-lg text-left
               transition-all duration-200
-              flex items-center gap-4
+              flex items-center gap-4 cursor-pointer
               ${
                 isSelected
                   ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-500 dark:border-purple-400"

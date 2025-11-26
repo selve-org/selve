@@ -33,7 +33,7 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
             </div>
           </div>
           {tier === "free" && (
-            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors">
+            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors cursor-pointer">
               Upgrade
             </button>
           )}
@@ -78,7 +78,7 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
                 •••• •••• •••• 4242
               </span>
             </div>
-            <button className="px-3 py-1.5 bg-white dark:bg-[#0c0c0c] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium transition-colors">
+            <button className="px-3 py-1.5 bg-white dark:bg-[#0c0c0c] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium transition-colors cursor-pointer">
               Update
             </button>
           </div>

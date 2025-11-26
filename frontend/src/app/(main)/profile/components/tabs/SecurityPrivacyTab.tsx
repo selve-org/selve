@@ -177,7 +177,8 @@ export function SecurityPrivacyTab() {
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+                aria-label={showCurrentPassword ? "Hide password" : "Show password"}
               >
                 {showCurrentPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -204,7 +205,8 @@ export function SecurityPrivacyTab() {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
               >
                 {showNewPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -231,7 +233,8 @@ export function SecurityPrivacyTab() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
               >
                 {showConfirmPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -264,7 +267,7 @@ export function SecurityPrivacyTab() {
             <button
               type="submit"
               disabled={passwordLoading}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-md text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-md text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
             >
               {passwordLoading ? "Updating..." : "Update Password"}
             </button>
@@ -298,7 +301,7 @@ export function SecurityPrivacyTab() {
             <button
               onClick={handleTwoFactorToggle}
               disabled={twoFactorLoading}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                 twoFactorEnabled
                   ? "bg-red-600 hover:bg-red-700 text-white"
                   : "bg-purple-600 hover:bg-purple-700 text-white"
@@ -361,14 +364,14 @@ export function SecurityPrivacyTab() {
                   <button
                     type="submit"
                     disabled={twoFactorLoading || verificationCode.length !== 6}
-                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-md text-sm font-medium transition-colors"
+                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-md text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
                     {twoFactorLoading ? "Verifying..." : "Verify & Enable"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowQRCode(false)}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md text-sm font-medium transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -407,7 +410,7 @@ export function SecurityPrivacyTab() {
                 {!showDeleteConfirm ? (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors cursor-pointer"
                   >
                     Delete Account
                   </button>
@@ -454,7 +457,7 @@ export function SecurityPrivacyTab() {
                       <button
                         onClick={handleDeleteAccount}
                         disabled={deleting || deleteConfirmText !== "DELETE"}
-                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-md text-sm font-medium transition-colors"
+                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-md text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
                       >
                         {deleting ? "Deleting..." : "Delete My Account"}
                       </button>
@@ -465,7 +468,7 @@ export function SecurityPrivacyTab() {
                           setDeleteError("");
                         }}
                         disabled={deleting}
-                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                       >
                         Cancel
                       </button>

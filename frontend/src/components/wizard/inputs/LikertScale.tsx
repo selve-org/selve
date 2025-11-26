@@ -45,7 +45,7 @@ export const LikertScale: React.FC<LikertScaleProps> = ({
             key={point}
             onClick={() => onChange(point)}
             className={`
-              w-full px-6 py-4 rounded-xl text-left transition-all
+              w-full px-6 py-4 rounded-xl text-left transition-all cursor-pointer
               ${
                 value === point
                   ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105"
@@ -90,7 +90,7 @@ export const LikertScale: React.FC<LikertScaleProps> = ({
         <motion.button
           onClick={() => onChange("not-sure")}
           className={`
-            w-full px-6 py-4 rounded-xl text-center transition-all
+            w-full px-6 py-4 rounded-xl text-center transition-all cursor-pointer
             ${
               value === "not-sure"
                 ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg scale-105"

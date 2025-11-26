@@ -97,7 +97,7 @@ export const DesktopNav = () => {
               {link.label}
             </Link>
           ) : (
-            <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap">
+            <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap cursor-pointer">
               {link.label}
             </button>
           )}

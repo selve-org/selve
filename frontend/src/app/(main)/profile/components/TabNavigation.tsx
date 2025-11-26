@@ -30,7 +30,7 @@ export function TabNavigation({ tabs, activeTab, onTabChange }: TabNavigationPro
     <div className="relative">
       {/* Scrollable container */}
       <div className="relative overflow-x-auto scrollbar-hide">
-        <nav className="relative flex space-x-6 sm:space-x-8 min-w-max" aria-label="Tabs">
+        <nav className="relative flex space-x-6 sm:space-x-8 min-w-max" aria-label="Tabs" role="tablist">
           {tabs.map((tab, index) => {
             const Icon = tab.icon;
             return (
@@ -38,8 +38,10 @@ export function TabNavigation({ tabs, activeTab, onTabChange }: TabNavigationPro
                 key={tab.id}
                 ref={(el) => (tabRefs.current[index] = el)}
                 onClick={() => onTabChange(tab.id)}
+                aria-selected={activeTab === tab.id}
+                role="tab"
                 className={`
-                  flex items-center gap-2 py-3 px-1 font-medium text-sm transition-colors whitespace-nowrap relative
+                  flex items-center gap-2 py-3 px-1 font-medium text-sm transition-colors whitespace-nowrap relative cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 rounded-sm
                   ${
                     activeTab === tab.id
                       ? "text-purple-600 dark:text-purple-400"

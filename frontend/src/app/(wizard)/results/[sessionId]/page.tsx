@@ -200,7 +200,9 @@ export default function ResultsPage() {
           <div className="flex justify-end mb-6 relative">
             <button
               onClick={() => setShowShareMenu(!showShareMenu)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#333] transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-[#333] transition-colors shadow-sm cursor-pointer"
+              aria-label="Share results"
+              aria-expanded={showShareMenu}
             >
               <Share2 className="w-4 h-4" />
               <span className="text-sm font-medium">Share</span>
@@ -234,7 +236,7 @@ export default function ResultsPage() {
                       <button
                         onClick={handleCopyLink}
                         disabled={shareLoading}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
                       >
                         {copySuccess ? (
                           <>
@@ -252,7 +254,7 @@ export default function ResultsPage() {
                       <button
                         onClick={() => handleToggleShare(false)}
                         disabled={shareLoading}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
                       >
                         <Lock className="w-4 h-4" />
                         Make Private
@@ -262,7 +264,7 @@ export default function ResultsPage() {
                     <button
                       onClick={handleShare}
                       disabled={shareLoading}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                     >
                       {shareLoading ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -461,13 +463,13 @@ export default function ResultsPage() {
         <div className="mt-12 flex justify-center gap-4">
           <button
             onClick={() => window.print()}
-            className="px-6 py-3 bg-gray-200 dark:bg-[#2e2e2e] hover:bg-gray-300 dark:hover:bg-[#3e3e3e] text-gray-900 dark:text-white rounded-full transition-colors"
+            className="px-6 py-3 bg-gray-200 dark:bg-[#2e2e2e] hover:bg-gray-300 dark:hover:bg-[#3e3e3e] text-gray-900 dark:text-white rounded-full transition-colors cursor-pointer"
           >
             Download PDF
           </button>
           <button
             onClick={() => router.push("/")}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors"
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors cursor-pointer"
           >
             Return Home
           </button>
