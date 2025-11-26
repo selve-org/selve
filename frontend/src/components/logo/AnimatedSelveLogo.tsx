@@ -42,6 +42,7 @@ export const AnimatedLogo = () => {
             height={30}
             priority
             className="dark:invert pointer-events-none select-none"
+            style={{ height: "auto" }}
           />
         </motion.div>
 

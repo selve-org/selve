@@ -22,7 +22,7 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md pb-1 border-b border-neutral-200 dark:border-neutral-800">
-      <div className="mx-auto px-4">
+      <div className="relative mx-auto px-4">
         <div className="grid grid-cols-3 items-center h-16">
           <div className="flex justify-start">
             <Link href="/" className="flex items-center">

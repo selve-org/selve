@@ -16,7 +16,7 @@ const SELVE_ASCII = `
 
 const SUBTITLE = "        ✨ Discover Your True Self ✨";
 const TAGLINE = "\n   Self-Exploration • Learning • Validation • Evolution";
-const URL = "\n              https://selve.me";
+const URL = "\n                        https://selve.me";
 
 // Track if we've already shown the branding
 let hasShown = false;

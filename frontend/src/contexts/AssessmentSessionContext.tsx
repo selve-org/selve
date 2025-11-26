@@ -52,7 +52,6 @@ function getStoredSession(): AssessmentSession {
       const hoursSinceActive = (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60);
       
       if (hoursSinceActive > SESSION_EXPIRY_HOURS) {
-        console.log("📅 Session expired, clearing...");
         localStorage.removeItem(STORAGE_KEY);
         return getDefaultSession();
       }
@@ -132,7 +131,7 @@ async function fetchSessionStatus(sessionId: string): Promise<{
   progress?: number;
 } | null> {
   if (!sessionId) {
-    console.warn("⚠️ fetchSessionStatus called with empty sessionId");
+    console.warn("fetchSessionStatus called with empty sessionId");
     return null;
   }
   
@@ -148,12 +147,11 @@ async function fetchSessionStatus(sessionId: string): Promise<{
     
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("📭 Session not found in database (might be anonymous or expired)");
         return null;
       }
       
       const errorText = await response.text();
-      console.error(`❌ Failed to fetch session status: ${response.status} ${errorText}`);
+      console.error(`Failed to fetch session status: ${response.status} ${errorText}`);
       return null;
     }
     
@@ -172,7 +170,7 @@ async function fetchSessionStatus(sessionId: string): Promise<{
 
     
   } catch (error) {
-    console.error("❌ Error fetching session status:", error);
+    console.error("Error fetching session status:", error);
     // Network errors, etc. - not fatal, just return null
     return null;
   }
@@ -197,7 +195,7 @@ async function fetchCurrentSession(clerkUserId: string): Promise<{
     });
     
     if (!response.ok) {
-      console.error(`❌ Failed to fetch current session: ${response.status}`);
+      console.error(`Failed to fetch current session: ${response.status}`);
       return null;
     }
     
@@ -205,7 +203,7 @@ async function fetchCurrentSession(clerkUserId: string): Promise<{
     return data.current_assessment || null;
     
   } catch (error) {
-    console.error("❌ Error fetching current session:", error);
+    console.error("Error fetching current session:", error);
     return null;
   }
 }
@@ -233,14 +231,12 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
         // For authenticated users, always check what their CURRENT session is on backend
         // This prevents showing old completed sessions when they have a new active one
         if (isUserLoaded && user?.id) {
-          console.log(`🔍 Checking current session for user: ${user.id}`);
           const currentSession = await fetchCurrentSession(user.id);
           
           if (currentSession) {
             // Backend has a current session for this user (with at least 1 answer)
             if (currentSession.session_id !== storedSession.sessionId) {
               // localStorage has wrong/old session - sync with backend current
-              console.log(`🔄 Syncing to current session: ${currentSession.session_id}`);
               storedSession.sessionId = currentSession.session_id;
               storedSession.status = currentSession.status as "in-progress" | "completed" | "abandoned";
               storedSession.completedAt = currentSession.completed_at;
@@ -262,18 +258,15 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
           } else if (storedSession.sessionId) {
             // localStorage has a session but backend says no current session
             // This could mean: 1) session was archived, 2) session has 0 answers (empty)
-            console.log(`🔍 Checking stored session status: ${storedSession.sessionId}`);
             const statusData = await fetchSessionStatus(storedSession.sessionId);
             if (statusData) {
               // Check if session has any actual data
               if (statusData.questions_answered === 0) {
                 // Empty session - clear it
-                console.log(`🗑️  Authenticated user session has 0 answers - clearing`);
                 storedSession = getDefaultSession();
                 saveSessionToStorage(storedSession);
               } else {
                 // Session exists but was archived - restore data from backend
-                console.log(`✅ Restoring archived session data: ${statusData.questions_answered} answers`);
                 storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
                 storedSession.completedAt = statusData.completedAt;
                 storedSession.responses = statusData.responses || {};
@@ -282,41 +275,35 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
               }
             } else {
               // Session not found or has no data - clear it
-              console.log(`🗑️  Clearing empty/invalid session from localStorage`);
               storedSession = getDefaultSession();
               saveSessionToStorage(storedSession);
             }
           }
         } else if (storedSession.sessionId) {
           // Anonymous user - just check the stored session's status
-          console.log(`🔄 Checking status for session: ${storedSession.sessionId}`);
           const statusData = await fetchSessionStatus(storedSession.sessionId);
           
           if (statusData) {
             // Check if session has any actual data (at least 1 answer)
             if (statusData.questions_answered === 0) {
               // Empty session - clear it
-              console.log(`🗑️  Anonymous session has 0 answers - clearing`);
               storedSession = getDefaultSession();
               saveSessionToStorage(storedSession);
             } else {
               // Restore responses and demographics from backend
-              console.log(`✅ Restoring session data: ${statusData.questions_answered} answers`);
               storedSession.status = statusData.status as "in-progress" | "completed" | "abandoned";
               storedSession.completedAt = statusData.completedAt;
               storedSession.responses = statusData.responses || {};
               storedSession.demographics = statusData.demographics || {};
               saveSessionToStorage(storedSession);
             }
-          } else {
-            console.log("📝 Using local session data (backend status unavailable)");
           }
         }
         
         setSession(storedSession);
         
       } catch (error) {
-        console.error("❌ Error loading session:", error);
+        console.error("Error loading session:", error);
         // On error, use default session to prevent app crash
         setSession(getDefaultSession());
       } finally {
@@ -368,7 +355,6 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       
       if (!clerkUserId) {
         // For anonymous users, just clear localStorage and start fresh
-        console.log("📦 Anonymous user - clearing local session");
         clearSession();
         startAssessment();
         return null;
@@ -390,8 +376,6 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       
       const data = await response.json();
       const newSessionId = data.new_session_id;
-      
-      console.log(`✅ Archived ${data.archived_count} assessment(s), created new session: ${newSessionId}`);
       
       // Show success toast
       if (data.archived_count > 0) {
@@ -418,7 +402,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       return newSessionId;
       
     } catch (error) {
-      console.error("❌ Failed to archive and restart:", error);
+      console.error("Failed to archive and restart:", error);
       toast.error("Couldn't save to server", {
         description: "No worries! Starting fresh locally instead. Your progress will still be saved.",
         duration: 5000,
@@ -442,12 +426,8 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       fetchSessionStatus(session.sessionId).then(sessionData => {
         // Only transfer if session has no clerk_user_id (anonymous) or different user
         if (sessionData && (!sessionData.clerk_user_id || sessionData.clerk_user_id !== user.id) && session.sessionId) {
-          console.log("🔄 Transferring anonymous session to authenticated user...");
-      
       transferSessionToUser(session.sessionId, user.id, getToken)
         .then(() => {
-          console.log("✅ Session transferred successfully");
-          
           // Only show toast if user is on assessment-related page and haven't shown it yet
           const isAssessmentPage = pathname?.includes("/assessment") || pathname?.includes("/results");
           
@@ -467,7 +447,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
           });
         })
         .catch((error: Error) => {
-          console.error("❌ Failed to transfer session:", error);
+          console.error("Failed to transfer session:", error);
           
           // Only show error toast on assessment pages
           const isAssessmentPage = pathname?.includes("/assessment") || pathname?.includes("/results");
@@ -494,7 +474,6 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
     const isResultsRoute = pathname?.includes("/results");
     
     if (isWizardRoute && !session.hasStartedAssessment) {
-      console.log("🚫 Wizard access blocked - redirecting to assessment start");
       router.replace("/assessment");
     }
     
