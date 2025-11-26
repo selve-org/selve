@@ -120,18 +120,18 @@ export const TestimonialsSection = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-neutral-800/50 p-6 rounded-lg border border-neutral-700 animate-pulse">
+              <div key={i} className="bg-white dark:bg-neutral-800/50 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm dark:shadow-none animate-pulse">
                 <div className="flex gap-1 mb-3">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <span key={star} className="text-base text-neutral-600">★</span>
+                    <span key={star} className="text-base text-neutral-300 dark:text-neutral-600">★</span>
                   ))}
                 </div>
-                <div className="h-20 bg-neutral-700/50 rounded" />
+                <div className="h-20 bg-neutral-200 dark:bg-neutral-700/50 rounded" />
                 <div className="mt-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-neutral-700/50 rounded-full" />
+                  <div className="w-10 h-10 bg-neutral-200 dark:bg-neutral-700/50 rounded-full" />
                   <div>
-                    <div className="h-4 w-20 bg-neutral-700/50 rounded" />
-                    <div className="h-3 w-28 bg-neutral-700/50 rounded mt-2" />
+                    <div className="h-4 w-20 bg-neutral-200 dark:bg-neutral-700/50 rounded" />
+                    <div className="h-3 w-28 bg-neutral-200 dark:bg-neutral-700/50 rounded mt-2" />
                   </div>
                 </div>
               </div>

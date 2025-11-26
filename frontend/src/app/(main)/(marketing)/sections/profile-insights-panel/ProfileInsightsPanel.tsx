@@ -57,17 +57,23 @@ const ProfileInsightsPanel = () => {
         {/* Left Section */}
         <div className="p-0">
           <h2 className="text-[32px] font-semibold mb-4 dark:text-white text-slate-900 leading-[1.2]">
-            Understand yourself end-to-end
+            Your SELVE Profile Dashboard
           </h2>
           <p className="text-[16px] dark:text-[#9ca3af] text-slate-600 leading-[1.5] mb-[60px]">
-            Gain clarity through structured assessments, insights, and trusted
-            external feedback—all unified in a powerful personal profile.
+            Track your personality dimensions, gather friend insights, and watch your 
+            self-awareness grow—all in one unified profile.
           </p>
 
-          {/* Project Card */}
-          <div className="relative bg-[#111111] border border-[#2a2a2a] rounded-lg overflow-hidden">
+          {/* Project Card - Light mode gets warm gradient, dark mode keeps original */}
+          <div className="relative overflow-hidden rounded-lg
+            bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50
+            border border-amber-200/60
+            shadow-[0_4px_20px_-4px_rgba(251,146,60,0.15)]
+            dark:bg-[#111111] dark:border-[#2a2a2a] dark:shadow-none dark:from-transparent dark:via-transparent dark:to-transparent"
+          >
+            {/* Gradient overlays - show in both modes but more visible in dark */}
             <div
-              className="absolute top-0 left-0 w-[200px] h-[200px] pointer-events-none z-[1]"
+              className="absolute top-0 left-0 w-[200px] h-[200px] pointer-events-none z-[1] hidden dark:block"
               style={{
                 background:
                   "radial-gradient(ellipse 150px 120px at 0% 0%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(255, 255, 255, 0.01) 50%, transparent 80%)",
@@ -75,7 +81,7 @@ const ProfileInsightsPanel = () => {
               }}
             />
             <div
-              className="absolute top-0 left-0 w-[100px] h-[100px] pointer-events-none z-[2]"
+              className="absolute top-0 left-0 w-[100px] h-[100px] pointer-events-none z-[2] hidden dark:block"
               style={{
                 background:
                   "radial-gradient(ellipse 80px 60px at 0% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0.01) 60%, transparent 90%)",
@@ -83,53 +89,53 @@ const ProfileInsightsPanel = () => {
               }}
             />
 
-            <div className="border-b border-[#2a2a2a] p-6 pb-5">
-              <h3 className="text-[18px] font-semibold text-white">
-                Profile Overview
+            <div className="border-b dark:border-[#2a2a2a] border-amber-200/60 p-6 pb-5">
+              <h3 className="text-[18px] font-semibold dark:text-white text-amber-900">
+                SELVE Profile Overview
               </h3>
             </div>
 
             <div className="p-0">
               {/* Combined Status and Sources section */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 border-b border-[#1a1a1a]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 border-b dark:border-[#1a1a1a] border-amber-100">
                 {/* Status Section */}
-                <div className="border-r border-[#1a1a1a] p-5">
-                  <div className="text-[13px] text-[#6b7280] font-medium mb-3">
-                    Status
+                <div className="border-r dark:border-[#1a1a1a] border-amber-100 p-5">
+                  <div className="text-[13px] dark:text-[#6b7280] text-amber-700/70 font-medium mb-3">
+                    Discovery Status
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <span className="w-[6px] h-[6px] rounded-full bg-[#f59e0b]"></span>
-                      <span className="text-[14px] text-[#e5e7eb]">
-                        Processing
+                      <span className="text-[14px] dark:text-[#e5e7eb] text-amber-900">
+                        In Progress
                       </span>
                     </div>
-                    <div className="bg-[#374151] text-[#9ca3af] px-2 py-1 rounded text-[12px] font-medium w-max">
-                      🎯 Self-Discovery
+                    <div className="dark:bg-[#374151] dark:text-[#9ca3af] bg-amber-100 text-amber-800 px-2 py-1 rounded text-[12px] font-medium w-max">
+                      ✨ Self-Discovery Phase
                     </div>
                   </div>
                 </div>
 
                 {/* Sources Section */}
                 <div className="p-5">
-                  <div className="text-[13px] text-[#6b7280] font-medium mb-3">
-                    Sources
+                  <div className="text-[13px] dark:text-[#6b7280] text-amber-700/70 font-medium mb-3">
+                    Insight Sources
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <span className="w-4 h-4 flex items-center justify-center text-[12px]">
-                        🧠
+                        🔍
                       </span>
-                      <span className="text-[14px] text-[#e5e7eb]">
-                        Core Assessment
+                      <span className="text-[14px] dark:text-[#e5e7eb] text-amber-900">
+                        Self Assessment
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-4 h-4 flex items-center justify-center text-[12px]">
                         👥
                       </span>
-                      <span className="text-[14px] text-[#e5e7eb]">
-                        External Reflections
+                      <span className="text-[14px] dark:text-[#e5e7eb] text-amber-900">
+                        Friend Perspectives
                       </span>
                     </div>
                   </div>
@@ -138,8 +144,8 @@ const ProfileInsightsPanel = () => {
 
               {/* Milestones Section */}
               <div className="p-5">
-                <div className="text-[13px] text-[#6b7280] font-medium mb-3">
-                  Milestones
+                <div className="text-[13px] dark:text-[#6b7280] text-amber-700/70 font-medium mb-3">
+                  Profile Milestones
                 </div>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
@@ -147,33 +153,33 @@ const ProfileInsightsPanel = () => {
                       <span className="w-4 h-4 flex items-center justify-center text-[12px]">
                         ✅
                       </span>
-                      <span className="text-[14px] text-[#e5e7eb]">
-                        Self Input
+                      <span className="text-[14px] dark:text-[#e5e7eb] text-amber-900">
+                        Core Assessment
                       </span>
                     </div>
-                    <span className="text-[13px] text-[#9ca3af]">100%</span>
+                    <span className="text-[13px] dark:text-[#9ca3af] text-amber-700">100%</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="w-4 h-4 flex items-center justify-center text-[12px]">
-                        🧩
+                        💬
                       </span>
-                      <span className="text-[14px] text-[#e5e7eb]">
-                        External Feedback
+                      <span className="text-[14px] dark:text-[#e5e7eb] text-amber-900">
+                        Friend Insights
                       </span>
                     </div>
-                    <span className="text-[13px] text-[#9ca3af]">3 of 5</span>
+                    <span className="text-[13px] dark:text-[#9ca3af] text-amber-700">3 of 5</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="w-4 h-4 flex items-center justify-center text-[12px]">
-                        🌟
+                        🎯
                       </span>
-                      <span className="text-[14px] text-[#e5e7eb]">
-                        Profile Strength
+                      <span className="text-[14px] dark:text-[#e5e7eb] text-amber-900">
+                        Profile Accuracy
                       </span>
                     </div>
-                    <span className="text-[13px] text-[#9ca3af]">67%</span>
+                    <span className="text-[13px] dark:text-[#9ca3af] text-amber-700">67%</span>
                   </div>
                 </div>
               </div>
@@ -184,11 +190,11 @@ const ProfileInsightsPanel = () => {
         {/* Right Section - Enhanced 3D Cards */}
         <div className="p-0">
           <h2 className="text-[32px] font-semibold mb-4 dark:text-white text-slate-900 leading-[1.2]">
-            Profile Updates
+            Insight Updates
           </h2>
           <p className="text-[16px] dark:text-[#9ca3af] text-slate-600 leading-[1.5] mb-[60px]">
-            Track your self-discovery progress, monitor changes over time, and ensure your 
-            personal profile stays aligned with real-time insights and evolving goals.
+            Real-time updates as friends complete their assessments about you. 
+            Watch your blind spots shrink and self-awareness grow.
           </p>
           <div
             className="relative h-[280px] mt-20 lg:mr-25 md:-mr-7 mr-20 ml-75"
@@ -201,8 +207,8 @@ const ProfileInsightsPanel = () => {
             <div
               className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-32"
               style={{
-                bottom: hoverStates.back ? "70px" : "65px", // Follows the card's position
-                right: hoverStates.back ? "20px" : "35px", // Follows the card's position
+                bottom: hoverStates.back ? "70px" : "65px",
+                right: hoverStates.back ? "20px" : "35px",
                 zIndex: 10,
                 pointerEvents:
                   hoverStates.middle || hoverStates.front ? "none" : "auto",
@@ -213,8 +219,8 @@ const ProfileInsightsPanel = () => {
             <div
               className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-32"
               style={{
-                bottom: hoverStates.middle ? "35px" : "25px", // Follows the card's position
-                right: hoverStates.middle ? "0px" : "15px", // Follows the card's position
+                bottom: hoverStates.middle ? "35px" : "25px",
+                right: hoverStates.middle ? "0px" : "15px",
                 zIndex: 10,
                 pointerEvents: hoverStates.front ? "none" : "auto",
               }}
@@ -224,22 +230,22 @@ const ProfileInsightsPanel = () => {
             <div
               className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-32"
               style={{
-                bottom: hoverStates.front ? "-5px" : "-5px", // Same since front card doesn't change bottom
-                right: hoverStates.front ? "-20px" : "-5px", // Follows the card's position
+                bottom: hoverStates.front ? "-5px" : "-5px",
+                right: hoverStates.front ? "-20px" : "-5px",
                 zIndex: 10,
               }}
               onMouseEnter={() => handleHover("front", true)}
               onMouseLeave={() => handleHover("front", false)}
             />
 
-            {/* Back Card */}
+            {/* Back Card - Blind Spot Alert */}
             <div
               className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-30 rounded-md p-4 transition-all duration-300"
               style={{
                 bottom: hoverStates.back ? "75px" : "70px",
                 right: hoverStates.back ? "25px" : "40px",
                 zIndex: 1,
-                pointerEvents: "none", // Disable direct hover since we use hover zones
+                pointerEvents: "none",
                 transform: `skewY(-5deg) ${
                   hoverStates.back
                     ? "translateY(-1px) translateZ(-15px) rotateY(-5deg) rotateX(1deg)"
@@ -277,7 +283,7 @@ const ProfileInsightsPanel = () => {
                     hoverStates.back ? "text-[#ef4444]" : "text-[#6b7280]"
                   }`}
                 >
-                  At risk
+                  Blind Spot Detected
                 </span>
               </div>
               <p
@@ -285,24 +291,24 @@ const ProfileInsightsPanel = () => {
                   hoverStates.back ? "text-[#d1d5db]" : "text-[#4b5563]"
                 }`}
               >
-                Blind spots detected in peer feedback cycle.
+                Friends see you as more assertive than you rated yourself on KAEL.
               </p>
               <div
                 className={`text-[12px] transition-colors duration-300 ${
                   hoverStates.back ? "text-[#9ca3af]" : "text-[#374151]"
                 }`}
               >
-                <div className="mb-0.5">Cycle 2</div>
+                <div className="mb-0.5">2 friends responded</div>
               </div>
             </div>
-            {/* Middle Card */}
+            {/* Middle Card - Friend Response Pending */}
             <div
               className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-30 rounded-md p-4 transition-all duration-300"
               style={{
                 bottom: hoverStates.middle ? "40px" : "30px",
                 right: hoverStates.middle ? "5px" : "20px",
                 zIndex: 2,
-                pointerEvents: "none", // Disable direct hover since we use hover zones
+                pointerEvents: "none",
                 transform: `skewY(-5deg) ${
                   hoverStates.middle
                     ? "translateY(-10px) translateZ(-5px) rotateY(-3deg) rotateX(1deg)"
@@ -339,7 +345,7 @@ const ProfileInsightsPanel = () => {
                     hoverStates.middle ? "text-[#f59e0b]" : "text-[#6b7280]"
                   }`}
                 >
-                  Processing
+                  Awaiting Responses
                 </span>
               </div>
               <p
@@ -347,24 +353,24 @@ const ProfileInsightsPanel = () => {
                   hoverStates.middle ? "text-[#d1d5db]" : "text-[#4b5563]"
                 }`}
               >
-                Waiting on more input from trusted peers.
+                2 friends haven&apos;t completed their assessment yet.
               </p>
               <div
                 className={`text-[12px] transition-colors duration-300 ${
                   hoverStates.middle ? "text-[#9ca3af]" : "text-[#374151]"
                 }`}
               >
-                <div className="mb-0.5">Sep 6</div>
+                <div className="mb-0.5">Invited 3 days ago</div>
               </div>
             </div>
-            {/* Front Card */}
+            {/* Front Card - New Insight */}
             <div
               className="absolute w-80 max-md:w-[60vw] max-md:min-w-[280px] h-30 rounded-md p-4 transition-all duration-300"
               style={{
                 bottom: hoverStates.front ? "0px" : "0px",
                 right: hoverStates.front ? "-15px" : "0px",
                 zIndex: 3,
-                pointerEvents: "none", // Disable direct hover since we use hover zones
+                pointerEvents: "none",
                 transform: `skewY(-5deg) ${
                   hoverStates.front
                     ? "translateY(-10px) translateZ(5px) rotateY(0deg) rotateX(0deg)"
@@ -393,14 +399,14 @@ const ProfileInsightsPanel = () => {
               <div className="flex items-center gap-2 mb-2 relative z-10">
                 <span className="w-[6px] h-[6px] rounded-full bg-[#22c55e]"></span>
                 <span className="text-[14px] font-semibold text-[#22c55e]">
-                  On track
+                  New Insight Unlocked
                 </span>
               </div>
               <p className="text-[13px] text-[#d1d5db] mb-3 leading-[1.3] relative z-10">
-                We are ready to launch next Thursday
+                Your ORPHEUS score is now triangulated! View your empathy profile.
               </p>
               <div className="text-[12px] text-[#6b7280] relative z-10">
-                <div className="text-[#9ca3af] mb-0.5">Sep 8</div>
+                <div className="text-[#9ca3af] mb-0.5">Just now</div>
               </div>
             </div>
           </div>

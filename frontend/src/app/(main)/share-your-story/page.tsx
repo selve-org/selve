@@ -118,7 +118,7 @@ export default function ShareYourStoryPage() {
   const isFormValid = formData.firstName.trim() && formData.message.trim().length >= 20;
   
   return (
-    <main className="relative min-h-screen bg-gradient-to-b from-background to-neutral-900/50">
+    <main className="relative min-h-screen bg-gradient-to-b from-purple-50 via-pink-50/50 to-background dark:from-background dark:via-background dark:to-neutral-900/50">
       <div className="relative z-10">
         <motion.div
           className="container mx-auto px-4 py-20 max-w-2xl"
@@ -149,7 +149,7 @@ export default function ShareYourStoryPage() {
               </p>
               <button
                 onClick={() => setSubmitStatus("idle")}
-                className="mt-6 px-6 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                className="mt-6 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-neutral-800 dark:to-neutral-800 text-white hover:from-purple-600 hover:to-pink-600 dark:hover:bg-neutral-700 rounded-lg transition-all"
               >
                 Share Another Story
               </button>
@@ -174,7 +174,7 @@ export default function ShareYourStoryPage() {
                     onChange={handleChange}
                     required
                     disabled={isSignedIn && !!user?.firstName}
-                    className={`w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                    className={`w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-purple-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-primary transition-colors text-purple-900 dark:text-foreground placeholder:text-purple-300 dark:placeholder:text-neutral-500 ${
                       isSignedIn && user?.firstName ? "opacity-60 cursor-not-allowed" : ""
                     }`}
                     placeholder="Your first name"
@@ -195,7 +195,7 @@ export default function ShareYourStoryPage() {
                     value={formData.lastName}
                     onChange={handleChange}
                     disabled={isSignedIn && !!user?.lastName}
-                    className={`w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                    className={`w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-purple-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-primary transition-colors text-purple-900 dark:text-foreground placeholder:text-purple-300 dark:placeholder:text-neutral-500 ${
                       isSignedIn && user?.lastName ? "opacity-60 cursor-not-allowed" : ""
                     }`}
                     placeholder="Your last name (optional)"
@@ -215,7 +215,7 @@ export default function ShareYourStoryPage() {
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                    className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-purple-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-primary transition-colors text-purple-900 dark:text-foreground placeholder:text-purple-300 dark:placeholder:text-neutral-500"
                     placeholder="e.g., Product Manager"
                   />
                 </div>
@@ -230,7 +230,7 @@ export default function ShareYourStoryPage() {
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                    className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-purple-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-primary transition-colors text-purple-900 dark:text-foreground placeholder:text-purple-300 dark:placeholder:text-neutral-500"
                     placeholder="e.g., Google"
                   />
                 </div>
@@ -248,7 +248,7 @@ export default function ShareYourStoryPage() {
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isSignedIn && !!user?.primaryEmailAddress}
-                  className={`w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                  className={`w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-purple-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-primary transition-colors text-purple-900 dark:text-foreground placeholder:text-purple-300 dark:placeholder:text-neutral-500 ${
                     isSignedIn && user?.primaryEmailAddress ? "opacity-60 cursor-not-allowed" : ""
                   }`}
                   placeholder="your@email.com (optional, for follow-up)"
@@ -270,7 +270,7 @@ export default function ShareYourStoryPage() {
                       type="button"
                       onClick={() => handleRatingChange(star)}
                       className={`text-3xl transition-transform hover:scale-110 ${
-                        star <= formData.rating ? "text-yellow-500" : "text-neutral-600"
+                        star <= formData.rating ? "text-yellow-500" : "text-purple-200 dark:text-neutral-600"
                       }`}
                     >
                       ★
@@ -292,7 +292,7 @@ export default function ShareYourStoryPage() {
                   required
                   minLength={20}
                   rows={5}
-                  className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-colors resize-none"
+                  className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-purple-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-primary transition-colors resize-none text-purple-900 dark:text-foreground placeholder:text-purple-300 dark:placeholder:text-neutral-500"
                   placeholder="Share how SELVE has helped you understand yourself better, grow professionally, or improve your relationships..."
                 />
                 <div className="flex justify-between mt-1">
@@ -331,7 +331,7 @@ export default function ShareYourStoryPage() {
               <button
                 type="submit"
                 disabled={!isFormValid || isSubmitting || sentimentWarning}
-                className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-primary dark:to-primary text-white dark:text-primary-foreground font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 dark:hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25 dark:shadow-none"
               >
                 {isSubmitting ? "Submitting..." : "Share My Story"}
               </button>

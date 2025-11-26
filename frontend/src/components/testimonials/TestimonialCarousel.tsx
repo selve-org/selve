@@ -49,7 +49,11 @@ const TestimonialCard = ({ testimonial, animationKey }: { testimonial: Testimoni
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.5, ease: "easeInOut" }}
-    className="bg-neutral-800/50 dark:bg-neutral-800/50 bg-neutral-100/80 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700 h-full flex flex-col"
+    className="relative overflow-hidden p-6 rounded-xl h-full flex flex-col
+      bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 
+      border border-purple-200/50
+      shadow-[0_4px_20px_-4px_rgba(168,85,247,0.15)]
+      dark:bg-neutral-800/50 dark:border-neutral-700 dark:shadow-none dark:from-transparent dark:via-transparent dark:to-transparent"
   >
     {/* Rating Stars */}
     <div className="flex gap-1 mb-3">
@@ -57,7 +61,7 @@ const TestimonialCard = ({ testimonial, animationKey }: { testimonial: Testimoni
         <span
           key={star}
           className={`text-base ${
-            star <= testimonial.rating ? "text-yellow-500" : "text-neutral-400 dark:text-neutral-600"
+            star <= testimonial.rating ? "text-yellow-500" : "text-neutral-300 dark:text-neutral-600"
           }`}
         >
           ★
@@ -65,16 +69,16 @@ const TestimonialCard = ({ testimonial, animationKey }: { testimonial: Testimoni
       ))}
     </div>
     
-    <blockquote className="text-base italic leading-relaxed flex-grow">
+    <blockquote className="text-base italic leading-relaxed flex-grow text-purple-900/80 dark:text-neutral-200">
       &ldquo;{testimonial.quote}&rdquo;
     </blockquote>
     
     <div className="mt-4 flex items-center gap-3">
-      <div className="w-10 h-10 bg-gradient-to-br from-primary/30 to-primary/60 rounded-full flex items-center justify-center text-sm font-bold">
+      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 dark:from-primary/30 dark:to-primary/60 rounded-full flex items-center justify-center text-sm font-bold text-white dark:text-foreground">
         {testimonial.displayName.charAt(0)}
       </div>
       <div>
-        <p className="font-semibold text-sm">{testimonial.displayName}</p>
+        <p className="font-semibold text-sm text-purple-900 dark:text-foreground">{testimonial.displayName}</p>
         {(testimonial.role || testimonial.company) && (
           <p className="text-xs text-muted-foreground">
             {testimonial.role}
