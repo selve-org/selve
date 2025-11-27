@@ -49,19 +49,19 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { rel: "icon", url: "favicons/icon.ico" },
-      { rel: "apple-touch-icon", url: "favicons/apple-touch-icon.png" },
+      { rel: "icon", url: "/favicons/icon.ico" },
+      { rel: "apple-touch-icon", url: "/favicons/apple-touch-icon.png" },
       {
         rel: "icon",
         type: "image/png",
         sizes: "192x192",
-        url: "favicons/android-chrome-192x192.png",
+        url: "/favicons/android-chrome-192x192.png",
       },
       {
         rel: "icon",
         type: "image/png",
         sizes: "512x512",
-        url: "favicons/android-chrome-512x512.png",
+        url: "/favicons/android-chrome-512x512.png",
       },
     ],
   },

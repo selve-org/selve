@@ -8,19 +8,21 @@ import { SelveLogo } from "@/components/logo/SelveLogo";
 import { footerLinks } from "./footerLinks";
 import { FooterLink } from "./FooterLink";
 import { 
-  FaLinkedinIn, 
   FaInstagram, 
   FaYoutube, 
   FaXTwitter, 
-  FaTiktok 
+  FaRedditAlien,
+  FaThreads,
+  FaMedium
 } from "react-icons/fa6";
 
 const socialLinks = [
-  { icon: FaLinkedinIn, href: "https://linkedin.com/company/selve", label: "LinkedIn" },
-  { icon: FaInstagram, href: "https://instagram.com/selve.app", label: "Instagram" },
-  { icon: FaYoutube, href: "https://youtube.com/@selve", label: "YouTube" },
-  { icon: FaXTwitter, href: "https://x.com/selve_app", label: "X (Twitter)" },
-  { icon: FaTiktok, href: "https://tiktok.com/@selve.app", label: "TikTok" },
+  { icon: FaYoutube, href: "https://youtube.com/@selve_co", label: "YouTube", title: "Subscribe to our YouTube channel" },
+  { icon: FaRedditAlien, href: "https://reddit.com/u/selve_co", label: "Reddit", title: "Join us on Reddit" },
+  { icon: FaXTwitter, href: "https://x.com/selve_co", label: "X (Twitter)", title: "Follow us on X" },
+  { icon: FaThreads, href: "https://threads.net/@selve.me", label: "Threads", title: "Follow us on Threads" },
+  { icon: FaInstagram, href: "https://www.instagram.com/selve.me/", label: "Instagram", title: "Follow us on Instagram" },
+  { icon: FaMedium, href: "https://medium.com/@selve", label: "Medium", title: "Read our blog on Medium" },
 ];
 
 export const Footer = () => {
@@ -121,6 +123,7 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
+                  title={social.title}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <social.icon className="w-5 h-5" />
