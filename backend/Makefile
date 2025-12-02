@@ -26,22 +26,22 @@ help:
 # Installation
 install:
 	@echo " Setting up Python virtual environment..."
-	cd backend && python3 -m venv venv
+	python3 -m venv .venv
 	@echo "📦 Installing backend dependencies..."
-	cd backend && ./venv/bin/pip install -r requirements.txt
+	./.venv/bin/pip install -r requirements.txt
 	@echo "✅ Backend dependencies installed"
 
 # Development
 dev:
 	@echo "▶️  Starting FastAPI server on http://localhost:8000"
-	./venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	./.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 run: dev
 
 # Testing
 test:
 	@echo "🧪 Running backend tests..."
-	cd backend && ./venv/bin/pytest
+	./.venv/bin/pytest
 
 health:
 	@echo "🏥 Checking backend health..."
