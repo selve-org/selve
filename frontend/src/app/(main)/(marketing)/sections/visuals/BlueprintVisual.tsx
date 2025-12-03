@@ -6,7 +6,7 @@ const BlueprintVisual: React.FC = () => (
     className={`
       w-full h-72 flex items-center justify-center
       bg-center bg-no-repeat bg-contain pointer-events-none select-none
-      bg-[url('/images/fingerprint_invert.png')] dark:bg-[url('/images/fingerprint_2.0.jpg')]
+      bg-[url('/images/fingerprint_invert.png')] dark:bg-[url('/images/fingerprint-grey-2.0.png')]
     `}
   />
 );
