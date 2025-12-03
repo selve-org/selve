@@ -3,6 +3,7 @@ fastapi==0.115.5
 uvicorn[standard]==0.32.1
 pydantic==2.10.3
 pydantic-settings==2.6.1
+email-validator==2.3.0
 
 # Database
 prisma==0.15.0
@@ -24,10 +25,15 @@ svix==1.36.0
 # NLP / Sentiment Analysis
 textblob==0.18.0.post0
 
-# Future: AI and Psychology Libraries (to be added in later phases)
-# numpy==2.0.2
-# scikit-learn==1.5.2
-# langchain==0.3.11
-# langchain-openai==0.2.11
+# AI / LLM
+openai==2.8.1
+anthropic==0.75.0
+numpy==2.3.5
+scipy==1.16.3
+
+# Async HTTP
+aiohttp==3.13.2
+
+# Utilities
 nanoid==2.0.0
 requests==2.32.3
