@@ -367,3 +367,164 @@ model NewsletterSubscriber {
   @@index([status])
   @@index([clerkUserId])
 }
+
+// ============================================================================
+// SELVE Chatbot Models - AI-Powered Personality Assistant
+// ============================================================================
+
+model ChatSession {
+  id                String              @id @default(cuid())
+  userId            String
+  clerkUserId       String
+
+  title             String?             // Auto-generated from first message
+  status            String              @default("active")  // "active" | "archived"
+  totalTokens       Int                 @default(0)
+  compressionCount  Int                 @default(0)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  lastMessageAt     DateTime            @default(now())
+
+  messages          ChatMessage[]
+  episodicMemories  EpisodicMemory[]
+  semanticMemories  SemanticMemory[]
+
+  @@index([userId, status, lastMessageAt])
+  @@index([clerkUserId, status])
+}
+
+model ChatMessage {
+  id                String              @id @default(cuid())
+  sessionId         String
+  session           ChatSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  role              String              // "user" | "assistant" | "system"
+  content           String
+  tokenCount        Int                 @default(0)
+  model             String?             // "claude-3-5-sonnet" | "gpt-4o-mini"
+  provider          String?             // "anthropic" | "openai"
+  cost              Float?
+
+  retrievedContextIds Json?             // IDs of knowledge/memories used
+  confidenceTags    Json?               // [{text, confidence, source}]
+
+  createdAt         DateTime            @default(now())
+  isCompressed      Boolean             @default(false)
+  compressedAt      DateTime?
+
+  @@index([sessionId, createdAt])
+}
+
+model EpisodicMemory {
+  id                String              @id @default(cuid())
+  userId            String
+  sessionId         String?
+  session           ChatSession?        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  title             String
+  summary           String
+  keyInsights       Json                // [{insight, confidence, source}]
+  unresolvedTopics  Json?
+  emotionalState    String?
+
+  sourceMessageIds  String[]
+  compressionModel  String              // Model used for compression
+  compressionCost   Float?
+
+  vectorId          String?             // Qdrant point ID
+  embedded          Boolean             @default(false)
+
+  createdAt         DateTime            @default(now())
+  spanStart         DateTime            // Start time of compressed conversation
+  spanEnd           DateTime            // End time of compressed conversation
+  lastAccessedAt    DateTime            @default(now())
+
+  @@index([userId, spanStart])
+}
+
+model SemanticMemory {
+  id                String              @id @default(cuid())
+  userId            String
+  sessionId         String?
+  session           ChatSession?        @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  category          String              // "behavior_pattern" | "relationship_insight" | "goal" | "value"
+  content           String
+  confidence        String              // "CONFIRMED" | "OBSERVED" | "HYPOTHESIS"
+
+  evidenceCount     Int                 @default(1)
+  firstObservedAt   DateTime
+  lastObservedAt    DateTime
+  sourceMessageIds  String[]
+  relatedDimension  String?             // LUMEN, AETHER, ORPHEUS, etc.
+
+  vectorId          String?             // Qdrant point ID
+  embedded          Boolean             @default(false)
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  isActive          Boolean             @default(true)
+
+  @@index([userId, confidence, isActive])
+}
+
+model ContentValidation {
+  id                String              @id @default(cuid())
+
+  sourceType        String              // "tim_lahaye" | "youtube" | "web" | "reddit"
+  sourceUrl         String?
+  originalContent   String
+  validatedContent  String
+
+  validationStatus  String              @default("pending")  // "pending" | "approved" | "rejected"
+  validatedBy       String?             // "llm" | "human:{admin_id}"
+  validationNotes   String?
+
+  isIndexed         Boolean             @default(false)
+  vectorId          String?             // Qdrant point ID
+
+  createdAt         DateTime            @default(now())
+  validatedAt       DateTime?
+
+  @@index([sourceType, validationStatus])
+}
+
+model ChatbotKnowledgeSync {
+  id                String              @id @default(cuid())
+  userId            String
+
+  syncType          String              // "assessment_result" | "friend_assessment"
+  sourceId          String              // AssessmentResult ID or FriendResponse ID
+  sourceType        String
+
+  status            String              @default("pending")  // "pending" | "completed" | "failed"
+  vectorId          String?             // Qdrant point ID
+  errorMessage      String?
+
+  syncedAt          DateTime?
+  createdAt         DateTime            @default(now())
+
+  @@index([userId, syncType, status])
+}
+
+model ChatbotAnalytics {
+  id                String              @id @default(cuid())
+  userId            String
+  sessionId         String
+
+  messageCount      Int                 @default(0)
+  totalTokensUsed   Int                 @default(0)
+  totalCost         Float               @default(0)
+  avgResponseTime   Float?
+
+  compressionTriggers Int               @default(0)
+
+  provider          String?             // "anthropic" | "openai"
+  model             String?
+
+  date              DateTime            @default(now())
+
+  @@index([userId, date])
+  @@index([provider, model, date])
+}
