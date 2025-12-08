@@ -4,27 +4,51 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: "https://8f93cce0b6bf2d61783c805ab5bfbd4b@o4509396398899200.ingest.us.sentry.io/4509430493282304",
+const CONSENT_KEY = "selve_consent_v1";
+let sentryInitialized = false;
 
-  // Add optional integrations for additional features
-  integrations: [
-    Sentry.replayIntegration(),
-  ],
+function readAnalyticsConsent(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = window.localStorage.getItem(CONSENT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { prefs?: { analytics?: boolean } };
+    return Boolean(parsed.prefs?.analytics);
+  } catch (error) {
+    console.warn("Could not read consent for Sentry", error);
+    return false;
+  }
+}
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+function initSentryIfPermitted() {
+  if (sentryInitialized) return;
+  if (!readAnalyticsConsent()) return;
 
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
+  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
+  if (!dsn) {
+    console.warn("Sentry DSN missing; client instrumentation skipped.");
+    return;
+  }
 
-  // Define how likely Replay events are sampled when an error occurs.
-  replaysOnErrorSampleRate: 1.0,
+  Sentry.init({
+    dsn,
+    integrations: [Sentry.replayIntegration()],
+    tracesSampleRate: 0.2,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    debug: false,
+  });
+  sentryInitialized = true;
+}
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-});
+if (typeof window !== "undefined") {
+  initSentryIfPermitted();
+  window.addEventListener("selve:consent", (event: Event) => {
+    const detail = (event as CustomEvent).detail as { analytics?: boolean } | undefined;
+    if (detail?.analytics) {
+      initSentryIfPermitted();
+    }
+  });
+}
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

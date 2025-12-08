@@ -141,6 +141,12 @@ export default function PrivacyPage() {
               tools to understand how users interact with our Service. You can control cookie 
               preferences through your browser settings.
             </p>
+            <p className="text-muted-foreground leading-relaxed mt-3">
+              When you first visit, we show a consent banner. You can accept or decline optional
+              analytics and privacy-filtered session replay. Essential cookies (for authentication and
+              assessment continuity) always remain on. You can revisit your choice anytime from the
+              banner link or your browser settings.
+            </p>
           </section>
 
           <section>

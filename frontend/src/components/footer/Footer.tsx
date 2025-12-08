@@ -7,6 +7,7 @@ import { useFooterVisibility } from "@/context/FooterVisibilityContext";
 import { SelveLogo } from "@/components/logo/SelveLogo";
 import { footerLinks } from "./footerLinks";
 import { FooterLink } from "./FooterLink";
+import { useConsent } from "@/contexts/ConsentContext";
 import { 
   FaInstagram, 
   FaYoutube, 
@@ -28,6 +29,7 @@ const socialLinks = [
 export const Footer = () => {
   const footerRef = useRef<HTMLElement>(null);
   const { setFooterVisibility } = useFooterVisibility();
+  const { openManager } = useConsent();
 
   useEffect(() => {
     if (!footerRef.current) return;
@@ -112,6 +114,13 @@ export const Footer = () => {
               <Link href="/privacy" className="hover:text-foreground transition-colors">
                 Privacy
               </Link>
+              <button
+                type="button"
+                onClick={openManager}
+                className="hover:text-foreground transition-colors underline-offset-4 cursor-pointer"
+              >
+                Cookies & privacy
+              </button>
             </div>
             
             {/* Social Media Icons */}
@@ -124,7 +133,7 @@ export const Footer = () => {
                   rel="noopener noreferrer"
                   aria-label={social.label}
                   title={social.title}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   <social.icon className="w-5 h-5" />
                 </a>

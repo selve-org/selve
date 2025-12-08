@@ -7,19 +7,35 @@ import { usePostHog } from 'posthog-js/react'
 
 import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider } from 'posthog-js/react'
+import { useConsent } from "@/contexts/ConsentContext"
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const { preferences } = useConsent();
+  const hasAnalyticsConsent = preferences.analytics;
+
   useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
-      person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
-      capture_pageview: false // Disable automatic pageview capture, as we capture manually
-    })
-  }, [])
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY as string | undefined;
+    if (!key) {
+      console.warn("PostHog key missing; analytics disabled.");
+      return;
+    }
+
+    if (hasAnalyticsConsent) {
+      // Initialize once; PostHog handles internal idempotency.
+      posthog.init(key, {
+        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
+        person_profiles: 'identified_only',
+        capture_pageview: false,
+      });
+      posthog.opt_in_capturing();
+    } else {
+      posthog.opt_out_capturing();
+    }
+  }, [hasAnalyticsConsent])
 
   return (
     <PHProvider client={posthog}>
-      <SuspendedPostHogPageView />
+      {hasAnalyticsConsent ? <SuspendedPostHogPageView /> : null}
       {children}
     </PHProvider>
   )

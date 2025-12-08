@@ -13,6 +13,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AssessmentSessionProvider } from "@/contexts/AssessmentSessionContext";
 import { FriendCompletionToast } from "@/components/FriendCompletionToast";
 import { ConsoleBranding } from "@/components/ConsoleBranding";
+import { ConsentProvider } from "@/contexts/ConsentContext";
+import { ConsentBanner } from "@/components/ConsentBanner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -77,18 +79,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} ${crimsonText.variable} antialiased`}
       >
-        <PostHogProvider>
-          <ClerkProvider>
-            <ThemeProvider>
-              <AssessmentSessionProvider>
-                {children}
-                <Toaster position="top-right" richColors closeButton />
-                <FriendCompletionToast />
-                <ConsoleBranding />
-              </AssessmentSessionProvider>
-            </ThemeProvider>
-          </ClerkProvider>
-        </PostHogProvider>
+        <ConsentProvider>
+          <PostHogProvider>
+            <ClerkProvider>
+              <ThemeProvider>
+                <AssessmentSessionProvider>
+                  {children}
+                  <Toaster position="top-right" richColors closeButton />
+                  <FriendCompletionToast />
+                  <ConsoleBranding />
+                  <ConsentBanner />
+                </AssessmentSessionProvider>
+              </ThemeProvider>
+            </ClerkProvider>
+          </PostHogProvider>
+        </ConsentProvider>
       </body>
     </html>
   );
