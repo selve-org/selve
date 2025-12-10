@@ -36,7 +36,9 @@ export function TabNavigation({ tabs, activeTab, onTabChange }: TabNavigationPro
             return (
               <button
                 key={tab.id}
-                ref={(el) => (tabRefs.current[index] = el)}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
                 onClick={() => onTabChange(tab.id)}
                 aria-selected={activeTab === tab.id}
                 role="tab"

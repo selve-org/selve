@@ -108,7 +108,7 @@ export function SecurityPrivacyTab() {
       try {
         const totp = await user?.createTOTP();
         if (totp) {
-          setQrCodeUrl(totp.qrCodeUrl || "");
+          setQrCodeUrl((totp as any)?.qrCodeUrl || "");
           setShowQRCode(true);
         }
       } catch (error: any) {

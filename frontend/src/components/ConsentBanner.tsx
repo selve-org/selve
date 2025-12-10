@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useConsent } from "@/contexts/ConsentContext";
 
 export function ConsentBanner() {
@@ -14,13 +14,55 @@ export function ConsentBanner() {
     closeManager,
   } = useConsent();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [readyToShow, setReadyToShow] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
 
-  const shouldShow = !hasDecided || managerOpen;
+  // Show after a short delay or when the user interacts with the page (scroll).
+  useEffect(() => {
+    if (hasDecided || readyToShow) return;
+
+    const timer = window.setTimeout(() => setReadyToShow(true), 7000); // ~7s within 5–10s window
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const doc = document.documentElement;
+      const maxScroll = Math.max(doc.scrollHeight - window.innerHeight, 0);
+      const progress = maxScroll === 0 ? 0 : scrollY / maxScroll; // 0..1
+
+      // Trigger once user reaches ~50% of the page
+      if (progress >= 0.5) {
+        setReadyToShow(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [hasDecided, readyToShow]);
+
+  useEffect(() => {
+    const shouldShow = managerOpen || (!hasDecided && readyToShow);
+    if (shouldShow) {
+      // Kick off after paint so transitions fire
+      requestAnimationFrame(() => setAnimateIn(true));
+    } else {
+      setAnimateIn(false);
+    }
+  }, [managerOpen, hasDecided, readyToShow]);
+
+  const shouldShow = managerOpen || (!hasDecided && readyToShow);
   if (!shouldShow) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 sm:left-6 sm:right-6">
-      <div className="bg-background/90 border border-foreground/10 shadow-2xl backdrop-blur-xl rounded-2xl px-4 py-4 sm:px-6 sm:py-5 flex flex-col gap-4">
+    <div
+      className={`fixed bottom-4 left-4 right-4 z-50 sm:left-6 sm:right-6 transition-all duration-500 ease-out ${
+        animateIn ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
+      }`}
+    >
+      <div className="bg-background/90 border border-foreground/10 shadow-2xl backdrop-blur-xl rounded-2xl px-4 py-4 sm:px-6 sm:py-5 flex flex-col gap-4 transition-transform duration-500 ease-out">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
           <div className="flex-1 space-y-2">
             <div className="inline-flex items-center gap-2 rounded-full bg-foreground/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-foreground/70">

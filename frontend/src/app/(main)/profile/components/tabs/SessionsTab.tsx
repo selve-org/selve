@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { SettingsCard } from "../ui/SettingsCard";
 import { Monitor, Smartphone, Tablet, AlertCircle, CheckCircle, MapPin } from "lucide-react";
-import type { SessionResource } from "@clerk/types";
+import type { SessionWithActivitiesResource } from "@clerk/types";
 
 export function SessionsTab() {
   const { user } = useUser();
   const clerk = useClerk();
-  const [sessions, setSessions] = useState<SessionResource[]>([]);
+  const [sessions, setSessions] = useState<SessionWithActivitiesResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [revokeLoading, setRevokeLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -77,7 +77,7 @@ export function SessionsTab() {
 
     try {
       const session = sessions.find((s) => s.id === sessionId);
-      await session?.revoke();
+      await (session as any)?.revoke?.();
 
       setSuccess("Device signed out successfully");
 

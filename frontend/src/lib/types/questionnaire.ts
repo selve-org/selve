@@ -34,7 +34,8 @@ export type QuestionInputType =
   | "color-picker" // Color selection
   | "range-slider" // Range slider with min and max values
   | "toggle" // Toggle/switch button
-  | "likert-scale"; // Likert scale (Strongly Disagree to Strongly Agree)
+  | "likert-scale" // Likert scale (Strongly Disagree to Strongly Agree)
+  | "likert-5-not-sure"; // Likert with neutral option
 
 /**
  * Validation rules that can be applied to any input type

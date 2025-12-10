@@ -16,6 +16,7 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/nextjs": "^6.36.0",
+    "@clerk/types": "^4.30.0",
     "@heroicons/react": "^2.2.0",
     "@sentry/nextjs": "^10.29.0",
     "clsx": "^2.1.1",
