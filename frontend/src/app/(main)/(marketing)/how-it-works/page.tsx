@@ -4,37 +4,60 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import type { MouseEvent } from "react";
 
+// Smooth scroll with custom ease-in-out (slow → fast → slow)
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+const smoothScrollTo = (targetY: number, duration = 950) => {
+  const startY = window.scrollY || window.pageYOffset;
+  const distance = targetY - startY;
+  const startTime = performance.now();
+
+  const tick = (now: number) => {
+    const elapsed = Math.min((now - startTime) / duration, 1);
+    const eased = easeInOutCubic(elapsed);
+    window.scrollTo(0, startY + distance * eased);
+    if (elapsed < 1) requestAnimationFrame(tick);
+  };
+
+  requestAnimationFrame(tick);
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // LINEAR-STYLE ELECTRIC CURRENT COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 type CurrentColor = "amber" | "cyan" | "violet" | "emerald" | "rose";
 
-const currentColors: Record<CurrentColor, { glow: string; pulse: string; bg: string }> = {
+const currentColors: Record<CurrentColor, { glow: string; pulse: string; bg: string; lightBg: string }> = {
   amber: {
     glow: "rgba(251, 191, 36, 0.9)",
     pulse: "rgba(251, 191, 36, 1)",
     bg: "rgba(251, 191, 36, 0.15)",
+    lightBg: "rgba(251, 191, 36, 0.12)",
   },
   cyan: {
     glow: "rgba(34, 211, 238, 0.9)",
     pulse: "rgba(34, 211, 238, 1)",
     bg: "rgba(34, 211, 238, 0.15)",
+    lightBg: "rgba(6, 182, 212, 0.12)",
   },
   violet: {
     glow: "rgba(167, 139, 250, 0.9)",
     pulse: "rgba(167, 139, 250, 1)",
     bg: "rgba(167, 139, 250, 0.15)",
+    lightBg: "rgba(139, 92, 246, 0.12)",
   },
   emerald: {
     glow: "rgba(52, 211, 153, 0.9)",
     pulse: "rgba(52, 211, 153, 1)",
     bg: "rgba(52, 211, 153, 0.15)",
+    lightBg: "rgba(16, 185, 129, 0.12)",
   },
   rose: {
     glow: "rgba(251, 113, 133, 0.9)",
     pulse: "rgba(251, 113, 133, 1)",
     bg: "rgba(251, 113, 133, 0.15)",
+    lightBg: "rgba(244, 63, 94, 0.12)",
   },
 };
 
@@ -75,7 +98,7 @@ const NeuralNetworkViz = () => {
   ];
 
   return (
-    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-950">
+    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-950">
       <svg viewBox="0 0 480 260" className="h-full w-full">
         <defs>
           <linearGradient id="neural-pulse-amber" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -101,7 +124,7 @@ const NeuralNetworkViz = () => {
             y1={nodes[conn.from].y}
             x2={nodes[conn.to].x}
             y2={nodes[conn.to].y}
-            stroke="rgba(255,255,255,0.08)"
+            className="stroke-neutral-300 dark:stroke-white/[0.08]"
             strokeWidth="1.5"
           />
         ))}
@@ -133,22 +156,31 @@ const NeuralNetworkViz = () => {
               cx={node.x}
               cy={node.y}
               r={node.layer === 3 ? 14 : 10}
-              fill="rgba(0,0,0,0.6)"
-              stroke={node.layer === 3 ? currentColors.amber.pulse : "rgba(255,255,255,0.2)"}
+              className={node.layer === 3 ? "fill-white dark:fill-black/60" : "fill-white dark:fill-black/60"}
+              stroke={node.layer === 3 ? currentColors.amber.pulse : undefined}
               strokeWidth={node.layer === 3 ? 2 : 1}
             />
+            {node.layer !== 3 && (
+              <circle
+                cx={node.x}
+                cy={node.y}
+                r={10}
+                className="fill-none stroke-neutral-300 dark:stroke-white/20"
+                strokeWidth="1"
+              />
+            )}
             <circle
               cx={node.x}
               cy={node.y}
               r={4}
-              fill={node.layer === 3 ? currentColors.amber.pulse : "rgba(255,255,255,0.4)"}
-              className={node.layer === 3 ? "neural-node-pulse" : ""}
+              fill={node.layer === 3 ? currentColors.amber.pulse : undefined}
+              className={node.layer === 3 ? "neural-node-pulse" : "fill-neutral-400 dark:fill-white/40"}
             />
           </g>
         ))}
 
         {/* Labels */}
-        <text x="60" y="250" fill="rgba(255,255,255,0.4)" fontSize="10" textAnchor="middle">
+        <text x="60" y="250" className="fill-neutral-500 dark:fill-white/40" fontSize="10" textAnchor="middle">
           Questions
         </text>
         <text x="420" y="250" fill={currentColors.amber.pulse} fontSize="10" textAnchor="middle">
@@ -175,7 +207,7 @@ const ConnectionGraphViz = () => {
   ];
 
   return (
-    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-950">
+    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-950">
       <svg viewBox="0 0 480 280" className="h-full w-full">
         <defs>
           <linearGradient id="friend-pulse-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -208,7 +240,7 @@ const ConnectionGraphViz = () => {
             y1={centerNode.y}
             x2={friend.x}
             y2={friend.y}
-            stroke="rgba(255,255,255,0.06)"
+            className="stroke-neutral-300 dark:stroke-white/[0.06]"
             strokeWidth="2"
           />
         ))}
@@ -237,14 +269,13 @@ const ConnectionGraphViz = () => {
               cx={friend.x}
               cy={friend.y}
               r="20"
-              fill="rgba(0,0,0,0.7)"
-              stroke="rgba(255,255,255,0.15)"
+              className="fill-white dark:fill-black/70 stroke-neutral-300 dark:stroke-white/15"
               strokeWidth="1"
             />
             <text
               x={friend.x}
               y={friend.y + 4}
-              fill="rgba(255,255,255,0.5)"
+              className="fill-neutral-500 dark:fill-white/50"
               fontSize="12"
               textAnchor="middle"
               fontWeight="500"
@@ -259,10 +290,9 @@ const ConnectionGraphViz = () => {
           cx={centerNode.x}
           cy={centerNode.y}
           r="28"
-          fill="rgba(0,0,0,0.8)"
+          className="fill-white dark:fill-black/80"
           stroke={currentColors.cyan.pulse}
           strokeWidth="2"
-          className="center-node-pulse"
         />
         <text
           x={centerNode.x}
@@ -285,7 +315,7 @@ const ConnectionGraphViz = () => {
 
 const BlueprintFusionViz = () => {
   return (
-    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-950">
+    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-950">
       <svg viewBox="0 0 480 280" className="h-full w-full">
         <defs>
           <linearGradient id="fusion-pulse-violet" x1="0%" y1="50%" x2="100%" y2="50%">
@@ -310,26 +340,26 @@ const BlueprintFusionViz = () => {
         </defs>
 
         {/* Self signal box */}
-        <rect x="30" y="40" width="100" height="60" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" />
-        <text x="80" y="75" fill="rgba(255,255,255,0.5)" fontSize="11" textAnchor="middle">Self Signal</text>
+        <rect x="30" y="40" width="100" height="60" rx="8" className="fill-white dark:fill-white/[0.03] stroke-neutral-300 dark:stroke-white/10" />
+        <text x="80" y="75" className="fill-neutral-600 dark:fill-white/50" fontSize="11" textAnchor="middle">Self Signal</text>
 
         {/* Friend signal box */}
-        <rect x="30" y="180" width="100" height="60" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" />
-        <text x="80" y="215" fill="rgba(255,255,255,0.5)" fontSize="11" textAnchor="middle">Friend Signal</text>
+        <rect x="30" y="180" width="100" height="60" rx="8" className="fill-white dark:fill-white/[0.03] stroke-neutral-300 dark:stroke-white/10" />
+        <text x="80" y="215" className="fill-neutral-600 dark:fill-white/50" fontSize="11" textAnchor="middle">Friend Signal</text>
 
         {/* Merge point */}
-        <circle cx="240" cy="140" r="24" fill="rgba(0,0,0,0.6)" stroke={currentColors.violet.pulse} strokeWidth="2" />
+        <circle cx="240" cy="140" r="24" className="fill-white dark:fill-black/60" stroke={currentColors.violet.pulse} strokeWidth="2" />
         <text x="240" y="144" fill={currentColors.violet.pulse} fontSize="10" textAnchor="middle">FUSE</text>
 
         {/* Blueprint output */}
-        <rect x="340" y="100" width="110" height="80" rx="10" fill="rgba(0,0,0,0.5)" stroke={currentColors.violet.pulse} strokeWidth="2" />
+        <rect x="340" y="100" width="110" height="80" rx="10" className="fill-white dark:fill-black/50" stroke={currentColors.violet.pulse} strokeWidth="2" />
         <text x="395" y="135" fill={currentColors.violet.pulse} fontSize="11" textAnchor="middle" fontWeight="600">Blueprint</text>
-        <text x="395" y="155" fill="rgba(255,255,255,0.4)" fontSize="9" textAnchor="middle">8 Dimensions</text>
+        <text x="395" y="155" className="fill-neutral-500 dark:fill-white/40" fontSize="9" textAnchor="middle">8 Dimensions</text>
 
         {/* Static paths */}
-        <path d="M 130 70 C 180 70, 180 140, 216 140" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
-        <path d="M 130 210 C 180 210, 180 140, 216 140" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
-        <path d="M 264 140 L 340 140" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
+        <path d="M 130 70 C 180 70, 180 140, 216 140" fill="none" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
+        <path d="M 130 210 C 180 210, 180 140, 216 140" fill="none" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
+        <path d="M 264 140 L 340 140" fill="none" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
 
         {/* Animated current - Self to Merge */}
         <path
@@ -374,19 +404,19 @@ const BlueprintFusionViz = () => {
 
 const CoachChatViz = () => {
   return (
-    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-950 p-4">
+    <div className="relative h-[280px] w-full overflow-hidden rounded-2xl bg-neutral-100 p-4 dark:bg-neutral-950">
       <div className="flex h-full flex-col justify-between">
         {/* Chat messages with flowing current */}
         <div className="space-y-3">
           {/* User message */}
           <div className="flex items-start gap-3">
             <div className="relative">
-              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
-                <span className="text-xs text-white/50">You</span>
+              <div className="h-8 w-8 rounded-full bg-neutral-200 flex items-center justify-center dark:bg-white/10">
+                <span className="text-xs text-neutral-600 dark:text-white/50">You</span>
               </div>
             </div>
             <div className="relative flex-1">
-              <div className="rounded-xl bg-white/5 px-4 py-2.5 text-sm text-white/60">
+              <div className="rounded-xl bg-white px-4 py-2.5 text-sm text-neutral-700 shadow-sm dark:bg-white/5 dark:text-white/60">
                 How should I approach this negotiation?
               </div>
               <svg className="absolute -right-2 top-1/2 h-16 w-24 -translate-y-1/2" viewBox="0 0 96 64">
@@ -397,7 +427,7 @@ const CoachChatViz = () => {
                     <stop offset="100%" stopColor="transparent" />
                   </linearGradient>
                 </defs>
-                <path d="M 0 32 C 30 32, 50 32, 96 32" stroke="rgba(255,255,255,0.06)" strokeWidth="2" fill="none" />
+                <path d="M 0 32 C 30 32, 50 32, 96 32" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" fill="none" />
                 <path
                   d="M 0 32 C 30 32, 50 32, 96 32"
                   stroke="url(#chat-pulse-rose)"
@@ -421,22 +451,22 @@ const CoachChatViz = () => {
                   </linearGradient>
                 </defs>
                 {/* Profile, Context, Response nodes */}
-                <circle cx="32" cy="24" r="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" />
-                <circle cx="96" cy="24" r="10" fill="rgba(0,0,0,0.5)" stroke={currentColors.rose.pulse} strokeWidth="1.5" />
-                <circle cx="160" cy="24" r="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" />
+                <circle cx="32" cy="24" r="8" className="fill-white dark:fill-white/5 stroke-neutral-300 dark:stroke-white/15" />
+                <circle cx="96" cy="24" r="10" className="fill-white dark:fill-black/50" stroke={currentColors.rose.pulse} strokeWidth="1.5" />
+                <circle cx="160" cy="24" r="8" className="fill-white dark:fill-white/5 stroke-neutral-300 dark:stroke-white/15" />
 
                 {/* Connection lines */}
-                <line x1="44" y1="24" x2="82" y2="24" stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
-                <line x1="110" y1="24" x2="148" y2="24" stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
+                <line x1="44" y1="24" x2="82" y2="24" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
+                <line x1="110" y1="24" x2="148" y2="24" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
 
                 {/* Animated currents */}
                 <line x1="44" y1="24" x2="82" y2="24" stroke="url(#process-gradient)" strokeWidth="2" className="process-current-1" />
                 <line x1="110" y1="24" x2="148" y2="24" stroke="url(#process-gradient)" strokeWidth="2" className="process-current-2" />
 
                 {/* Labels */}
-                <text x="32" y="44" fill="rgba(255,255,255,0.3)" fontSize="7" textAnchor="middle">Profile</text>
+                <text x="32" y="44" className="fill-neutral-400 dark:fill-white/30" fontSize="7" textAnchor="middle">Profile</text>
                 <text x="96" y="44" fill={currentColors.rose.pulse} fontSize="7" textAnchor="middle">Process</text>
-                <text x="160" y="44" fill="rgba(255,255,255,0.3)" fontSize="7" textAnchor="middle">Response</text>
+                <text x="160" y="44" className="fill-neutral-400 dark:fill-white/30" fontSize="7" textAnchor="middle">Response</text>
               </svg>
             </div>
           </div>
@@ -444,7 +474,7 @@ const CoachChatViz = () => {
           {/* Coach response */}
           <div className="flex items-start gap-3">
             <svg className="h-16 w-24 flex-shrink-0" viewBox="0 0 96 64">
-              <path d="M 96 32 C 66 32, 46 32, 0 32" stroke="rgba(255,255,255,0.06)" strokeWidth="2" fill="none" />
+              <path d="M 96 32 C 66 32, 46 32, 0 32" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" fill="none" />
               <path
                 d="M 96 32 C 66 32, 46 32, 0 32"
                 stroke="url(#chat-pulse-rose)"
@@ -455,22 +485,22 @@ const CoachChatViz = () => {
             </svg>
             <div className="flex-1">
               <div className="relative">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-rose-500/20 to-rose-600/20 border border-rose-500/30 flex items-center justify-center">
-                  <span className="text-xs text-rose-400">S</span>
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-rose-100 to-rose-200 border border-rose-300 flex items-center justify-center dark:from-rose-500/20 dark:to-rose-600/20 dark:border-rose-500/30">
+                  <span className="text-xs text-rose-600 dark:text-rose-400">S</span>
                 </div>
               </div>
             </div>
-            <div className="flex-1 rounded-xl bg-rose-500/5 border border-rose-500/10 px-4 py-2.5 text-sm text-white/60">
-              <span className="text-rose-400">Based on your ORIN score,</span> lead with data first, then emotional framing...
+            <div className="flex-1 rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-sm text-neutral-700 dark:bg-rose-500/5 dark:border-rose-500/10 dark:text-white/60">
+              <span className="text-rose-600 dark:text-rose-400">Based on your ORIN score,</span> lead with data first, then emotional framing...
             </div>
           </div>
         </div>
 
         {/* Input area */}
-        <div className="mt-4 flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3">
-          <span className="text-sm text-white/30">Ask your blueprint anything...</span>
-          <div className="ml-auto h-6 w-6 rounded-full bg-rose-500/20 flex items-center justify-center">
-            <svg className="h-3 w-3 text-rose-400" viewBox="0 0 24 24" fill="currentColor">
+        <div className="mt-4 flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm dark:bg-white/5">
+          <span className="text-sm text-neutral-400 dark:text-white/30">Ask your blueprint anything...</span>
+          <div className="ml-auto h-6 w-6 rounded-full bg-rose-100 flex items-center justify-center dark:bg-rose-500/20">
+            <svg className="h-3 w-3 text-rose-600 dark:text-rose-400" viewBox="0 0 24 24" fill="currentColor">
               <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
             </svg>
           </div>
@@ -485,7 +515,7 @@ const CoachChatViz = () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const ClarityViz = () => (
-  <div className="relative h-[200px] w-full overflow-hidden rounded-xl bg-neutral-950 p-4">
+  <div className="relative h-[200px] w-full overflow-hidden rounded-xl bg-neutral-100 p-4 dark:bg-neutral-950">
     <svg viewBox="0 0 320 160" className="h-full w-full">
       <defs>
         <linearGradient id="clarity-bar" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -496,8 +526,8 @@ const ClarityViz = () => (
       {/* Dimension bars */}
       {["LUMEN", "AETHER", "ORPHEUS", "ORIN"].map((dim, i) => (
         <g key={dim} transform={`translate(0, ${i * 38})`}>
-          <text x="10" y="20" fill="rgba(255,255,255,0.4)" fontSize="10">{dim}</text>
-          <rect x="80" y="10" width="220" height="16" rx="4" fill="rgba(255,255,255,0.03)" />
+          <text x="10" y="20" className="fill-neutral-500 dark:fill-white/40" fontSize="10">{dim}</text>
+          <rect x="80" y="10" width="220" height="16" rx="4" className="fill-neutral-200 dark:fill-white/[0.03]" />
           <rect
             x="80"
             y="10"
@@ -518,12 +548,12 @@ const ClarityViz = () => (
 );
 
 const AlignmentViz = () => (
-  <div className="relative h-[200px] w-full overflow-hidden rounded-xl bg-neutral-950 p-4">
+  <div className="relative h-[200px] w-full overflow-hidden rounded-xl bg-neutral-100 p-4 dark:bg-neutral-950">
     <svg viewBox="0 0 320 160" className="h-full w-full">
       <defs>
         <linearGradient id="align-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
           <stop offset="0%" stopColor={currentColors.emerald.pulse} />
-          <stop offset="50%" stopColor="rgba(255,255,255,0.1)" />
+          <stop offset="50%" stopColor="rgba(150,150,150,0.3)" />
           <stop offset="100%" stopColor={currentColors.rose.pulse} />
         </linearGradient>
       </defs>
@@ -542,13 +572,12 @@ const AlignmentViz = () => (
             cx={40 + pos * 240}
             cy="72"
             r="8"
-            fill="rgba(0,0,0,0.8)"
-            stroke={pos < 0.5 ? currentColors.emerald.pulse : pos > 0.5 ? currentColors.rose.pulse : "rgba(255,255,255,0.3)"}
+            className="fill-white dark:fill-black/80"
+            stroke={pos < 0.5 ? currentColors.emerald.pulse : pos > 0.5 ? currentColors.rose.pulse : "rgba(150,150,150,0.5)"}
             strokeWidth="2"
-            className="alignment-marker"
             style={{ animationDelay: `${i * 0.2}s` }}
           />
-          <text x={40 + pos * 240} y="100" fill="rgba(255,255,255,0.4)" fontSize="8" textAnchor="middle">
+          <text x={40 + pos * 240} y="100" className="fill-neutral-500 dark:fill-white/40" fontSize="8" textAnchor="middle">
             {["LUMEN", "AETHER", "ORPHEUS", "ORIN", "LYRA"][i]}
           </text>
         </g>
@@ -556,15 +585,15 @@ const AlignmentViz = () => (
       
       {/* You vs Friends indicators */}
       <circle cx="100" cy="130" r="4" fill={currentColors.cyan.pulse} />
-      <text x="110" y="134" fill="rgba(255,255,255,0.4)" fontSize="9">Self</text>
+      <text x="110" y="134" className="fill-neutral-500 dark:fill-white/40" fontSize="9">Self</text>
       <circle cx="180" cy="130" r="4" fill={currentColors.violet.pulse} />
-      <text x="190" y="134" fill="rgba(255,255,255,0.4)" fontSize="9">Friends</text>
+      <text x="190" y="134" className="fill-neutral-500 dark:fill-white/40" fontSize="9">Friends</text>
     </svg>
   </div>
 );
 
 const CoachStyleViz = () => (
-  <div className="relative h-[200px] w-full overflow-hidden rounded-xl bg-neutral-950 p-4">
+  <div className="relative h-[200px] w-full overflow-hidden rounded-xl bg-neutral-100 p-4 dark:bg-neutral-950">
     <div className="flex h-full flex-col justify-between">
       {/* Style options with current flowing to selected */}
       <svg viewBox="0 0 320 140" className="h-full w-full">
@@ -577,7 +606,7 @@ const CoachStyleViz = () => (
         </defs>
         
         {/* Profile node */}
-        <circle cx="50" cy="70" r="16" fill="rgba(0,0,0,0.6)" stroke={currentColors.violet.pulse} strokeWidth="2" />
+        <circle cx="50" cy="70" r="16" className="fill-white dark:fill-black/60" stroke={currentColors.violet.pulse} strokeWidth="2" />
         <text x="50" y="74" fill={currentColors.violet.pulse} fontSize="8" textAnchor="middle">YOU</text>
         
         {/* Style options */}
@@ -585,10 +614,10 @@ const CoachStyleViz = () => (
           { y: 30, label: "Direct", active: false },
           { y: 70, label: "Compassionate", active: true },
           { y: 110, label: "Strategic", active: false },
-        ].map((style, i) => (
+        ].map((style) => (
           <g key={style.label}>
             {/* Connection line */}
-            <line x1="70" y1="70" x2="130" y2={style.y} stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
+            <line x1="70" y1="70" x2="130" y2={style.y} className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
             {style.active && (
               <line
                 x1="70"
@@ -608,14 +637,16 @@ const CoachStyleViz = () => (
               width="80"
               height="28"
               rx="6"
-              fill={style.active ? "rgba(167, 139, 250, 0.1)" : "rgba(255,255,255,0.02)"}
-              stroke={style.active ? currentColors.violet.pulse : "rgba(255,255,255,0.1)"}
+              className={style.active ? "" : "fill-white dark:fill-white/[0.02] stroke-neutral-300 dark:stroke-white/10"}
+              fill={style.active ? "rgba(167, 139, 250, 0.15)" : undefined}
+              stroke={style.active ? currentColors.violet.pulse : undefined}
               strokeWidth={style.active ? 1.5 : 1}
             />
             <text
               x={170}
               y={style.y + 4}
-              fill={style.active ? currentColors.violet.pulse : "rgba(255,255,255,0.4)"}
+              fill={style.active ? currentColors.violet.pulse : undefined}
+              className={style.active ? "" : "fill-neutral-500 dark:fill-white/40"}
               fontSize="10"
               textAnchor="middle"
             >
@@ -625,7 +656,7 @@ const CoachStyleViz = () => (
             {/* Output arrow */}
             {style.active && (
               <>
-                <line x1="210" y1={style.y} x2="280" y2={style.y} stroke="rgba(255,255,255,0.06)" strokeWidth="2" />
+                <line x1="210" y1={style.y} x2="280" y2={style.y} className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
                 <line
                   x1="210"
                   y1={style.y}
@@ -650,7 +681,7 @@ const CoachStyleViz = () => (
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const RoadmapViz = () => (
-  <div className="relative overflow-hidden rounded-2xl bg-neutral-950 p-6">
+  <div className="relative overflow-hidden rounded-2xl bg-neutral-100 p-6 dark:bg-neutral-950">
     <svg viewBox="0 0 800 200" className="w-full h-auto">
       <defs>
         <linearGradient id="roadmap-pulse" x1="0%" y1="50%" x2="100%" y2="50%">
@@ -668,7 +699,7 @@ const RoadmapViz = () => (
       </defs>
 
       {/* Main timeline */}
-      <line x1="50" y1="100" x2="750" y2="100" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+      <line x1="50" y1="100" x2="750" y2="100" className="stroke-neutral-300 dark:stroke-white/[0.08]" strokeWidth="3" />
       
       {/* Animated current on timeline */}
       <line
@@ -688,46 +719,48 @@ const RoadmapViz = () => (
         { x: 350, label: "Friend Input", sublabel: "Optional", complete: false },
         { x: 550, label: "Blueprint", sublabel: "Instant", complete: false },
         { x: 700, label: "Coach", sublabel: "Ongoing", complete: false },
-      ].map((milestone, i) => (
+      ].map((milestone) => (
         <g key={milestone.label}>
           {/* Milestone marker */}
           <circle
             cx={milestone.x}
             cy="100"
             r="12"
-            fill={milestone.complete ? currentColors.emerald.pulse : "rgba(0,0,0,0.8)"}
-            stroke={milestone.complete ? currentColors.emerald.pulse : "rgba(255,255,255,0.2)"}
+            fill={milestone.complete ? currentColors.emerald.pulse : undefined}
+            className={milestone.complete ? "" : "fill-white dark:fill-black/80 stroke-neutral-300 dark:stroke-white/20"}
+            stroke={milestone.complete ? currentColors.emerald.pulse : undefined}
             strokeWidth="2"
           />
           {milestone.complete && (
             <path
               d={`M ${milestone.x - 4} 100 L ${milestone.x - 1} 103 L ${milestone.x + 5} 97`}
-              stroke="black"
+              stroke="white"
               strokeWidth="2"
               fill="none"
+              className="dark:stroke-black"
             />
           )}
           
           {/* Label */}
-          <text x={milestone.x} y="75" fill="rgba(255,255,255,0.7)" fontSize="12" textAnchor="middle" fontWeight="500">
+          <text x={milestone.x} y="75" className="fill-neutral-700 dark:fill-white/70" fontSize="12" textAnchor="middle" fontWeight="500">
             {milestone.label}
           </text>
-          <text x={milestone.x} y="135" fill="rgba(255,255,255,0.3)" fontSize="10" textAnchor="middle">
+          <text x={milestone.x} y="135" className="fill-neutral-400 dark:fill-white/30" fontSize="10" textAnchor="middle">
             {milestone.sublabel}
           </text>
         </g>
       ))}
 
       {/* Branch to outputs */}
-      <path d="M 550 100 C 600 100, 620 50, 680 50" stroke="rgba(255,255,255,0.06)" strokeWidth="2" fill="none" />
-      <path d="M 550 100 C 600 100, 620 150, 680 150" stroke="rgba(255,255,255,0.06)" strokeWidth="2" fill="none" />
+      <path d="M 550 100 C 600 100, 620 50, 680 50" fill="none" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
+      <path d="M 550 100 C 600 100, 620 150, 680 150" fill="none" className="stroke-neutral-300 dark:stroke-white/[0.06]" strokeWidth="2" />
       
       {/* Branch labels */}
-      <rect x="680" y="35" width="90" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" />
-      <text x="725" y="55" fill="rgba(255,255,255,0.5)" fontSize="10" textAnchor="middle">Action Cards</text>
+      <rect x="680" y="35" width="90" height="30" rx="6" className="fill-white dark:fill-white/[0.03] stroke-neutral-300 dark:stroke-white/10" />
+      <text x="725" y="55" className="fill-neutral-600 dark:fill-white/50" fontSize="10" textAnchor="middle">Action Cards</text>
       
-      <rect x="680" y="135" width="90" height="30" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" />
-      <text x="725" y="155" fill="rgba(255,255,255,0.5)" fontSize="10" textAnchor="middle">Insights</text>
+      <rect x="680" y="135" width="90" height="30" rx="6" className="fill-white dark:fill-white/[0.03] stroke-neutral-300 dark:stroke-white/10" />
+      <text x="725" y="155" className="fill-neutral-600 dark:fill-white/50" fontSize="10" textAnchor="middle">Insights</text>
     </svg>
   </div>
 );
@@ -814,12 +847,13 @@ export default function HowItWorksPage() {
     event.preventDefault();
     const el = document.getElementById("steps");
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const targetY = el.getBoundingClientRect().top + window.scrollY;
+      smoothScrollTo(targetY, 950);
     }
   };
 
   return (
-    <div className="bg-neutral-950 text-white min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-white via-neutral-50 to-white text-neutral-900 dark:from-neutral-950 dark:via-neutral-950 dark:to-neutral-950 dark:text-white">
       {/* Global animation styles */}
       <style jsx global>{`
         /* Neural Network - Step 1 */
@@ -967,34 +1001,34 @@ export default function HowItWorksPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden py-24 md:py-32">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-1/4 top-1/4 h-96 w-96 bg-amber-500/5 blur-[120px] rounded-full" />
-          <div className="absolute right-1/4 bottom-1/4 h-96 w-96 bg-violet-500/5 blur-[120px] rounded-full" />
+          <div className="absolute left-1/4 top-1/4 h-96 w-96 bg-amber-400/15 blur-[120px] rounded-full dark:bg-amber-500/5" />
+          <div className="absolute right-1/4 bottom-1/4 h-96 w-96 bg-violet-400/15 blur-[120px] rounded-full dark:bg-violet-500/5" />
         </div>
 
         <div className="container relative mx-auto px-4 sm:px-6 lg:px-12">
           <div className="max-w-4xl">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-500 dark:text-white/40">
               How SELVE works
             </p>
             <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.1]">
               From honest signals to a{" "}
-              <span className="bg-gradient-to-r from-amber-400 via-rose-400 to-violet-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-amber-500 via-rose-500 to-violet-500 bg-clip-text text-transparent dark:from-amber-400 dark:via-rose-400 dark:to-violet-400">
                 living blueprint
               </span>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-white/50 leading-relaxed">
-              Adaptive psychometrics, trusted friend input, and a profile-aware coach. 
+            <p className="mt-6 max-w-2xl text-lg text-neutral-600 leading-relaxed dark:text-white/50">
+              Adaptive psychometrics, trusted friend input, and a profile-aware coach.
               Move from self-awareness to confident action.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-white/5 border border-white/10 px-4 py-1.5 text-sm text-white/60">
+              <span className="rounded-full bg-white border border-neutral-200 px-4 py-1.5 text-sm text-neutral-600 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-white/60">
                 ~6–8 minutes
               </span>
-              <span className="rounded-full bg-white/5 border border-white/10 px-4 py-1.5 text-sm text-white/60">
+              <span className="rounded-full bg-white border border-neutral-200 px-4 py-1.5 text-sm text-neutral-600 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-white/60">
                 Friend perspective optional
               </span>
-              <span className="rounded-full bg-white/5 border border-white/10 px-4 py-1.5 text-sm text-white/60">
+              <span className="rounded-full bg-white border border-neutral-200 px-4 py-1.5 text-sm text-neutral-600 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-white/60">
                 Validated items
               </span>
             </div>
@@ -1002,14 +1036,14 @@ export default function HowItWorksPage() {
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
                 href="/assessment"
-                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-white/90"
+                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-white/90"
               >
                 Start the assessment
               </Link>
               <Link
                 href="#steps"
                 onClick={handleScrollToSteps}
-                className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/70 transition hover:bg-white/5 hover:text-white"
+                className="inline-flex items-center justify-center rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-white/20 dark:text-white/70 dark:hover:bg-white/5 dark:hover:text-white"
               >
                 See the flow ↓
               </Link>
@@ -1043,23 +1077,23 @@ export default function HowItWorksPage() {
                       <span
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold"
                         style={{
-                          backgroundColor: currentColors[step.color].bg,
+                          backgroundColor: currentColors[step.color].lightBg,
                           color: currentColors[step.color].pulse,
                         }}
                       >
                         {index + 1}
                       </span>
-                      <span className="text-sm text-white/40 uppercase tracking-wide">
+                      <span className="text-sm text-neutral-500 uppercase tracking-wide dark:text-white/40">
                         {step.time}
                       </span>
                     </div>
 
-                    <h2 className="text-2xl sm:text-3xl font-semibold">{step.title}</h2>
-                    <p className="text-base text-white/50 leading-relaxed">{step.description}</p>
+                    <h2 className="text-2xl sm:text-3xl font-semibold text-neutral-900 dark:text-white">{step.title}</h2>
+                    <p className="text-base text-neutral-600 leading-relaxed dark:text-white/50">{step.description}</p>
 
                     <ul className="space-y-2">
                       {step.highlights.map((item) => (
-                        <li key={item} className="flex items-start gap-3 text-sm text-white/60">
+                        <li key={item} className="flex items-start gap-3 text-sm text-neutral-600 dark:text-white/60">
                           <span
                             className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0"
                             style={{ backgroundColor: currentColors[step.color].pulse }}
@@ -1072,7 +1106,7 @@ export default function HowItWorksPage() {
 
                   {/* Visualization */}
                   <div className={index % 2 === 1 ? "md:order-1" : ""}>
-                    <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-2 backdrop-blur-sm">
+                    <div className="relative rounded-2xl border border-neutral-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-white/[0.02]">
                       <step.Visual />
                     </div>
                   </div>
@@ -1082,7 +1116,7 @@ export default function HowItWorksPage() {
                 {index < steps.length - 1 && (
                   <div className="hidden md:block absolute left-1/2 -bottom-8 h-16 w-px">
                     <svg viewBox="0 0 2 64" className="h-full w-full">
-                      <line x1="1" y1="0" x2="1" y2="64" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+                      <line x1="1" y1="0" x2="1" y2="64" className="stroke-neutral-200 dark:stroke-white/10" strokeWidth="2" />
                       <line
                         x1="1"
                         y1="0"
@@ -1104,13 +1138,13 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Outcomes Section */}
-      <section className="relative py-20 md:py-28 bg-neutral-900/50">
+      <section className="relative py-20 md:py-28 bg-neutral-100/80 dark:bg-neutral-900/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
           <div className="text-center mb-16">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-neutral-500 dark:text-white/40">
               What you get
             </p>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-semibold">
+            <h2 className="mt-4 text-3xl sm:text-4xl font-semibold text-neutral-900 dark:text-white">
               Insights that actually help
             </h2>
           </div>
@@ -1123,10 +1157,10 @@ export default function HowItWorksPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group relative rounded-2xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur-sm transition hover:border-white/20"
+                className="group relative rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:border-neutral-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-white/20"
               >
-                <h3 className="text-xl font-semibold">{outcome.title}</h3>
-                <p className="mt-3 text-sm text-white/50 leading-relaxed">{outcome.copy}</p>
+                <h3 className="text-xl font-semibold text-neutral-900 dark:text-white">{outcome.title}</h3>
+                <p className="mt-3 text-sm text-neutral-600 leading-relaxed dark:text-white/50">{outcome.copy}</p>
                 <div className="mt-6">
                   <outcome.Visual />
                 </div>
@@ -1139,22 +1173,22 @@ export default function HowItWorksPage() {
       {/* CTA Section */}
       <section className="relative py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent p-10 md:p-16">
+          <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-gradient-to-br from-white via-neutral-50 to-neutral-100 p-10 md:p-16 shadow-xl dark:border-white/10 dark:from-white/[0.03] dark:via-neutral-900/0 dark:to-transparent">
             {/* Ambient glow */}
-            <div className="absolute -top-40 -right-40 h-80 w-80 bg-violet-500/10 blur-[100px] rounded-full" />
-            <div className="absolute -bottom-40 -left-40 h-80 w-80 bg-amber-500/10 blur-[100px] rounded-full" />
+            <div className="absolute -top-40 -right-40 h-80 w-80 bg-violet-500/15 blur-[110px] rounded-full dark:bg-violet-500/10" />
+            <div className="absolute -bottom-40 -left-40 h-80 w-80 bg-amber-500/15 blur-[110px] rounded-full dark:bg-amber-500/10" />
 
             <div className="relative">
-              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-white/40 mb-6">
-                <span className="rounded-full border border-white/10 px-3 py-1">Private</span>
-                <span className="rounded-full border border-white/10 px-3 py-1">Actionable</span>
-                <span className="rounded-full border border-white/10 px-3 py-1">Context-aware</span>
+              <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-neutral-600 mb-6 dark:text-white/40">
+                <span className="rounded-full border border-neutral-200 px-3 py-1 text-neutral-700 dark:border-white/10 dark:text-white/70">Private</span>
+                <span className="rounded-full border border-neutral-200 px-3 py-1 text-neutral-700 dark:border-white/10 dark:text-white/70">Actionable</span>
+                <span className="rounded-full border border-neutral-200 px-3 py-1 text-neutral-700 dark:border-white/10 dark:text-white/70">Context-aware</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-semibold max-w-2xl">
+              <h2 className="text-3xl sm:text-4xl font-semibold max-w-2xl text-neutral-900 dark:text-white">
                 Ready to see yourself more clearly—then act on it?
               </h2>
-              <p className="mt-4 max-w-xl text-base text-white/50">
+              <p className="mt-4 max-w-xl text-base text-neutral-700 leading-relaxed dark:text-white/50">
                 Start with the adaptive assessment. Invite one trusted friend. 
                 Ask SELVE-CHAT the hard questions.
               </p>
@@ -1162,13 +1196,13 @@ export default function HowItWorksPage() {
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
                   href="/assessment"
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition hover:bg-white/90"
+                  className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-white/90"
                 >
                   Begin the assessment
                 </Link>
                 <Link
                   href="/share-your-story"
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-medium text-white/70 transition hover:bg-white/5 hover:text-white"
+                  className="inline-flex items-center justify-center rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium text-neutral-800 transition hover:bg-neutral-100 dark:border-white/20 dark:text-white dark:hover:bg-white/5"
                 >
                   See how others use SELVE
                 </Link>
