@@ -34,7 +34,7 @@ export const navLinks: NavLinkType[] = [
     type: "dropdown",
     label: "Learn",
     items: [
-      { label: "How it Works", href: "/#how-it-works" },
+      { label: "How it Works", href: "/how-it-works" },
       { label: "Friend Insights", href: "/#friend-insights" },
       { label: "Blog", href: "/blog" },
     ],
