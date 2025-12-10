@@ -39,6 +39,9 @@ export default function ResultsPage() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
 
+  const chatbotBaseUrl = process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me";
+  const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
+
   useEffect(() => {
     async function fetchResults() {
       try {
@@ -473,9 +476,15 @@ export default function ResultsPage() {
           >
             Return Home
           </button>
+          <button
+            onClick={() => router.push(chatbotRedirect)}
+            className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer"
+          >
+            Open SELVE-Chat
+          </button>
         </div>
 
-        {/* Coming Soon: AI Chat Section */}
+        {/* SELVE-Chat Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -488,7 +497,7 @@ export default function ResultsPage() {
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-200/50 to-transparent dark:from-indigo-600/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
             
             <div className="relative">
-              {/* Icon and Coming Soon Badge */}
+              {/* Icon and Availability Badge */}
               <div className="flex flex-col items-center justify-center mb-6">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25 mb-3">
                   <MessageCircle className="w-8 h-8 text-white" />
@@ -496,20 +505,19 @@ export default function ResultsPage() {
 
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 dark:bg-purple-800/40 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
                   <Sparkles className="w-3 h-3" />
-                  Coming Soon
+                  Available Now
                 </div>
               </div>
               
               {/* Title */}
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                Explore Yourself Deeper
+                Explore Yourself Deeper with SELVE-Chat
               </h3>
               
               {/* Description */}
               <p className="text-gray-600 dark:text-gray-300 max-w-lg mx-auto leading-relaxed">
-                Chat with your personal AI guide to dive deeper into your personality. 
-                Share your thoughts, explore patterns, and get to know yourself even better 
-                through meaningful conversation.
+                SELVE-Chat uses your blueprint to answer questions, rehearse scenarios, and keep you on track. 
+                Bring specific contexts or decisions and get responses in your own style.
               </p>
               
               {/* Teaser features */}
@@ -523,6 +531,16 @@ export default function ResultsPage() {
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#2a2a2a] rounded-full text-sm text-gray-600 dark:text-gray-300 shadow-sm">
                   🔮 Pattern exploration
                 </span>
+              </div>
+
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => router.push(chatbotRedirect)}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-sm font-semibold transition-colors cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Open SELVE-Chat
+                </button>
               </div>
             </div>
           </div>

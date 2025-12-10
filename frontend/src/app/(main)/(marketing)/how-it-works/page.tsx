@@ -37,6 +37,9 @@ const smoothScrollTo = (targetY: number, duration = 950) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function HowItWorksPage() {
+  const chatbotBaseUrl = process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me";
+  const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
+
   const handleScrollToSteps = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     const el = document.getElementById("steps");
@@ -91,6 +94,12 @@ export default function HowItWorksPage() {
                 className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-white/90"
               >
                 Start the assessment
+              </Link>
+              <Link
+                href={chatbotRedirect}
+                className="inline-flex items-center justify-center rounded-full border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/10"
+              >
+                Open SELVE-Chat
               </Link>
               <Link
                 href="#steps"
@@ -251,6 +260,12 @@ export default function HowItWorksPage() {
                   className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-white/90"
                 >
                   Begin the assessment
+                </Link>
+                <Link
+                  href={chatbotRedirect}
+                  className="inline-flex items-center justify-center rounded-full border border-rose-200 px-6 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                >
+                  Chat with SELVE-Chat
                 </Link>
                 <Link
                   href="/share-your-story"
