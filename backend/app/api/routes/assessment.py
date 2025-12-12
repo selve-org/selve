@@ -516,6 +516,16 @@ async def submit_answer(
     # Get next adaptive questions (exclude already answered AND pending questions)
     all_seen_questions = set(responses.keys()) | pending_questions
     
+    # OPTIMIZATION: Identify dimensions with 0 items answered
+    # If any dimension has 0 items, hard-prioritize it to avoid the emergency bloat
+    dimensions_with_zero = []
+    for dim in ['LUMEN', 'AETHER', 'ORPHEUS', 'ORIN', 'LYRA', 'VARA', 'CHRONOS', 'KAEL']:
+        dim_items = [code for code in responses.keys() if any(
+            item['item'] == code for item in tester.scorer.get_items_by_dimension(dim)
+        )]
+        if len(dim_items) == 0:
+            dimensions_with_zero.append(dim)
+    
     # Build exclusion list based on user context
     context_exclusions = []
     
@@ -609,10 +619,62 @@ async def submit_answer(
         if consistency_item:
             print(f"\n🔍 Injecting consistency-check question: {consistency_item}")
     
-    next_items = tester.select_next_items_excluding(responses, all_exclusions, max_items=3)
+    # OPTIMIZATION: If any dimension has 0 items, hard-prioritize it
+    # This prevents the emergency bloat where we queue pending items for 27 more questions
+    # Instead, we aggressively pull in items from uncovered dimensions NOW
+    if dimensions_with_zero:
+        print(f"\n🎯 HARD-PRIORITY MODE: Uncovered dimensions detected!")
+        print(f"   Dimensions with 0 items: {', '.join(dimensions_with_zero)}")
+        print(f"   Will prioritize items from these dimensions...")
+        
+        # Build a list of items ONLY from zero-item dimensions
+        # that haven't been answered or demographically excluded
+        zero_dim_items = []
+        demographic_exclusions = []
+        if demographics.get("demo_drives") == "no":
+            demographic_exclusions.extend(["LUMEN_SC2", "KAEL_SC1", "CHRONOS_SC2"])
+        if demographics.get("demo_credit_cards") == "no":
+            demographic_exclusions.extend(["AETHER_SC2", "AETHER_SC4"])
+        if demographics.get("demo_has_yard") == "no":
+            demographic_exclusions.extend(["LUMEN_SC3", "ORIN_SC5"])
+        
+        for dim in dimensions_with_zero:
+            dim_items = tester.scorer.get_items_by_dimension(dim)
+            for item in dim_items:
+                if (item['item'] not in responses 
+                    and item['item'] not in all_exclusions
+                    and item['item'] not in demographic_exclusions):
+                    zero_dim_items.append(item)
+        
+        # If we have items from zero dimensions, use them exclusively
+        # (don't mix with normal selection)
+        if zero_dim_items:
+            zero_dim_items.sort(key=lambda x: x['correlation'], reverse=True)
+            next_items = []
+            for item in zero_dim_items[:3]:  # Take top 3 by correlation
+                if 'dimension' not in item:
+                    # Infer dimension from item code
+                    for dim in dimensions_with_zero:
+                        if any(i['item'] == item['item'] for i in tester.scorer.get_items_by_dimension(dim)):
+                            item['dimension'] = dim
+                            break
+                next_items.append(item)
+            
+            print(f"   ✅ Selected {len(next_items)} items from zero-item dimensions (hard-priority)")
+            # Don't use consistency check in hard-priority mode - keep focused on coverage
+            consistency_item = None
+        else:
+            # No items available from zero dimensions (all demographically excluded)
+            # Fall back to normal selection
+            print(f"   ⚠️  No items available from zero-item dimensions (all excluded)")
+            print(f"   Falling back to normal adaptive selection...")
+            next_items = tester.select_next_items_excluding(responses, all_exclusions, max_items=3)
+    else:
+        # Normal path: no zero-item dimensions, proceed with adaptive selection
+        next_items = tester.select_next_items_excluding(responses, all_exclusions, max_items=3)
     
-    # Replace one item with consistency check if we have one
-    if consistency_item and next_items:
+    # Replace one item with consistency check if we have one (only if not in hard-priority mode)
+    if consistency_item and next_items and not dimensions_with_zero:
         # Need to get the full item object for the consistency check
         # Find it in the scorer's item pool
         consistency_item_obj = None
