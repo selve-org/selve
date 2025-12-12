@@ -23,6 +23,16 @@ model User {
   profile             Profile?
   responsesAbout      Response[]   @relation("ResponsesAbout")
   responsesGiven      Response[]   @relation("ResponsesGiven")
+
+  // Agentic chatbot relations
+  notes               UserNote[]
+  securityIncidents   SecurityIncident[]
+  riskProfile         UserRiskProfile?
+  conversationInsights ConversationInsight[]
+
+  // Friend assessments (both directions)
+  assessmentsReceived FriendAssessment[] @relation("AssessmentTarget")
+  assessmentsGiven    FriendAssessment[] @relation("AssessmentAssessor")
 }
 
 model Profile {
@@ -390,6 +400,7 @@ model ChatSession {
   messages          ChatMessage[]
   episodicMemories  EpisodicMemory[]
   semanticMemories  SemanticMemory[]
+  insights          ConversationInsight[]
 
   @@index([userId, status, lastMessageAt])
   @@index([clerkUserId, status])
@@ -528,4 +539,109 @@ model ChatbotAnalytics {
 
   @@index([userId, date])
   @@index([provider, model, date])
+}
+
+// =============================================================================
+// Agentic Chatbot Additions
+// =============================================================================
+
+/// Persistent notes about users that the chatbot stores for future reference.
+/// These help the chatbot remember key information across sessions.
+model UserNote {
+  id          String    @id @default(cuid())
+  userId      String    // Internal user ID
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    String    @default("observation")
+  content     String    @db.VarChar(500)
+  importance  Int       @default(3)
+  source      String    @default("chatbot")
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, category])
+  @@index([userId, importance])
+  @@index([expiresAt])
+}
+
+/// Records security incidents for audit and risk tracking
+model SecurityIncident {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  clerkUserId     String?
+  sessionId       String?
+  incidentType    String
+  riskScore       Float
+  detectionTier   Int       @default(1)
+  flags           Json      @default("[]")
+  messagePreview  String?   @db.VarChar(100)
+  wasBlocked      Boolean   @default(false)
+  ipHash          String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([clerkUserId])
+  @@index([incidentType])
+  @@index([createdAt])
+}
+
+/// Aggregated risk profile for a user
+model UserRiskProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalScore      Float     @default(0)
+  incidentCount   Int       @default(0)
+  isFlagged       Boolean   @default(false)
+  flaggedAt       DateTime?
+  lastIncidentAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isFlagged])
+  @@index([totalScore])
+}
+
+/// Insights extracted from conversations for better personalization
+model ConversationInsight {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId       String?
+  session         ChatSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  insightType     String
+  content         String      @db.VarChar(500)
+  confidence      Float       @default(0.7)
+  dimensions      Json        @default("[]")
+  createdAt       DateTime    @default(now())
+
+  @@index([userId, insightType])
+  @@index([sessionId])
+}
+
+/// Assessment of a user by their friend/peer
+model FriendAssessment {
+  id              String    @id @default(cuid())
+  targetUserId    String
+  targetUser      User      @relation("AssessmentTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  assessorId      String
+  assessor        User      @relation("AssessmentAssessor", fields: [assessorId], references: [id], onDelete: Cascade)
+  relationship    String    @default("friend")
+  scoreLumen      Float?
+  scoreAether     Float?
+  scoreOrpheus    Float?
+  scoreOrin       Float?
+  scoreLyra       Float?
+  scoreVara       Float?
+  scoreChronos    Float?
+  scoreKael       Float?
+  notes           String?   @db.Text
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([targetUserId, assessorId])
+  @@index([targetUserId])
+  @@index([assessorId])
 }
