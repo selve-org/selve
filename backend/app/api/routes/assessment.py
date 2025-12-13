@@ -25,13 +25,199 @@ from app.narratives.integrated_generator import generate_integrated_narrative
 from app.response_validator import ResponseValidator
 from app.auth import get_current_user
 from app.services.assessment_service import AssessmentService, session_to_state_dict, update_session_from_state
+from app.services.redis_service import get_redis_session_store
 from app.db import prisma
 
 router = APIRouter()
 
-# In-memory session cache (for backward compatibility - will be synced to DB)
-# TODO: Remove this once all endpoints are fully database-backed
+# Redis session store (replaces in-memory dict to fix race conditions)
+redis_store = get_redis_session_store()
+
+# DEPRECATED: Legacy in-memory sessions dict (kept for backward compatibility during migration)
+# TODO: Remove this once all code is migrated to use redis_store directly
 sessions: Dict[str, Dict] = {}
+
+
+# ============================================================================
+# Session Storage Helper Functions
+# ============================================================================
+
+def serialize_session_for_redis(session: Dict) -> Dict:
+    """
+    Extract serializable data from session dict (exclude tester/scorer/validator objects)
+
+    Args:
+        session: Full session dict with objects
+
+    Returns:
+        Serializable dict for Redis storage
+    """
+    # Convert set to list for JSON serialization
+    pending_questions = session.get("pending_questions", set())
+    if isinstance(pending_questions, set):
+        pending_questions = list(pending_questions)
+
+    return {
+        "responses": session.get("responses", {}),
+        "demographics": session.get("demographics", {}),
+        "pending_questions": pending_questions,
+        "current_batch": session.get("current_batch", []),
+        "batch_history": session.get("batch_history", []),
+        "answer_history": session.get("answer_history", []),
+        "back_navigation_count": session.get("back_navigation_count", 0),
+        "back_navigation_log": session.get("back_navigation_log", []),
+        "started_at": session.get("started_at"),
+        "user_id": session.get("user_id"),
+        "clerk_user": session.get("clerk_user"),  # May be None for anonymous
+        "metadata": session.get("metadata", {}),
+        "db_session_id": session.get("db_session_id"),
+    }
+
+
+def deserialize_session_from_redis(redis_data: Dict) -> Dict:
+    """
+    Reconstruct full session dict from Redis data (recreate tester/scorer/validator)
+
+    Args:
+        redis_data: Serialized data from Redis
+
+    Returns:
+        Full session dict with helper objects
+    """
+    # Convert list back to set
+    pending_questions = redis_data.get("pending_questions", [])
+    if isinstance(pending_questions, list):
+        pending_questions = set(pending_questions)
+
+    return {
+        "tester": AdaptiveTester(),  # Recreate stateless helper
+        "scorer": SelveScorer(),  # Recreate stateless helper
+        "validator": ResponseValidator(),  # Recreate stateless helper
+        "responses": redis_data.get("responses", {}),
+        "demographics": redis_data.get("demographics", {}),
+        "pending_questions": pending_questions,
+        "current_batch": redis_data.get("current_batch", []),
+        "batch_history": redis_data.get("batch_history", []),
+        "answer_history": redis_data.get("answer_history", []),
+        "back_navigation_count": redis_data.get("back_navigation_count", 0),
+        "back_navigation_log": redis_data.get("back_navigation_log", []),
+        "started_at": redis_data.get("started_at"),
+        "user_id": redis_data.get("user_id"),
+        "clerk_user": redis_data.get("clerk_user"),
+        "metadata": redis_data.get("metadata", {}),
+        "db_session_id": redis_data.get("db_session_id"),
+    }
+
+
+def get_session_from_storage(session_id: str) -> Optional[Dict]:
+    """
+    Get session from Redis (or fallback to database)
+
+    Args:
+        session_id: Session ID
+
+    Returns:
+        Full session dict with helper objects, or None if not found
+    """
+    # Try Redis first
+    redis_data = redis_store.get_session(session_id)
+    if redis_data:
+        return deserialize_session_from_redis(redis_data)
+
+    # Fallback to database (for backward compatibility)
+    return None  # Will be handled by calling code
+
+
+def save_session_to_storage(session_id: str, session: Dict) -> bool:
+    """
+    Save session to Redis
+
+    Args:
+        session_id: Session ID
+        session: Full session dict
+
+    Returns:
+        True if saved successfully
+    """
+    serialized = serialize_session_for_redis(session)
+    return redis_store.set_session(session_id, serialized)
+
+
+# ============================================================================
+# Dual-Write Wrapper Functions (PHASE 1: Migration Safety Layer)
+# ============================================================================
+
+def _get_session_dual_write(session_id: str) -> Optional[Dict]:
+    """
+    Get session from memory first, fall back to Redis.
+    DUAL-WRITE PHASE: Memory is source of truth during migration.
+
+    Args:
+        session_id: Session ID
+
+    Returns:
+        Full session dict with helper objects, or None if not found
+    """
+    # Try memory first (faster, current source of truth)
+    if session_id in sessions:
+        session = sessions[session_id]
+        # Ensure it's also in Redis (sync if missing)
+        if not redis_store.session_exists(session_id):
+            save_session_to_storage(session_id, session)
+        return session
+
+    # Try Redis next (fallback after restart or memory eviction)
+    redis_session = get_session_from_storage(session_id)
+    if redis_session:
+        # Restore to memory for backward compatibility
+        sessions[session_id] = redis_session
+        return redis_session
+
+    return None
+
+
+def _save_session_dual_write(session_id: str, session: Dict) -> bool:
+    """
+    Save to both memory and Redis during dual-write phase.
+
+    Args:
+        session_id: Session ID
+        session: Full session dict
+
+    Returns:
+        True if saved to both stores successfully
+    """
+    # Write to memory first (ensures immediate availability)
+    sessions[session_id] = session
+
+    # Write to Redis (ensures persistence and race condition safety)
+    redis_success = save_session_to_storage(session_id, session)
+
+    # Extend TTL on update
+    if redis_success:
+        redis_store.extend_session_ttl(session_id)
+
+    return redis_success
+
+
+def _delete_session_dual_write(session_id: str) -> bool:
+    """
+    Delete from both memory and Redis.
+
+    Args:
+        session_id: Session ID
+
+    Returns:
+        True if deleted successfully
+    """
+    # Delete from memory
+    if session_id in sessions:
+        del sessions[session_id]
+
+    # Delete from Redis
+    redis_store.delete_session(session_id)
+
+    return True
 
 
 # ============================================================================
@@ -290,9 +476,8 @@ async def start_assessment(
         }
     ]
     
-    # Create in-memory cache for this session (will be synced to DB after each operation)
-    # This maintains backward compatibility with existing code structure
-    sessions[session_id] = {
+    # Create session dict with all required fields
+    session_data = {
         "tester": tester,
         "scorer": SelveScorer(),
         "validator": ResponseValidator(),
@@ -310,6 +495,10 @@ async def start_assessment(
         "metadata": request.metadata or {},
         "db_session_id": session_id,  # Link to database session
     }
+
+    # DUAL-WRITE: Save to both memory and Redis (Phase 1: Redis migration)
+    # This fixes race condition RC-1 by ensuring sessions are persisted in Redis
+    _save_session_dual_write(session_id, session_data)
     
     # DON'T send personality questions initially!
     # They will be generated AFTER demographics are complete,
