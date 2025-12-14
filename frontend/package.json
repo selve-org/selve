@@ -23,6 +23,7 @@
     "framer-motion": "^12.18.1",
     "gray-matter": "^4.0.3",
     "import-in-the-middle": "^2.0.0",
+    "isomorphic-dompurify": "^2.34.0",
     "lucide-react": "^0.523.0",
     "nanoid": "^5.1.6",
     "next": "16.0.7",

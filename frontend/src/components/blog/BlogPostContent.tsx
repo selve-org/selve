@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import DOMPurify from "isomorphic-dompurify";
 import type { Post } from "@/lib/markdown";
 import "./blog-prose.css";
 
@@ -113,7 +114,7 @@ export function BlogPostContent({ post, isDimensionPost, otherDimensions }: Blog
       >
         <div
           className="blog-prose max-w-3xl mx-auto"
-          dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.contentHtml) }}
         />
       </motion.article>
 
