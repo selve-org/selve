@@ -3,7 +3,7 @@ Response validation and consistency tracking.
 Detects random clicking, attention issues, and response patterns.
 """
 
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional
 import statistics
 
 

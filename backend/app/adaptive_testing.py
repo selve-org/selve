@@ -16,7 +16,7 @@ Author: SELVE Team
 """
 
 import json
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Tuple, Set
 from dataclasses import dataclass
 import statistics
 from pathlib import Path
