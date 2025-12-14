@@ -107,12 +107,13 @@ app = FastAPI(
 cors_origins_str = os.getenv('CORS_ORIGINS', 'http://localhost:3000')
 cors_origins = [origin.strip() for origin in cors_origins_str.split(',')]
 
+# Restrict methods and headers to only what's needed for security (SEC-4)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
 )
 
 # Include routers
