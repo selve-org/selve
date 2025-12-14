@@ -11,7 +11,7 @@ Handles the complete assessment flow:
 import os
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
@@ -297,11 +297,47 @@ class StartAssessmentResponse(BaseModel):
 
 
 class SubmitAnswerRequest(BaseModel):
-    """Request to submit an answer"""
+    """Request to submit an answer with input validation (SEC-5)"""
     session_id: str
     question_id: str
     response: Any = Field(..., description="Response value (varies by question type)")
     is_going_back: Optional[bool] = False  # Flag if user is updating after going back
+
+    @field_validator('response')
+    @classmethod
+    def validate_response(cls, v):
+        """
+        Validate response input to prevent injection attacks and ensure data integrity
+
+        Security checks:
+        - Limit string length to prevent DoS
+        - Reject null bytes and control characters
+        - Validate numeric ranges for rating questions
+        """
+        # If response is a string (demographics/text responses)
+        if isinstance(v, str):
+            # Reject excessively long strings (DoS protection)
+            if len(v) > 5000:
+                raise ValueError("Response text too long (max 5000 characters)")
+
+            # Reject null bytes and dangerous control characters
+            if '\x00' in v or any(ord(c) < 32 and c not in '\n\r\t' for c in v):
+                raise ValueError("Invalid characters in response")
+
+        # If response is a number (rating questions)
+        elif isinstance(v, (int, float)):
+            # Most questions use 1-5 scale, but allow wider range for flexibility
+            if not (-100 <= v <= 100):
+                raise ValueError("Numeric response out of valid range")
+
+        # If response is a dict or list (complex responses)
+        elif isinstance(v, (dict, list)):
+            # Limit size to prevent DoS
+            import json
+            if len(json.dumps(v)) > 10000:
+                raise ValueError("Response data too large")
+
+        return v
 
 
 class SubmitAnswerResponse(BaseModel):
