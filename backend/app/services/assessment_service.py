@@ -5,7 +5,7 @@ Handles all database operations for the assessment system using Prisma
 
 import logging
 from typing import Optional, Dict, List, Any
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from prisma import fields
 
 from app.db import prisma
@@ -314,25 +314,34 @@ class AssessmentService:
     ):
         """
         Transfer anonymous session to authenticated user
-        
+
+        Security checks:
+        - Session must be anonymous (no existing clerkUserId)
+        - Session must be recent (within 24 hours) to prevent session fixation attacks
+
         Args:
             session_id: Session to transfer
             clerk_user_id: Clerk user ID to transfer to
-            
+
         Returns:
             Updated AssessmentSession or None if not found
         """
         session = await self.get_session(session_id)
         if not session:
             return None
-        
+
         # Check if already owned
         if session.clerkUserId == clerk_user_id:
             return session
-        
+
         # Prevent stealing other users' sessions
         if session.clerkUserId is not None:
             raise ValueError("Session already belongs to another user")
+
+        # Prevent session fixation attacks - only allow transfer of recent anonymous sessions
+        session_age = datetime.now(timezone.utc) - session.createdAt
+        if session_age > timedelta(hours=24):
+            raise ValueError("Session too old to transfer (must be within 24 hours)")
         
         # Transfer ownership
         return await self.db.assessmentsession.update(
