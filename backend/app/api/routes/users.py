@@ -5,7 +5,7 @@ Handles user sync, profile management, and Clerk webhooks
 
 import os
 from typing import Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, Request, Header
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 from svix.webhooks import Webhook, WebhookVerificationError
 

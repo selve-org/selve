@@ -3,7 +3,7 @@ Notifications API Routes
 Handles UI notifications and toast triggers
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel

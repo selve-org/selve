@@ -13,7 +13,6 @@ Environment Variables Required:
 import os
 import requests
 from typing import Optional, Dict, Any
-from datetime import datetime
 
 
 class MailgunService:

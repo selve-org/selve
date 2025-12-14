@@ -10,7 +10,6 @@ This service handles:
 
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Literal, Optional, Tuple
-from fastapi import HTTPException
 
 # Tier Configuration
 TIERS = {

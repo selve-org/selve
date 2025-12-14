@@ -7,9 +7,8 @@ and regenerates narrative with friend data.
 """
 
 import logging
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from datetime import datetime
-import json
 from app.scoring import SelveScorer
 from app.narratives.integrated_generator import IntegratedNarrativeGenerator
 from app.services.quality_scoring import QualityScoringService
