@@ -417,6 +417,8 @@ model ChatMessage {
   model             String?             // "claude-3-5-sonnet" | "gpt-4o-mini"
   provider          String?             // "anthropic" | "openai"
   cost              Float?
+  
+  langfuseTraceId   String?             // Langfuse trace ID for feedback tracking
 
   retrievedContextIds Json?             // IDs of knowledge/memories used
   confidenceTags    Json?               // [{text, confidence, source}]
@@ -426,6 +428,7 @@ model ChatMessage {
   compressedAt      DateTime?
 
   @@index([sessionId, createdAt])
+  @@index([langfuseTraceId])
 }
 
 model EpisodicMemory {
