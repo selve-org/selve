@@ -423,12 +423,24 @@ model ChatMessage {
   retrievedContextIds Json?             // IDs of knowledge/memories used
   confidenceTags    Json?               // [{text, confidence, source}]
 
+  // Message versioning fields for regenerate/edit functionality
+  isActive          Boolean             @default(true)        // Is this the current active version?
+  regenerationIndex Int                 @default(1)           // Version number (1, 2, 3...)
+  parentMessageId   String?             // Points to previous version if regenerated
+  groupId           String?             // Groups all versions together
+  regenerationType  String?             // "regenerate" | "edit" | null
+  parentMessage     ChatMessage?        @relation("MessageVersions", fields: [parentMessageId], references: [id], onDelete: SetNull)
+  childVersions     ChatMessage[]       @relation("MessageVersions")
+
   createdAt         DateTime            @default(now())
   isCompressed      Boolean             @default(false)
   compressedAt      DateTime?
 
   @@index([sessionId, createdAt])
   @@index([langfuseTraceId])
+  @@index([sessionId, isActive])
+  @@index([groupId])
+  @@index([parentMessageId])
 }
 
 model EpisodicMemory {
