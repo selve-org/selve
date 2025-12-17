@@ -26,6 +26,29 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
         person_profiles: 'identified_only',
         capture_pageview: false,
+
+        // Sanitize events before sending to remove PII
+        sanitize_properties: (properties, event) => {
+          // Create a copy to avoid mutating original
+          const sanitized = { ...properties };
+
+          // Remove sensitive fields
+          delete sanitized.email;
+          delete sanitized.password;
+          delete sanitized.credit_card;
+          delete sanitized.ssn;
+          delete sanitized.api_key;
+          delete sanitized.token;
+
+          // Scrub financial amounts from all string values
+          Object.keys(sanitized).forEach(key => {
+            if (typeof sanitized[key] === 'string') {
+              sanitized[key] = sanitized[key].replace(/\$\d+\.\d+/g, '$X.XX');
+            }
+          });
+
+          return sanitized;
+        },
       });
       posthog.opt_in_capturing();
     } else {

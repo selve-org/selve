@@ -11,8 +11,12 @@ export function IdentifyUser() {
   useEffect(() => {
     if (user && posthog) {
       posthog.identify(user.id, {
-        email: user.primaryEmailAddress?.emailAddress,
-        name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+        // Remove email for GDPR compliance - not needed for product analytics
+        // Keep only first name for cohort analysis
+        firstName: user.firstName,
+        signupDate: user.createdAt,
+        // Add subscription plan from public metadata if available
+        subscriptionPlan: (user.publicMetadata?.subscriptionPlan as string) || "free",
       });
     }
   }, [user, posthog]);

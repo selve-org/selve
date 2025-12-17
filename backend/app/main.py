@@ -16,9 +16,11 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from app.db import prisma
 from app.api.routes import assessment, invites, notifications, testimonials, newsletter, stats
 from app.api.routes.users import router as users_router, webhooks_router
+from app.logging_config import setup_logging
+from app.middleware.request_logging import RequestLoggingMiddleware
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Setup production logging with PII scrubbing and file rotation
+setup_logging(app_name="selve-backend")
 logger = logging.getLogger(__name__)
 
 
@@ -224,6 +226,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With", "X-User-ID"],
 )
+
+# Request logging middleware with tracing
+app.add_middleware(RequestLoggingMiddleware)
 
 
 # Sentry user context middleware
