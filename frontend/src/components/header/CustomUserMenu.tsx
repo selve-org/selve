@@ -4,7 +4,7 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Settings, LogOut, User, Bell, MessageSquare } from "lucide-react";
+import { Settings, LogOut, User, Bell, MessageSquare, DollarSign } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 
 export function CustomUserMenu() {
@@ -287,6 +287,23 @@ export function CustomUserMenu() {
                   <p className="font-medium">Chat with SELVE</p>
                   <p className="text-xs text-gray-500 dark:text-gray-500">
                     Ask questions & explore yourself
+                  </p>
+                </div>
+              </Link>
+
+              {/* Pricing & Plans */}
+              <Link
+                href="/pricing"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+              >
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors">
+                  <DollarSign className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">Pricing & Plans</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    View subscription options
                   </p>
                 </div>
               </Link>

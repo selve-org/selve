@@ -15,7 +15,7 @@ export type NavLinkType = SimpleNavLink | DropdownNavLink;
 
 export const navLinks: NavLinkType[] = [
   { type: "link", label: "About", href: "/about" },
-  { type: "link", label: "Pricing", href: "/#pricing" },
+  { type: "link", label: "Pricing", href: "/pricing" },
   {
     type: "dropdown",
     label: "Dimensions",
