@@ -241,7 +241,10 @@ class SubscriptionService:
         status: str
     ) -> Dict[str, Any]:
         """
-        Handle Clerk subscription.updated webhook event
+        Handle Clerk subscription.updated webhook event (ATOMIC)
+
+        Uses transaction to ensure atomicity - prevents partial updates
+        if subscription status changes and downgrade operations fail.
 
         Args:
             clerk_user_id: Clerk user ID
@@ -251,27 +254,43 @@ class SubscriptionService:
         Returns:
             Updated subscription details
         """
-        user = await self.db.user.find_unique(
-            where={"clerkId": clerk_user_id}
-        )
+        # Use transaction for atomicity
+        async with self.db.tx() as transaction:
+            user = await transaction.user.find_unique(
+                where={"clerkId": clerk_user_id}
+            )
 
-        if not user:
-            raise ValueError(f"User not found with Clerk ID: {clerk_user_id}")
+            if not user:
+                raise ValueError(f"User not found with Clerk ID: {clerk_user_id}")
 
-        logger.info(f"Processing subscription.updated for user {user.id}: status={status}")
+            logger.info(f"Processing subscription.updated for user {user.id}: status={status}")
 
-        # Update subscription status
-        updated_user = await self.db.user.update(
-            where={"id": user.id},
-            data={
-                "subscriptionStatus": status
-            }
-        )
+            # Update subscription status
+            updated_user = await transaction.user.update(
+                where={"id": user.id},
+                data={
+                    "subscriptionStatus": status
+                }
+            )
 
-        # If status is past_due or cancelled, may need to downgrade
-        if status in ["cancelled", "incomplete_expired"]:
-            return await self.downgrade_to_free(user.id, reason=status)
+            # If status is past_due or cancelled, downgrade within transaction
+            if status in ["cancelled", "incomplete_expired"]:
+                now = datetime.now(timezone.utc)
+                updated_user = await transaction.user.update(
+                    where={"id": user.id},
+                    data={
+                        "subscriptionPlan": "free",
+                        "subscriptionStatus": "cancelled" if status == "cancelled" else None,
+                        "subscriptionId": None,
+                        "planEndDate": now,
+                        "currentPeriodCost": 0.0,
+                        "currentPeriodStart": now,
+                        "currentPeriodEnd": None
+                    }
+                )
+                logger.info(f"User {user.id} downgraded to Free plan. Reason: {status}")
 
+        # Transaction committed - now fetch details
         return await self.get_subscription_details(user.id)
 
     async def handle_subscription_deleted(

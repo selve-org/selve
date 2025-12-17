@@ -5,12 +5,96 @@ Main entry point for the psychology profiling backend
 
 import os
 import asyncio
+import logging
+import re
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 from app.db import prisma
 from app.api.routes import assessment, invites, notifications, testimonials, newsletter, stats
 from app.api.routes.users import router as users_router, webhooks_router
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def scrub_financial_data(text: str) -> str:
+    """Replace financial amounts in text with masked values"""
+    if not isinstance(text, str):
+        return text
+    # Replace $X.XX with $X.XX (masked)
+    return re.sub(r'\$\d+\.\d+', '$X.XX', text)
+
+
+def scrub_pii_from_event(event, hint):
+    """
+    Remove PII from Sentry events before sending
+
+    Scrubs:
+    - User emails
+    - Financial data (costs, amounts)
+    - Sensitive request data (passwords, tokens, etc.)
+    """
+    # Scrub user emails
+    if "user" in event and "email" in event["user"]:
+        event["user"]["email"] = "***@***.***"
+
+    # Scrub financial data from exception messages
+    if "exception" in event:
+        for exc in event["exception"].get("values", []):
+            if "value" in exc:
+                exc["value"] = scrub_financial_data(exc["value"])
+
+    # Scrub request data
+    if "request" in event:
+        if "data" in event["request"]:
+            data = event["request"]["data"]
+            if isinstance(data, dict):
+                # Remove sensitive fields
+                for key in ["password", "token", "credit_card", "ssn", "api_key"]:
+                    if key in data:
+                        data[key] = "[REDACTED]"
+
+    # Scrub message
+    if "message" in event:
+        event["message"] = scrub_financial_data(event["message"])
+
+    return event
+
+
+def validate_required_environment_variables():
+    """
+    Validate that all critical environment variables are present at startup
+
+    Fails loudly with RuntimeError if any required variables are missing.
+    This prevents the application from starting in an invalid state.
+    """
+    required_vars = {
+        "DATABASE_URL": "Database connection string",
+        "CLERK_WEBHOOK_SECRET": "Clerk webhook signature verification",
+    }
+
+    missing = []
+    for var_name, description in required_vars.items():
+        if not os.getenv(var_name):
+            missing.append(f"  • {var_name}: {description}")
+
+    if missing:
+        error_msg = (
+            "\n❌ STARTUP VALIDATION FAILED\n"
+            "\nMissing required environment variables:\n" +
+            "\n".join(missing) +
+            "\n\nApplication cannot start without these variables.\n"
+            "Please check your .env file or environment configuration.\n"
+        )
+        logger.critical(error_msg)
+        raise RuntimeError(error_msg)
+
+    logger.info("✅ All required environment variables present")
 
 
 @asynccontextmanager
@@ -68,7 +152,32 @@ async def lifespan(app: FastAPI):
         print("📊 Using development database (ep-rapid-band)")
         print("🔐 Using development Clerk keys (pretty-boxer-70)")
         print("🤖 Using development OpenAI key")
-    
+
+    # Validate required environment variables BEFORE proceeding
+    # This ensures we fail fast if critical configuration is missing
+    validate_required_environment_variables()
+
+    # Initialize Sentry for error tracking (production only)
+    sentry_dsn = os.getenv("SENTRY_DSN")
+    if sentry_dsn and environment == "production":
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            environment=environment,
+            integrations=[
+                FastApiIntegration(transaction_style="endpoint"),
+                LoggingIntegration(
+                    level=logging.INFO,
+                    event_level=logging.ERROR
+                ),
+            ],
+            traces_sample_rate=0.1,  # 10% of transactions for performance monitoring
+            profiles_sample_rate=0.1,  # 10% profiling
+            before_send=scrub_pii_from_event,
+        )
+        logger.info("✅ Sentry initialized for production error tracking")
+    else:
+        logger.info(f"ℹ️ Sentry disabled ({environment} mode or missing DSN)")
+
     # Connect to database with retries (Neon compute may need time to wake up)
     print("🔌 Connecting to database (this may take a moment if compute is waking up)...")
     max_retries = 3
@@ -115,6 +224,22 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With", "X-User-ID"],
 )
+
+
+# Sentry user context middleware
+@app.middleware("http")
+async def add_sentry_context(request: Request, call_next):
+    """Add user context to Sentry events"""
+    user_id = request.headers.get("X-User-ID")
+    if user_id:
+        with sentry_sdk.configure_scope() as scope:
+            # Truncate user ID for privacy (first 8 chars + ***)
+            scope.set_user({"id": user_id[:8] + "***"})
+            scope.set_tag("endpoint", request.url.path)
+
+    response = await call_next(request)
+    return response
+
 
 # Include routers
 app.include_router(assessment.router, prefix="/api", tags=["assessment"])

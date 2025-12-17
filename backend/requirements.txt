@@ -38,3 +38,6 @@ aiohttp==3.13.2
 # Utilities
 nanoid==2.0.0
 requests==2.32.3
+
+# Error Tracking & Monitoring
+sentry-sdk[fastapi]==1.40.0

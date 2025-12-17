@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 # Clerk webhook secret from environment
+# Note: This is validated at startup - app won't start if missing
 CLERK_WEBHOOK_SECRET = os.getenv("CLERK_WEBHOOK_SECRET")
 
 
@@ -26,6 +27,9 @@ CLERK_WEBHOOK_SECRET = os.getenv("CLERK_WEBHOOK_SECRET")
 async def handle_clerk_subscription_webhook(request: Request):
     """
     Handle Clerk subscription webhook events
+
+    **Security**: Webhook secret validated at application startup.
+    Invalid signatures are rejected with 400 Bad Request.
 
     Supported events:
     - subscription.created: User subscribes to Pro plan
@@ -37,13 +41,6 @@ async def handle_clerk_subscription_webhook(request: Request):
     Returns:
         Success message
     """
-    if not CLERK_WEBHOOK_SECRET:
-        logger.error("CLERK_WEBHOOK_SECRET not configured")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Webhook secret not configured"
-        )
-
     try:
         # Get webhook payload and headers
         payload = await request.body()
