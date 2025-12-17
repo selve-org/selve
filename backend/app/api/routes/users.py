@@ -13,6 +13,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 from app.db import prisma
 from app.services.user_service import UserService
+from app.services.subscription_service import SubscriptionService, get_plan_features
 
 router = APIRouter(prefix="/users", tags=["users"])
 webhooks_router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -167,6 +168,72 @@ async def update_profile(
         raise HTTPException(
             status_code=500,
             detail=f"Error updating profile: {str(e)}"
+        )
+
+
+@router.get("/subscription")
+async def get_subscription(request: Request):
+    """
+    Get user's subscription details
+
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+
+    **Returns**:
+    - Subscription plan details including features and status
+    """
+    user_id = get_user_id(request)
+
+    subscription_service = SubscriptionService(prisma)
+
+    try:
+        # Get user by Clerk ID first
+        user = await prisma.user.find_unique(
+            where={"clerkId": user_id}
+        )
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+
+        # Get subscription details
+        subscription = await subscription_service.get_subscription_details(
+            user_id=user.id
+        )
+
+        return subscription
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching subscription: {str(e)}"
+        )
+
+
+@router.get("/subscription/plans")
+async def get_subscription_plans():
+    """
+    Get available subscription plans and features
+
+    **Returns**:
+    - List of available subscription plans with pricing and features
+    """
+    try:
+        return {
+            "plans": {
+                "free": await get_plan_features("free"),
+                "pro": await get_plan_features("pro")
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching plans: {str(e)}"
         )
 
 

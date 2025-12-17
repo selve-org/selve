@@ -1,6 +1,9 @@
-import { CreditCardIcon } from "@heroicons/react/24/outline";
+"use client";
+
+import { CreditCardIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { SettingsCard } from "../ui/SettingsCard";
 import { TierType, InviteLink } from "../../types";
+import { useUsage } from "@/hooks/useUsage";
 
 interface PlanUsageTabProps {
   tier: TierType;
@@ -11,6 +14,16 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
   const inviteCount = invites.length;
   const maxInvites = tier === "free" ? 3 : Infinity;
   const usagePercentage = tier === "free" ? (inviteCount / 3) * 100 : 20;
+
+  // Chatbot usage tracking
+  const {
+    usagePercentage: chatbotUsage,
+    messageCount,
+    timeUntilReset,
+    plan,
+    loading: usageLoading,
+    isLimitExceeded
+  } = useUsage();
 
   return (
     <div className="space-y-6">
@@ -58,11 +71,60 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
           </div>
         </div>
 
-        {/* Future: Chatbot Usage */}
+        {/* Chatbot Usage */}
         <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-          <p className="text-sm text-gray-500 dark:text-gray-500">
-            Chatbot usage tracking coming soon
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <ChatBubbleLeftRightIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400">Chatbot usage</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {usageLoading ? (
+                <span className="text-gray-400">Loading...</span>
+              ) : plan === "pro" ? (
+                <span className="text-green-600 dark:text-green-400">Unlimited</span>
+              ) : (
+                `${Math.round(chatbotUsage)}%`
+              )}
+            </span>
+          </div>
+
+          {plan === "free" && (
+            <>
+              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 mb-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${
+                    isLimitExceeded
+                      ? "bg-red-600 dark:bg-red-500"
+                      : chatbotUsage >= 80
+                      ? "bg-yellow-600 dark:bg-yellow-500"
+                      : "bg-purple-600 dark:bg-purple-500"
+                  }`}
+                  style={{ width: `${Math.min(chatbotUsage, 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
+                <span>{messageCount} messages today</span>
+                <span>Resets in {timeUntilReset}</span>
+              </div>
+              {isLimitExceeded && (
+                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-md">
+                  <p className="text-sm text-red-800 dark:text-red-300 font-medium">
+                    Daily limit reached
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Upgrade to Pro for unlimited chatbot conversations!
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {plan === "pro" && (
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              {messageCount} messages today • No daily limit
+            </p>
+          )}
         </div>
       </SettingsCard>
 

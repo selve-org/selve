@@ -43,19 +43,29 @@ class TierService:
     async def get_user_tier(self, user_id: str) -> TierType:
         """
         Get the tier for a user
-        
+
         Args:
             user_id: User's ID
-            
+
         Returns:
             "free" or "premium"
-            
-        TODO: Integrate with actual subscription system (Stripe, Paddle, etc.)
-        For now, all users are on free tier
         """
-        # TODO: Query subscription database
-        # For now, return free tier for everyone
-        return "free"
+        # Query user's subscription plan from database
+        user = await self.db.user.find_unique(
+            where={"id": user_id},
+            select={"subscriptionPlan": True}
+        )
+
+        if not user:
+            return "free"
+
+        # Map subscription plans: "pro" -> "premium", "free" -> "free"
+        subscription_plan = user.subscriptionPlan or "free"
+
+        if subscription_plan == "pro":
+            return "premium"
+        else:
+            return "free"
     
     async def get_invite_count(self, user_id: str) -> int:
         """

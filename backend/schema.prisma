@@ -18,6 +18,21 @@ model User {
   isArchived          Boolean      @default(false)
   archivedAt          DateTime?
   archiveMetadata     Json?
+
+  // Subscription fields
+  subscriptionPlan     String    @default("free")  // "free" | "pro"
+  subscriptionStatus   String?                     // "active" | "cancelled" | "past_due"
+  clerkCustomerId      String?                     // Clerk customer ID
+  subscriptionId       String?                     // Clerk subscription ID
+  planStartDate        DateTime?
+  planEndDate          DateTime?
+
+  // Usage tracking (24-hour rolling window)
+  currentPeriodStart   DateTime  @default(now())
+  currentPeriodEnd     DateTime?
+  currentPeriodCost    Float     @default(0)
+  lastUsageReset       DateTime  @default(now())
+
   inviteLinksSent     InviteLink[] @relation("InviterRelation")
   inviteLinksReceived InviteLink[] @relation("TargetRelation")
   profile             Profile?
@@ -538,6 +553,7 @@ model ChatbotKnowledgeSync {
 model ChatbotAnalytics {
   id                String              @id @default(cuid())
   userId            String
+  clerkUserId       String              // Clerk user ID for integration
   sessionId         String
 
   messageCount      Int                 @default(0)
@@ -550,9 +566,18 @@ model ChatbotAnalytics {
   provider          String?             // "anthropic" | "openai"
   model             String?
 
+  // Usage period tracking for daily limits
+  periodStart       DateTime            @default(now())
+  periodEnd         DateTime?
+  resetAt           DateTime?           // When usage resets (24h from periodStart)
+
   date              DateTime            @default(now())
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   @@index([userId, date])
+  @@index([clerkUserId, periodStart])
+  @@index([clerkUserId, resetAt])
   @@index([provider, model, date])
 }
 
