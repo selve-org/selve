@@ -91,11 +91,11 @@ export default function ProfilePage() {
 
   const tabs: Tab[] = [
     { id: "general", label: "General", icon: UserCircleIcon },
-    { id: "security", label: "Security & Privacy", icon: ShieldCheckIcon },
     { id: "accounts", label: "Account Connections", icon: LinkIcon },
     { id: "sessions", label: "Sessions", icon: ComputerDesktopIcon },
     { id: "invites", label: "Invites", icon: UserGroupIcon },
     { id: "plan", label: "Plan & Usage", icon: CreditCardIcon },
+    { id: "security", label: "Security & Privacy", icon: ShieldCheckIcon },
   ];
 
   if (!isLoaded) {

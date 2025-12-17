@@ -172,9 +172,15 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
             </p>
           </div>
           {tier === "free" && (
-            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors cursor-pointer">
+            /* COMING SOON: Premium upgrade functionality */
+            <button 
+              disabled 
+              title="Coming soon"
+              className="px-4 py-2 bg-purple-600/50 text-white/70 rounded-md text-sm font-medium cursor-not-allowed"
+            >
               Upgrade to Premium
             </button>
+            /* END COMING SOON */
           )}
         </div>
       </SettingsCard>

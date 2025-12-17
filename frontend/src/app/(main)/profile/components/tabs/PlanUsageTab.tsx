@@ -46,9 +46,15 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
             </div>
           </div>
           {tier === "free" && (
-            <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors cursor-pointer">
+            /* COMING SOON: Upgrade functionality */
+            <button 
+              disabled 
+              title="Coming soon"
+              className="px-4 py-2 bg-purple-600/50 text-white/70 rounded-md text-sm font-medium cursor-not-allowed"
+            >
               Upgrade
             </button>
+            /* END COMING SOON */
           )}
         </div>
       </SettingsCard>
@@ -140,9 +146,15 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
                 •••• •••• •••• 4242
               </span>
             </div>
-            <button className="px-3 py-1.5 bg-white dark:bg-[#0c0c0c] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium transition-colors cursor-pointer">
+            {/* COMING SOON: Payment method update functionality */}
+            <button 
+              disabled 
+              title="Coming soon"
+              className="px-3 py-1.5 bg-white/50 dark:bg-[#0c0c0c]/50 border border-gray-200 dark:border-gray-800 text-gray-700/50 dark:text-gray-300/50 rounded-md text-sm font-medium cursor-not-allowed"
+            >
               Update
             </button>
+            {/* END COMING SOON */}
           </div>
         </SettingsCard>
       )}
