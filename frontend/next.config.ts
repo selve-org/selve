@@ -27,7 +27,9 @@ export default withSentryConfig(nextConfig, {
   disableLogger: true,
 
   // Hide source maps from generated client bundles
-  hideSourceMaps: true,
+  sourcemaps: {
+    disable: true,
+  },
 
   // Enables automatic instrumentation of Vercel Cron Monitors
   automaticVercelMonitors: true,
