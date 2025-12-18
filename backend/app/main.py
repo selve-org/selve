@@ -14,7 +14,8 @@ import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from app.db import prisma
-from app.api.routes import assessment, invites, notifications, testimonials, newsletter, stats
+from app.routes.assessment import router as assessment_router
+from app.api.routes import invites, notifications, testimonials, newsletter, stats
 from app.api.routes.users import router as users_router, webhooks_router
 from app.logging_config import setup_logging
 from app.middleware.request_logging import RequestLoggingMiddleware
@@ -247,7 +248,7 @@ async def add_sentry_context(request: Request, call_next):
 
 
 # Include routers
-app.include_router(assessment.router, prefix="/api", tags=["assessment"])
+app.include_router(assessment_router, prefix="/api", tags=["assessment"])
 app.include_router(invites.router, prefix="/api", tags=["invites"])
 app.include_router(notifications.router, prefix="/api", tags=["notifications"])
 app.include_router(testimonials.router, prefix="/api", tags=["testimonials"])

@@ -253,6 +253,157 @@ class RedisSessionStore:
         except Exception:
             return 0
 
+    # ========================================================================
+    # Distributed Locking - Prevents Race Conditions
+    # ========================================================================
+
+    def acquire_lock(
+        self,
+        lock_name: str,
+        lock_timeout: int = 120,
+        blocking: bool = True,
+        blocking_timeout: int = 130
+    ) -> Optional[str]:
+        """
+        Acquire a distributed lock using Redis SETNX.
+        
+        This prevents race conditions when multiple requests try to perform
+        the same operation (e.g., generating assessment results).
+        
+        Args:
+            lock_name: Unique identifier for the lock (e.g., "results:session123")
+            lock_timeout: Seconds before lock auto-expires (prevents deadlocks)
+            blocking: If True, wait for lock; if False, return None immediately if locked
+            blocking_timeout: Max seconds to wait for lock when blocking
+            
+        Returns:
+            Lock token (str) if acquired, None if failed/timeout
+        """
+        import uuid
+        import time
+        
+        lock_key = f"lock:{lock_name}"
+        lock_token = str(uuid.uuid4())  # Unique token to ensure only owner can release
+        
+        if not self.redis_available:
+            # In-memory fallback: simple dict-based lock
+            if not hasattr(self, '_memory_locks'):
+                self._memory_locks: Dict[str, str] = {}
+            
+            if lock_key in self._memory_locks:
+                if not blocking:
+                    return None
+                # Simple busy-wait for in-memory (dev only)
+                start = time.time()
+                while lock_key in self._memory_locks:
+                    if time.time() - start > blocking_timeout:
+                        return None
+                    time.sleep(0.1)
+            
+            self._memory_locks[lock_key] = lock_token
+            return lock_token
+        
+        try:
+            if blocking:
+                # Blocking: keep trying until timeout
+                start = time.time()
+                while time.time() - start < blocking_timeout:
+                    # Try to acquire with NX (only if not exists) and EX (expiry)
+                    acquired = self.client.set(
+                        lock_key, 
+                        lock_token, 
+                        nx=True,  # Only set if not exists
+                        ex=lock_timeout  # Auto-expire after timeout
+                    )
+                    if acquired:
+                        logger.debug(f"🔒 Lock acquired: {lock_name}")
+                        return lock_token
+                    
+                    # Wait a bit before retrying
+                    time.sleep(0.5)
+                
+                # Timeout waiting for lock
+                logger.warning(f"⏰ Lock timeout waiting for: {lock_name}")
+                return None
+            else:
+                # Non-blocking: try once
+                acquired = self.client.set(
+                    lock_key, 
+                    lock_token, 
+                    nx=True, 
+                    ex=lock_timeout
+                )
+                if acquired:
+                    logger.debug(f"🔒 Lock acquired: {lock_name}")
+                    return lock_token
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Redis lock error for {lock_name}: {e}")
+            return None
+
+    def release_lock(self, lock_name: str, lock_token: str) -> bool:
+        """
+        Release a distributed lock (only if we own it).
+        
+        Uses Lua script for atomic check-and-delete to prevent
+        accidentally releasing someone else's lock.
+        
+        Args:
+            lock_name: Lock identifier
+            lock_token: Token returned by acquire_lock
+            
+        Returns:
+            True if released, False if not owner or error
+        """
+        lock_key = f"lock:{lock_name}"
+        
+        if not self.redis_available:
+            # In-memory fallback
+            if hasattr(self, '_memory_locks') and self._memory_locks.get(lock_key) == lock_token:
+                del self._memory_locks[lock_key]
+                return True
+            return False
+        
+        try:
+            # Lua script: atomic check-and-delete
+            # Only delete if the lock value matches our token
+            lua_script = """
+            if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("del", KEYS[1])
+            else
+                return 0
+            end
+            """
+            result = self.client.eval(lua_script, 1, lock_key, lock_token)
+            if result:
+                logger.debug(f"🔓 Lock released: {lock_name}")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"❌ Redis unlock error for {lock_name}: {e}")
+            return False
+
+    def is_locked(self, lock_name: str) -> bool:
+        """
+        Check if a lock is currently held.
+        
+        Args:
+            lock_name: Lock identifier
+            
+        Returns:
+            True if locked, False otherwise
+        """
+        lock_key = f"lock:{lock_name}"
+        
+        if not self.redis_available:
+            return hasattr(self, '_memory_locks') and lock_key in self._memory_locks
+        
+        try:
+            return self.client.exists(lock_key) > 0
+        except Exception:
+            return False
+
 
 # ============================================================================
 # Global Instance

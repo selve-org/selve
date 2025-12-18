@@ -7,6 +7,7 @@ import logging
 from typing import Optional, Dict, List, Any
 from datetime import datetime, timezone, timedelta
 from prisma import fields
+from prisma.errors import UniqueViolationError
 
 from app.db import prisma
 from app.utils.db_retry import with_db_retry
@@ -180,11 +181,16 @@ class AssessmentService:
             
         Returns:
             AssessmentResult object (existing or newly created)
+            
+        Note:
+            This method is idempotent - if a result already exists for the session,
+            it returns the existing result. Race conditions are handled gracefully
+            by catching UniqueViolationError and returning the concurrent winner.
         """
-        # Check if result already exists (idempotency)
+        # Check if result already exists (idempotency - first check)
         existing_result = await self.get_result(session_id)
         if existing_result:
-            print(f"⚠️ Result already exists for session {session_id}, returning existing")
+            logger.info(f"Result already exists for session {session_id}, returning existing")
             return existing_result
 
         # Get session to extract user IDs
@@ -202,31 +208,43 @@ class AssessmentService:
                 data={"isCurrent": False}
             )
 
-        # Create result
-        result = await self.db.assessmentresult.create(
-            data={
-                "session": {"connect": {"id": session_id}},
-                "userId": session.userId,
-                "clerkUserId": session.clerkUserId,
-                "isCurrent": True,
-                "scoreLumen": scores.get("LUMEN", 0),
-                "scoreAether": scores.get("AETHER", 0),
-                "scoreOrpheus": scores.get("ORPHEUS", 0),
-                "scoreOrin": scores.get("ORIN", 0),
-                "scoreLyra": scores.get("LYRA", 0),
-                "scoreVara": scores.get("VARA", 0),
-                "scoreChronos": scores.get("CHRONOS", 0),
-                "scoreKael": scores.get("KAEL", 0),
-                "narrative": fields.Json(narrative),
-                "archetype": archetype,
-                "profilePattern": profile_pattern,
-                "consistencyScore": consistency_score,
-                "attentionScore": attention_score,
-                "validationFlags": fields.Json(validation_flags) if validation_flags else None,
-                "generationCost": generation_cost,
-                "generationModel": generation_model,
-            }
-        )
+        # Create result - wrapped in try/except to handle race conditions
+        # If another request created the result between our check and create,
+        # we catch the UniqueViolationError and return the existing result
+        try:
+            result = await self.db.assessmentresult.create(
+                data={
+                    "session": {"connect": {"id": session_id}},
+                    "userId": session.userId,
+                    "clerkUserId": session.clerkUserId,
+                    "isCurrent": True,
+                    "scoreLumen": scores.get("LUMEN", 0),
+                    "scoreAether": scores.get("AETHER", 0),
+                    "scoreOrpheus": scores.get("ORPHEUS", 0),
+                    "scoreOrin": scores.get("ORIN", 0),
+                    "scoreLyra": scores.get("LYRA", 0),
+                    "scoreVara": scores.get("VARA", 0),
+                    "scoreChronos": scores.get("CHRONOS", 0),
+                    "scoreKael": scores.get("KAEL", 0),
+                    "narrative": fields.Json(narrative),
+                    "archetype": archetype,
+                    "profilePattern": profile_pattern,
+                    "consistencyScore": consistency_score,
+                    "attentionScore": attention_score,
+                    "validationFlags": fields.Json(validation_flags) if validation_flags else None,
+                    "generationCost": generation_cost,
+                    "generationModel": generation_model,
+                }
+            )
+        except UniqueViolationError:
+            # Race condition: another request created the result concurrently
+            # This is expected behavior - return the winning result
+            logger.info(f"Race condition resolved for session {session_id} - returning concurrent result")
+            existing_result = await self.get_result(session_id)
+            if existing_result:
+                return existing_result
+            # This should never happen, but handle defensively
+            raise ValueError(f"Unexpected state: UniqueViolationError but no result found for {session_id}")
 
         # Update session status to completed
         await self.update_session(session_id, status="completed")
