@@ -46,7 +46,8 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
             [&::-webkit-slider-thumb]:w-5
             [&::-webkit-slider-thumb]:h-5
             [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-green-500
+            [&::-webkit-slider-thumb]:bg-green-600
+            dark:[&::-webkit-slider-thumb]:bg-green-500
             [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:shadow-lg
             [&::-webkit-slider-thumb]:transition-transform
@@ -54,7 +55,8 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
             [&::-moz-range-thumb]:w-5
             [&::-moz-range-thumb]:h-5
             [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-green-500
+            [&::-moz-range-thumb]:bg-green-600
+            dark:[&::-moz-range-thumb]:bg-green-500
             [&::-moz-range-thumb]:cursor-pointer
             [&::-moz-range-thumb]:border-0
             [&::-moz-range-thumb]:shadow-lg
@@ -69,7 +71,7 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
               left: `${((currentValue - min) / (max - min)) * 100}%`,
             }}
           >
-            <div className="bg-green-500 text-white ml-10% w-5 h-5 flex items-center justify-center rounded-full text-xs font-semibold shadow-lg">
+            <div className="bg-green-600 dark:bg-green-500 text-white ml-10% w-5 h-5 flex items-center justify-center rounded-full text-xs font-semibold shadow-lg">
               {currentValue}
             </div>
           </div>
@@ -91,7 +93,7 @@ export const ScaleSlider: React.FC<ScaleSliderProps> = ({
                 showOnMobile ? "" : "hidden md:block"
               } ${
                 point === currentValue
-                  ? "text-green-400 font-semibold"
+                  ? "text-green-700 dark:text-green-400 font-semibold"
                   : "text-gray-500 dark:text-gray-400"
               }`}
             >
