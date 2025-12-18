@@ -44,14 +44,16 @@ class TestNarrativeGenerator:
         assert 'ALIVE in the presence of others' in narrative.template.core_nature
     
     def test_generate_dimension_narrative_missing_template(self):
-        """Test with dimension that doesn't have template yet."""
+        """Test that KAEL dimension now has templates (previously missing)."""
         generator = NarrativeGenerator()
         
-        # KAEL doesn't have templates yet
+        # KAEL now has templates - verify it returns a valid narrative
         narrative = generator.generate_dimension_narrative('KAEL', 75)
         
-        # Should return None gracefully
-        assert narrative is None
+        # Should return a valid DimensionNarrative
+        assert narrative is not None
+        assert narrative.dimension == 'KAEL'
+        assert narrative.score == 75
     
     def test_generate_complete_narrative(self):
         """Test generating complete personality narrative."""

@@ -14,7 +14,7 @@ class TestSelveScorer:
     @pytest.fixture
     def scorer(self):
         """Create scorer instance for tests."""
-        return SelveScorer('/home/chris/selve/data/selve_item_pool_expanded.json')
+        return SelveScorer('app/data/selve_item_pool_expanded.json')
     
     def test_scorer_initialization(self, scorer):
         """Test scorer loads item pool correctly."""
