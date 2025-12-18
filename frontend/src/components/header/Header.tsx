@@ -93,8 +93,8 @@ export const Header = () => {
               )
             )}
             <hr className="border-neutral-200 dark:border-neutral-800" />
-            <div className="flex items-center space-x-2 pt-2">
-              <SignedOut>
+            <SignedOut>
+              <div className="flex items-center space-x-2 pt-2">
                 <SignInButton>
                   <button className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">
                     Log in
@@ -105,15 +105,52 @@ export const Header = () => {
                     Sign up
                   </button>
                 </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <div className="flex-1 flex justify-center">
-                  <CustomUserMenu />
-                </div>
-                <IdentifyUser />
-                <SyncClerkToDB />
-              </SignedIn>
-            </div>
+              </div>
+            </SignedOut>
+            <SignedIn>
+              {/* Mobile User Menu - Inline items instead of dropdown */}
+              <div className="pt-2 space-y-1">
+                <Link
+                  href="/profile?tab=invites"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                >
+                  Notifications
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                >
+                  View Profile
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                >
+                  Settings
+                </Link>
+                <Link
+                  href={process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                >
+                  Chat with SELVE
+                </Link>
+                <Link
+                  href="/pricing"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                >
+                  Pricing & Plans
+                </Link>
+              </div>
+              <IdentifyUser />
+              <SyncClerkToDB />
+            </SignedIn>
           </div>
         )}
       </div>
