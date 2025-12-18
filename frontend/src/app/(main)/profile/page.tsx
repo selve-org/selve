@@ -56,13 +56,13 @@ export default function ProfilePage() {
       
       try {
         const url = `${process.env.NEXT_PUBLIC_API_URL}/api/assessment/current-result/${user.id}`;
-        console.log('Checking assessment status for:', user.id);
+        // Removed console.log for security - user ID should not be exposed in client console
         
         const response = await fetch(url);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Assessment check response:', data);
+          // Removed console.log for security - response data may contain sensitive user information
           setHasCompletedAssessment(!!data.current_result);
           if (data.current_result?.session_id) {
             setCurrentSessionId(data.current_result.session_id);

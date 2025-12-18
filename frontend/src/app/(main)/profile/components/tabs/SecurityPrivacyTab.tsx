@@ -283,6 +283,7 @@ export function SecurityPrivacyTab() {
             from your authenticator app when signing in.
           </p>
 
+          {/* Authenticator App - Not available */}
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#0c0c0c] rounded-lg border border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
@@ -293,25 +294,17 @@ export function SecurityPrivacyTab() {
                   Authenticator App
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {twoFactorEnabled ? "Enabled" : "Not enabled"}
+                  Not available
                 </p>
               </div>
             </div>
 
             <button
-              onClick={handleTwoFactorToggle}
-              disabled={twoFactorLoading}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                twoFactorEnabled
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "bg-purple-600 hover:bg-purple-700 text-white"
-              } disabled:opacity-50`}
+              disabled={true}
+              title="Not available now"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-not-allowed opacity-50 bg-gray-400 text-gray-600`}
             >
-              {twoFactorLoading
-                ? "Loading..."
-                : twoFactorEnabled
-                ? "Disable"
-                : "Enable"}
+              Not available
             </button>
           </div>
 

@@ -40,7 +40,7 @@ export default function AssessmentPage() {
   const isCompleted = session.status === "completed" && session.completedAt;
   return (
     <div
-      className="min-h-screen bg-white dark:bg-[#0c0c0c] text-slate-900 dark:text-white flex flex-col justify-start items-start p-4 md:justify-center md:items-center md:p-8"
+      className="min-h-screen text-slate-900 dark:text-white flex flex-col justify-start items-start p-4 md:justify-center md:items-center md:p-8"
       style={{
         fontFamily:
           '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',

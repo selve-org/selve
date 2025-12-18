@@ -121,6 +121,9 @@ export const Footer = () => {
               >
                 Cookies & privacy
               </button>
+              <Link href="https://buymeacoffee.com/selve" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                Buy me a coffee ☕
+              </Link>
             </div>
             
             {/* Social Media Icons */}
