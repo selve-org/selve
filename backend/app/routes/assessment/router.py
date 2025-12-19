@@ -14,6 +14,7 @@ import os
 import logging
 from datetime import datetime
 from typing import Optional, Dict, Any, List
+from html import escape
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -163,6 +164,34 @@ async def start_assessment(
         raise HTTPException(status_code=500, detail="Failed to start assessment")
 
 
+def sanitize_text_input(text: str, max_length: int = 500) -> str:
+    """
+    Sanitize user text input to prevent XSS attacks.
+
+    Removes control characters, truncates to max length, and escapes HTML entities.
+
+    Args:
+        text: The input text to sanitize
+        max_length: Maximum allowed length (default: 500)
+
+    Returns:
+        Sanitized and escaped text
+    """
+    if not isinstance(text, str):
+        return ""
+
+    # Remove control characters (keep newlines and tabs)
+    text = ''.join(char for char in text if ord(char) >= 32 or char in '\n\t')
+
+    # Truncate to max length
+    text = text[:max_length]
+
+    # Escape HTML entities to prevent XSS
+    text = escape(text)
+
+    return text.strip()
+
+
 @router.post("/assessment/answer", response_model=SubmitAnswerResponse)
 async def submit_answer(
     request: SubmitAnswerRequest,
@@ -170,45 +199,70 @@ async def submit_answer(
 ):
     """
     Submit an answer and get next question(s).
-    
+
     The adaptive algorithm determines:
     - Whether more questions are needed
     - Which dimension needs more clarity
     - When assessment is complete
-    
+
     Returns:
     - next_questions: Next adaptive questions (if not complete)
     - is_complete: Whether assessment is finished
     - progress: Current progress (0.0 - 1.0)
+
+    Race condition protection:
+    - Uses distributed locking to prevent concurrent modifications
+    - Ensures consistency when multiple requests arrive simultaneously
     """
     session_id = validate_session_id(request.session_id)
     session_mgr = get_session_manager()
-    
-    # Get session with database fallback
-    session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    
-    # Extract session components
-    tester = session["tester"]
-    responses: Dict = session["responses"]
-    demographics: Dict = session["demographics"]
-    pending_questions: set = session["pending_questions"]
-    answer_history: List = session.get("answer_history", [])
-    validator = session.get("validator")
-    
-    question_id = request.question_id
-    is_demographic = question_id.startswith("demo_")
-    
-    # Handle back navigation tracking
-    if request.is_going_back:
-        old_value = demographics.get(question_id) if is_demographic else responses.get(question_id)
-        if old_value is not None:
-            log_back_navigation(session, question_id, old_value, request.response)
-    
-    # Store response based on type
-    if is_demographic:
-        demographics[question_id] = request.response
+
+    # Acquire distributed lock for this session to prevent race conditions
+    lock_token = None
+    try:
+        lock_token = session_mgr._redis.acquire_lock(
+            lock_name=f"answer:{session_id}",
+            lock_timeout=30,  # 30s max for answer processing
+            blocking=True,
+            blocking_timeout=35
+        )
+
+        if lock_token is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Answer submission in progress. Please wait and try again."
+            )
+
+        # Get session with database fallback
+        session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        # Extract session components
+        tester = session["tester"]
+        responses: Dict = session["responses"]
+        demographics: Dict = session["demographics"]
+        pending_questions: set = session["pending_questions"]
+        answer_history: List = session.get("answer_history", [])
+        validator = session.get("validator")
+
+        question_id = request.question_id
+        is_demographic = question_id.startswith("demo_")
+
+        # Handle back navigation tracking
+        if request.is_going_back:
+            old_value = demographics.get(question_id) if is_demographic else responses.get(question_id)
+            if old_value is not None:
+                log_back_navigation(session, question_id, old_value, request.response)
+
+        # Store response based on type
+        if is_demographic:
+            # Sanitize text input to prevent XSS attacks
+            if isinstance(request.response, str):
+                max_length = 1000 if question_id == 'demo_name' else 500
+                demographics[question_id] = sanitize_text_input(request.response, max_length=max_length)
+            else:
+                demographics[question_id] = request.response
         
         # Track in history (avoid duplicates)
         if not request.is_going_back and question_id not in answer_history:
@@ -235,106 +289,111 @@ async def submit_answer(
         if responses or pending_questions:
             # User went back through demographics - don't regenerate
             logger.debug("Demographics re-completed, personality questions exist")
-    else:
-        # Personality question - must be numeric
-        try:
-            response_value = ensure_numeric_response(request.response, question_id)
-            responses[question_id] = response_value
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
-        
-        # Remove from pending and add to history
-        pending_questions.discard(question_id)
-        if not request.is_going_back and question_id not in answer_history:
-            answer_history.append(question_id)
-        
-        # Run periodic validation
-        if should_run_validation_check(len(responses)) and validator:
-            validation_result = validator.validate_responses(responses)
-            logger.info(
-                f"Validation check: consistency={validation_result['consistency_score']:.1f}%, "
-                f"attention={validation_result['attention_score']:.1f}%"
+        else:
+            # Personality question - must be numeric
+            try:
+                response_value = ensure_numeric_response(request.response, question_id)
+                responses[question_id] = response_value
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+
+            # Remove from pending and add to history
+            pending_questions.discard(question_id)
+            if not request.is_going_back and question_id not in answer_history:
+                answer_history.append(question_id)
+
+            # Run periodic validation
+            if should_run_validation_check(len(responses)) and validator:
+                validation_result = validator.validate_responses(responses)
+                logger.info(
+                    f"Validation check: consistency={validation_result['consistency_score']:.1f}%, "
+                    f"attention={validation_result['attention_score']:.1f}%"
+                )
+
+        # Create question engine
+        question_engine = QuestionEngine(tester, session["scorer"])
+
+        # Check if we should continue testing
+        should_continue, reason = question_engine.should_continue_testing(responses)
+        log_adaptive_decision(len(responses), should_continue, reason)
+
+        if not should_continue:
+            # Assessment complete
+            logger.info(f"Assessment complete! Total items: {len(responses)}")
+            session_mgr.save_session(session_id, session)
+
+            # Persist to database
+            await update_session_from_state(service, session_id, session)
+
+            return SubmitAnswerResponse(
+                next_questions=None,
+                is_complete=True,
+                progress=1.0,
+                questions_answered=len(demographics) + len(responses),
+                total_questions=len(demographics) + len(responses),
+                can_go_back=True,
             )
-    
-    # Create question engine
-    question_engine = QuestionEngine(tester, session["scorer"])
-    
-    # Check if we should continue testing
-    should_continue, reason = question_engine.should_continue_testing(responses)
-    log_adaptive_decision(len(responses), should_continue, reason)
-    
-    if not should_continue:
-        # Assessment complete
-        logger.info(f"Assessment complete! Total items: {len(responses)}")
-        session_mgr.save_session(session_id, session)
-        
-        # Persist to database
-        await update_session_from_state(service, session_id, session)
-        
-        return SubmitAnswerResponse(
-            next_questions=None,
-            is_complete=True,
-            progress=1.0,
-            questions_answered=len(demographics) + len(responses),
-            total_questions=len(demographics) + len(responses),
-            can_go_back=True,
+
+        # Get next questions
+        next_items = question_engine.select_next_questions(
+            responses=responses,
+            demographics=demographics,
+            pending_questions=pending_questions,
+            max_items=AssessmentConfig.DEFAULT_BATCH_SIZE,
         )
-    
-    # Get next questions
-    next_items = question_engine.select_next_questions(
-        responses=responses,
-        demographics=demographics,
-        pending_questions=pending_questions,
-        max_items=AssessmentConfig.DEFAULT_BATCH_SIZE,
-    )
-    
-    if not next_items:
-        # No more questions available
-        logger.info("No more questions available, completing assessment")
+
+        if not next_items:
+            # No more questions available
+            logger.info("No more questions available, completing assessment")
+            session_mgr.save_session(session_id, session)
+            await update_session_from_state(service, session_id, session)
+
+            return SubmitAnswerResponse(
+                next_questions=None,
+                is_complete=True,
+                progress=1.0,
+                questions_answered=len(demographics) + len(responses),
+                total_questions=len(demographics) + len(responses),
+                can_go_back=True,
+            )
+
+        log_question_selection(next_items)
+
+        # Format questions for response
+        next_questions = question_engine.format_questions(next_items)
+
+        # Mark as pending
+        for q in next_questions:
+            pending_questions.add(q.id)
+
+        # Update batch tracking
+        session["current_batch"] = [q.id for q in next_questions]
+        session["batch_history"].append({
+            "batch": [q.id for q in next_questions],
+            "timestamp": datetime.now().isoformat(),
+        })
+
+        # Calculate progress
+        questions_answered = len(demographics) + len(responses)
+        progress = calculate_progress(len(demographics), len(responses))
+
+        # Save session
         session_mgr.save_session(session_id, session)
         await update_session_from_state(service, session_id, session)
-        
+
         return SubmitAnswerResponse(
-            next_questions=None,
-            is_complete=True,
-            progress=1.0,
-            questions_answered=len(demographics) + len(responses),
-            total_questions=len(demographics) + len(responses),
-            can_go_back=True,
+            next_questions=next_questions,
+            is_complete=False,
+            progress=progress,
+            questions_answered=questions_answered,
+            total_questions=AssessmentConfig.ESTIMATED_TOTAL_QUESTIONS,
+            can_go_back=len(responses) > 0,
         )
-    
-    log_question_selection(next_items)
-    
-    # Format questions for response
-    next_questions = question_engine.format_questions(next_items)
-    
-    # Mark as pending
-    for q in next_questions:
-        pending_questions.add(q.id)
-    
-    # Update batch tracking
-    session["current_batch"] = [q.id for q in next_questions]
-    session["batch_history"].append({
-        "batch": [q.id for q in next_questions],
-        "timestamp": datetime.now().isoformat(),
-    })
-    
-    # Calculate progress
-    questions_answered = len(demographics) + len(responses)
-    progress = calculate_progress(len(demographics), len(responses))
-    
-    # Save session
-    session_mgr.save_session(session_id, session)
-    await update_session_from_state(service, session_id, session)
-    
-    return SubmitAnswerResponse(
-        next_questions=next_questions,
-        is_complete=False,
-        progress=progress,
-        questions_answered=questions_answered,
-        total_questions=AssessmentConfig.ESTIMATED_TOTAL_QUESTIONS,
-        can_go_back=len(responses) > 0,
-    )
+
+    finally:
+        # Always release lock, even if error occurred
+        if lock_token:
+            session_mgr._redis.release_lock(f"answer:{session_id}", lock_token)
 
 
 @router.post("/assessment/can-go-back", response_model=GetPreviousQuestionResponse)
@@ -613,6 +672,63 @@ async def get_results(
     finally:
         if lock_token:
             session_mgr.release_results_lock(session_id, lock_token)
+
+
+@router.get("/assessment/{session_id}/results/status")
+async def get_results_status(
+    session_id: str,
+    service: AssessmentService = Depends(get_assessment_service),
+):
+    """
+    Check if assessment results are ready.
+
+    Returns:
+        - status: "generating" | "ready" | "error" | "not_found" | "pending"
+        - progress: Optional progress percentage
+        - estimated_time: Seconds remaining
+    """
+    session_id = validate_session_id(session_id)
+    session_mgr = get_session_manager()
+
+    # Check if results exist in database (cache hit)
+    existing_result = await service.get_result(session_id)
+    if existing_result:
+        return {
+            "status": "ready",
+            "session_id": session_id,
+            "completed_at": existing_result.createdAt.isoformat(),
+        }
+
+    # Check if generation is in progress (lock exists)
+    lock_name = f"results:{session_id}"
+    is_generating = session_mgr._redis.is_locked(lock_name)
+
+    if is_generating:
+        return {
+            "status": "generating",
+            "session_id": session_id,
+            "estimated_time": 180,  # Max timeout
+            "message": "Generating your personality narrative. This may take up to 3 minutes.",
+        }
+
+    # Check if session exists
+    session = await session_mgr.get_session_with_db_fallback(
+        session_id, raise_if_missing=False
+    )
+
+    if not session:
+        return {
+            "status": "not_found",
+            "session_id": session_id,
+            "error_message": "Session not found or expired",
+        }
+
+    # Session exists but results not ready
+    return {
+        "status": "pending",
+        "session_id": session_id,
+        "message": "Assessment incomplete or results not yet generated",
+    }
 
 
 @router.get("/assessment/{session_id}/progress")

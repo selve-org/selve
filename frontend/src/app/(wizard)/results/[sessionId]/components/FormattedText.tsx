@@ -1,13 +1,25 @@
 /**
  * FormattedText component - Renders text with styled bullets
- * 
+ *
  * Parses plain text and converts bullet points (-, •, *, 1., 2., etc.)
  * into styled list items with purple gradient dots and hover effects.
+ *
+ * Security: Uses DOMPurify for sanitization as an extra layer of defense,
+ * though React's JSX rendering already provides XSS protection.
  */
 
+import DOMPurify from 'dompurify';
+
 export function FormattedText({ text }: { text: string }) {
-  // Split text into lines
-  const lines = text.split('\n');
+  // Sanitize text as extra layer of security (defense in depth)
+  const sanitizedText = DOMPurify.sanitize(text, {
+    ALLOWED_TAGS: [], // No HTML tags allowed, plain text only
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true,
+  });
+
+  // Split sanitized text into lines
+  const lines = sanitizedText.split('\n');
   const elements: React.ReactNode[] = [];
   let currentList: string[] = [];
   let key = 0;

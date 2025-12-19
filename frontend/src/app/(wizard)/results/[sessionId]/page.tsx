@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
@@ -39,80 +39,164 @@ export default function ResultsPage() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [shareLoading, setShareLoading] = useState(false);
 
+  // Polling state
+  const [resultsStatus, setResultsStatus] = useState<'loading' | 'generating' | 'ready' | 'error'>('loading');
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef(Date.now());
+
   const chatbotBaseUrl = process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me";
   const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
 
+  // Fetch full results (once status is "ready")
+  const fetchFullResults = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/assessment/${sessionId}/results`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch results");
+      }
+
+      const data = await response.json();
+      setResults(data);
+      setResultsStatus('ready');
+      setIsLoading(false);
+
+      // Update user profile with demographics and results (for authenticated users only)
+      if (data.demographics && data.scores && data.narrative) {
+        try {
+          await fetch('/api/update-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              demographics: data.demographics,
+              scores: data.scores,
+              narrative: data.narrative,
+            }),
+          });
+          console.log('✅ Profile updated with assessment results');
+        } catch (profileError) {
+          console.error('⚠️ Failed to update profile (non-critical):', profileError);
+        }
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load results";
+      setError(errorMessage);
+      setResultsStatus('error');
+      setIsLoading(false);
+    }
+  }, [sessionId]);
+
+  // Check results status (polling function)
+  const checkResultsStatus = useCallback(async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+      const response = await fetch(
+        `${API_BASE}/api/assessment/${sessionId}/results/status`,
+        { signal: controller.signal }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Status check failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'ready') {
+        setResultsStatus('ready');
+        await fetchFullResults();
+
+        // Stop polling
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+      } else if (data.status === 'generating') {
+        setResultsStatus('generating');
+
+        // Estimate progress based on elapsed time
+        const elapsed = Date.now() - startTimeRef.current;
+        const progress = Math.min(95, (elapsed / 180000) * 100);
+        setGenerationProgress(progress);
+      } else if (data.status === 'error' || data.status === 'not_found') {
+        setResultsStatus('error');
+        setError(data.error_message || 'Failed to load results');
+
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+      }
+
+      setRetryCount(0); // Reset on success
+
+    } catch (error) {
+      console.error('Status check error:', error);
+
+      if (retryCount < 3) {
+        setRetryCount(prev => prev + 1);
+      } else {
+        setResultsStatus('error');
+        setError('Unable to check results status. Please refresh the page.');
+        setIsLoading(false);
+
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+      }
+    }
+  }, [sessionId, retryCount, fetchFullResults]);
+
+  // Check access and start polling
   useEffect(() => {
-    async function fetchResults() {
+    async function checkAccessAndStartPolling() {
       try {
         // First check access
         const accessResponse = await fetch(
           `${API_BASE}/api/assessment/${sessionId}/results/check-access?clerk_user_id=${user?.id || ''}`
         );
-        
+
         if (accessResponse.ok) {
           const accessData = await accessResponse.json();
           setIsOwner(accessData.isOwner);
           setIsPublic(accessData.isPublic);
           setShareId(accessData.publicShareId);
-          
+
           if (!accessData.hasAccess) {
-            // Redirect unauthorized users to homepage
-            console.log('🔒 Access denied to results - redirecting to homepage', {
-              sessionId,
-              isOwner: accessData.isOwner,
-              isPublic: accessData.isPublic,
-              userId: user?.id || 'anonymous'
-            });
+            console.log('🔒 Access denied to results - redirecting to homepage');
             router.replace('/');
             return;
           }
         }
 
-        const response = await fetch(
-          `${API_BASE}/api/assessment/${sessionId}/results`
-        );
+        // Start polling
+        checkResultsStatus();
+        pollingIntervalRef.current = setInterval(checkResultsStatus, 2000); // Poll every 2s
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch results");
-        }
-
-        const data = await response.json();
-        setResults(data);
-
-        // Update user profile with demographics and results (for authenticated users only)
-        // This saves demographics to User/Profile tables
-        if (data.demographics && data.scores && data.narrative) {
-          try {
-            await fetch('/api/update-profile', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                demographics: data.demographics,
-                scores: data.scores,
-                narrative: data.narrative,
-              }),
-            });
-            console.log('✅ Profile updated with assessment results');
-          } catch (profileError) {
-            // Don't fail the whole page if profile update fails
-            // User can still see results, just profile won't be updated
-            console.error('⚠️ Failed to update profile (non-critical):', profileError);
-          }
-        }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to load results";
-        setError(errorMessage);
-      } finally {
+        console.error('Access check failed:', error);
+        setError('Failed to verify access');
         setIsLoading(false);
       }
     }
 
     if (sessionId && userLoaded) {
-      fetchResults();
+      checkAccessAndStartPolling();
     }
-  }, [sessionId, userLoaded, user?.id]);
+
+    // Cleanup: stop polling on unmount
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [sessionId, userLoaded, user?.id, checkResultsStatus, router]);
 
   const handleShare = async () => {
     if (!user?.id) return;
@@ -173,8 +257,32 @@ export default function ResultsPage() {
     }
   };
 
-  if (isLoading) {
-    return <LoadingSpinner />;
+  if (isLoading || resultsStatus === 'generating') {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#1c1c1c] flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <LoadingSpinner />
+
+          {resultsStatus === 'generating' && (
+            <div className="mt-8">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                <motion.div
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 h-2 rounded-full transition-all duration-500"
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${generationProgress}%` }}
+                />
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                Generating your personality narrative...
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                This can take up to 3 minutes. Progress: {Math.round(generationProgress)}%
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   if (error || !results) {

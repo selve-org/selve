@@ -449,10 +449,9 @@ export function useQuestionnaire(inviteCode?: string) {
             }
           }
 
-          // Redirect to results page after showing all loading stages (~5.5 seconds)
-          setTimeout(() => {
-            window.location.href = `/results/${sessionId}`;
-          }, 5500);
+          // Redirect to results page immediately
+          // Results page handles waiting for narrative generation with polling
+          window.location.href = `/results/${sessionId}`;
           return;
         }
 
