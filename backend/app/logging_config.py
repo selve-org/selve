@@ -140,42 +140,9 @@ def setup_logging(app_name: str = "selve-backend"):
 
     root_logger.addHandler(console_handler)
 
-    # File handler (production only)
-    if env == "production":
-        log_dir = "/var/log/selve"
-        try:
-            os.makedirs(log_dir, exist_ok=True)
-
-            # Rotating file handler - 50MB per file, keep 30 backups
-            file_handler = logging.handlers.RotatingFileHandler(
-                filename=f"{log_dir}/{app_name}.log",
-                maxBytes=50 * 1024 * 1024,  # 50MB
-                backupCount=30,  # 30 backups
-                encoding="utf-8",
-            )
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(JSONFormatter())
-            root_logger.addHandler(file_handler)
-
-            # Error file handler - separate file for errors only
-            error_handler = logging.handlers.RotatingFileHandler(
-                filename=f"{log_dir}/{app_name}-errors.log",
-                maxBytes=50 * 1024 * 1024,
-                backupCount=30,
-                encoding="utf-8",
-            )
-            error_handler.setLevel(logging.ERROR)
-            error_handler.setFormatter(JSONFormatter())
-            root_logger.addHandler(error_handler)
-
-            logging.info(f"✅ Production logging enabled: {log_dir}")
-        except PermissionError:
-            logging.warning(
-                f"⚠️ Cannot write to {log_dir}, using console only. "
-                "Run: sudo mkdir -p /var/log/selve && sudo chown $USER /var/log/selve"
-            )
-    else:
-        logging.info(f"ℹ️ Console logging only ({env} mode)")
+    # Logging goes to stdout → systemd journal (StandardOutput=journal)
+    # No file logging needed - journald handles rotation, compression, and persistence
+    logging.info(f"ℹ️ Logging to stdout ({env} mode) → journald via systemd")
 
     # Suppress noisy third-party loggers
     logging.getLogger("httpx").setLevel(logging.WARNING)
