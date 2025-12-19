@@ -263,32 +263,33 @@ async def submit_answer(
                 demographics[question_id] = sanitize_text_input(request.response, max_length=max_length)
             else:
                 demographics[question_id] = request.response
-        
-        # Track in history (avoid duplicates)
-        if not request.is_going_back and question_id not in answer_history:
-            answer_history.append(question_id)
-        
-        # Check if all demographics complete
-        all_demographics_complete = len(demographics) >= len(DEMOGRAPHIC_QUESTION_ORDER)
-        
-        if not all_demographics_complete:
-            # Still collecting demographics
-            progress = calculate_progress(len(demographics), 0)
-            session_mgr.save_session(session_id, session)
-            
-            return SubmitAnswerResponse(
-                next_questions=None,
-                is_complete=False,
-                progress=progress,
-                questions_answered=len(demographics),
-                total_questions=AssessmentConfig.ESTIMATED_TOTAL_QUESTIONS,
-                can_go_back=len(answer_history) > 0,
-            )
-        
-        # Demographics complete - check if we already have personality questions
-        if responses or pending_questions:
-            # User went back through demographics - don't regenerate
-            logger.debug("Demographics re-completed, personality questions exist")
+
+            # Track in history (avoid duplicates)
+            if not request.is_going_back and question_id not in answer_history:
+                answer_history.append(question_id)
+
+            # Check if all demographics complete
+            all_demographics_complete = len(demographics) >= len(DEMOGRAPHIC_QUESTION_ORDER)
+
+            if not all_demographics_complete:
+                # Still collecting demographics
+                progress = calculate_progress(len(demographics), 0)
+                session_mgr.save_session(session_id, session)
+
+                return SubmitAnswerResponse(
+                    next_questions=None,
+                    is_complete=False,
+                    progress=progress,
+                    questions_answered=len(demographics),
+                    total_questions=AssessmentConfig.ESTIMATED_TOTAL_QUESTIONS,
+                    can_go_back=len(answer_history) > 0,
+                )
+
+            # Demographics complete - check if we already have personality questions
+            if responses or pending_questions:
+                # User went back through demographics - don't regenerate
+                logger.debug("Demographics re-completed, personality questions exist")
+
         else:
             # Personality question - must be numeric
             try:
