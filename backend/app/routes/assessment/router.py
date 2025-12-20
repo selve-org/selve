@@ -298,11 +298,27 @@ async def submit_answer(
             try:
                 response_value = ensure_numeric_response(request.response, question_id)
                 responses[question_id] = response_value
+                logger.debug(f"✓ Stored response: {question_id} = {response_value}")
             except ValueError as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
             # Remove from pending and add to history
+            was_pending = question_id in pending_questions
             pending_questions.discard(question_id)
+            logger.debug(f"✓ Removed from pending: {question_id} (was_pending={was_pending})")
+            
+            # STALE PENDING CLEANUP: If user answered a question that wasn't pending,
+            # it means frontend state is out of sync (page refresh, browser back, etc.)
+            # Clear all pending items to allow fresh question selection
+            if not was_pending and pending_questions:
+                stale_count = len(pending_questions)
+                stale_items = list(pending_questions)
+                pending_questions.clear()
+                logger.warning(
+                    f"Stale pending cleanup: Cleared {stale_count} items {stale_items} "
+                    f"(frontend out of sync - answered {question_id} which wasn't pending)"
+                )
+            
             if not request.is_going_back and question_id not in answer_history:
                 answer_history.append(question_id)
 
@@ -366,9 +382,16 @@ async def submit_answer(
         # Format questions for response
         next_questions = question_engine.format_questions(next_items)
 
+        # ROOT CAUSE FIX: Clear old pending questions before adding new ones.
+        # Since the frontend replaces the view with this new batch, any previous 
+        # questions are no longer visible/answerable. Clearing them prevents "ghosts".
+        pending_questions.clear()
+        logger.debug(f"✓ Cleared pending questions (frontend batch replacement)")
+
         # Mark as pending
         for q in next_questions:
             pending_questions.add(q.id)
+            logger.debug(f"✓ Added to pending: {q.id}")
 
         # Update batch tracking
         session["current_batch"] = [q.id for q in next_questions]

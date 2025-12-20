@@ -185,10 +185,29 @@ class QuestionEngine:
         
         if zero_dims:
             logger.warning(f"Zero-item dimensions detected: {zero_dims}")
+            
+            # EMERGENCY MODE FIX: In emergency mode, we're desperate for ANY coverage.
+            # Only exclude:
+            #   1. Already answered questions (responses)
+            #   2. Contextually invalid questions (e.g., driving questions for non-drivers)
+            # 
+            # We IGNORE:
+            #   - pending_questions (may be stuck/stale)
+            #   - dedup_exclusions (redundancy is fine if it gets us data!)
+            #
+            # This prevents the "cascading exclusion" problem where stale pending items
+            # poison dedup rules, creating a chain reaction that blocks even more items.
+            emergency_exclusions = set(responses.keys()) | set(context_exclusions)
+            
+            logger.info(
+                f"Emergency mode: Using minimal exclusions only. "
+                f"Ignoring {len(pending_questions)} pending + {len(dedup_exclusions)} dedup exclusions"
+            )
+            
             items = self._get_emergency_items(
                 zero_dims, 
                 responses, 
-                all_exclusions,
+                emergency_exclusions,  # Clean exclusions (no pending, no dedup)
                 context_exclusions,
                 max_items
             )
@@ -242,13 +261,46 @@ class QuestionEngine:
         Get emergency items for zero-coverage dimensions.
         
         This prevents completing assessment with dimensions that have no data.
+        
+        In emergency mode, we use minimal exclusions:
+        - Exclude: responses (already answered) + context (demographics)
+        - Ignore: pending (may be stuck) + dedup (redundancy OK in emergency)
+        
+        This prevents the "cascading exclusion" problem where stale pending items
+        poison dedup rules, blocking even more questions.
+        
+        Args:
+            zero_dims: Dimensions with zero answered items
+            responses: Answered questions dict
+            all_exclusions: Minimal exclusions (responses + context only)
+            demographic_exclusions: Context-based exclusions
+            max_items: Maximum items to return
+            
+        Returns:
+            List of emergency items for zero-coverage dimensions
         """
         logger.info(f"Emergency mode: Getting items for {zero_dims}")
         
+        # DEBUG: Check scorer state
+        logger.debug(f"Emergency: Scorer include_scenarios={self.scorer.include_scenarios}")
+        logger.debug(f"Emergency: Scorer has {len(self.scorer.dimension_items)} dimensions loaded")
+        
         emergency_items = []
         
-        for dim in zero_dims:
+        # CRITICAL: Sort dimensions to prioritize ones that STILL have zero items
+        # This ensures chronically-zero dimensions (like CHRONOS, KAEL) get coverage first
+        def get_response_count(dim):
             dim_items = self.scorer.get_items_by_dimension(dim)
+            dim_item_codes = {item['item'] for item in dim_items}
+            return len(dim_item_codes & set(responses.keys()))
+        
+        # Sort by response count (ascending) - dimensions with 0 responses first
+        sorted_dims = sorted(zero_dims, key=get_response_count)
+        logger.info(f"Emergency priority order: {sorted_dims}")
+        
+        for dim in sorted_dims:
+            dim_items = self.scorer.get_items_by_dimension(dim)
+            logger.debug(f"Emergency: {dim} has {len(dim_items)} items in pool")
             
             # Find items not answered, not excluded, not demographically filtered
             available = [
@@ -257,6 +309,22 @@ class QuestionEngine:
                     item['item'] not in all_exclusions and
                     item['item'] not in demographic_exclusions)
             ]
+            
+            logger.debug(f"Emergency: {dim} filtered to {len(available)} available items")
+            logger.debug(f"Emergency: Total exclusions={len(all_exclusions)}, demographic={len(demographic_exclusions)}, responses={len(responses)}")
+            
+            if len(available) == 0 and len(dim_items) > 0:
+                # Debug: Why are all items excluded?
+                logger.warning(f"Emergency DEBUG for {dim}: All {len(dim_items)} items excluded!")
+                dim_item_codes = {item['item'] for item in dim_items}
+                in_responses = dim_item_codes & set(responses.keys())
+                in_exclusions = dim_item_codes & all_exclusions
+                
+                logger.warning(f"Items in responses: {len(in_responses)}, in exclusions: {len(in_exclusions)}")
+                if in_responses:
+                    logger.warning(f"{dim} items in responses: {sorted(list(in_responses))[:10]}")
+                logger.warning(f"No available items for dimension {dim} after unsticking pending")
+                continue
             
             if available:
                 # Sort by correlation (best discriminators first)
@@ -271,6 +339,9 @@ class QuestionEngine:
             else:
                 logger.warning(f"No available items for dimension {dim}")
         
+        logger.info(f"Emergency mode returning {len(emergency_items)} total items")
+        if emergency_items:
+            logger.info(f"Emergency items: {[item['item'] for item in emergency_items]}")
         return emergency_items[:max_items]
     
     def _apply_final_filter(
