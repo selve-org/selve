@@ -578,12 +578,20 @@ export function useQuestionnaire(inviteCode?: string) {
       }
 
       const data = await response.json();
-      const { question, current_answer, can_go_back, warning } = data;
+      const { question, current_answer, can_go_back, warning, pending_questions_cleared } = data;
 
       // Update states
       setCanGoBack(can_go_back);
       setWarningMessage(warning || null);
       setIsGoingBack(true); // Set flag so next submission knows it's a resubmission
+
+      // CRITICAL FIX: If backend cleared pending questions, frontend must clear its queue too!
+      // This prevents showing stale questions that were invalidated by going back
+      if (pending_questions_cleared) {
+        console.log("🧹 Backend cleared pending questions - clearing frontend question queue");
+        setQuestionQueue([]);
+        setCurrentQuestionIndex(0);
+      }
 
       // Check if we have a question to go back to
       if (!question) {

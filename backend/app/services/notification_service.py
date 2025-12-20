@@ -24,7 +24,7 @@ class NotificationService:
         self.mailgun_api_key = os.getenv('MAILGUN_API_KEY')
         self.mailgun_domain = os.getenv('MAILGUN_DOMAIN', 'mg.selve.me')
         self.mailgun_url = f'https://api.mailgun.net/v3/{self.mailgun_domain}/messages'
-        self.app_url = os.getenv('APP_URL', 'https://selve.app')
+        self.app_url = os.getenv('APP_URL', 'https://selve.me')
         
         # In-memory toast flags (replace with Redis in production)
         self._toast_flags = {}

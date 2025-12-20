@@ -627,32 +627,52 @@ async def go_back(request: GetPreviousQuestionRequest):
         # Get current answer
         current_answer = demographics.get(last_question_id) if is_demographic else responses.get(last_question_id)
         
-        # CRITICAL FIX: Clear pending questions that come AFTER the question we're going back to
+        # CRITICAL FIX: When going back, we must remove the question from responses/demographics
         # This prevents duplicate question selection when user re-answers
         # 
         # Example flow:
-        # 1. User answers Q1, Q2, Q3 → pending: {Q4, Q5, Q6}
-        # 2. User goes back to Q3 → answer_history.pop() → pending should clear {Q4, Q5, Q6}
-        # 3. User re-answers Q3 → system generates NEW questions (not duplicates)
+        # 1. User answers Q1, Q2, Q3 → responses: {Q1, Q2, Q3}, pending: {Q4, Q5, Q6}
+        # 2. User goes back to Q3 → answer_history.pop(Q3), responses should remove Q3
+        # 3. User re-answers Q3 → system treats it as a new answer, generates fresh questions
         #
-        # Without this fix:
-        # - pending: {Q4, Q5, Q6} stays intact
-        # - User re-answers Q3 → removes Q3 from pending (but Q3 wasn't in pending!)
-        # - System sees pending has items → generates more questions
-        # - Emergency mode re-selects Q4, Q5, Q6 because they're "available" again
+        # ROOT CAUSE OF DUPLICATES:
+        # When going back to Q3, if we don't remove Q3 from `responses`, the system thinks
+        # "Q3 is already answered" and the question selector excludes it from filtering.
+        # Then when emergency mode runs, Q3 is still in responses, so it selects the NEXT
+        # available questions... which might be ones that were previously selected and shown!
+        #
+        # FIX: Remove the target question from responses/demographics so it's treated as unanswered
+        
+        # Clear all pending questions - they're all "ahead" of where we're going back to
         pending_questions = session.get("pending_questions", set())
         if pending_questions:
-            # Clear all pending questions - they're all "ahead" of where we're going back to
             cleared_count = len(pending_questions)
             cleared_items = list(pending_questions)
             pending_questions.clear()
             logger.info(
-                f"Back navigation: Cleared {cleared_count} pending questions {cleared_items} "
-                f"to prevent duplicates when user re-answers from {last_question_id}"
+                f"Back navigation: Cleared {cleared_count} pending questions {cleared_items}"
             )
+        
+        # Remove the target question from responses/demographics
+        # This is KEY - without this, the question is still "answered" and can cause duplicates
+        if is_demographic:
+            if last_question_id in demographics:
+                old_value = demographics[last_question_id]
+                del demographics[last_question_id]
+                logger.debug(f"✓ Removed demographic {last_question_id} (was: {old_value})")
+        else:
+            if last_question_id in responses:
+                old_value = responses[last_question_id]
+                del responses[last_question_id]
+                logger.debug(f"✓ Removed response {last_question_id} (was: {old_value})")
         
         # Remove from history atomically (will be re-added on submit)
         answer_history.pop()
+        
+        logger.info(
+            f"Back navigation to {last_question_id}: "
+            f"Removed from responses and history to allow fresh re-answer"
+        )
         
         # Get question details
         question_engine = QuestionEngine(session["tester"], session["scorer"])
@@ -668,6 +688,7 @@ async def go_back(request: GetPreviousQuestionRequest):
             current_answer=current_answer,
             can_go_back=len(answer_history) > 0,
             warning="Changing previous answers may affect your results accuracy.",
+            pending_questions_cleared=True,  # Always true - we always clear pending on back
         )
     
     except HTTPException:
@@ -1327,9 +1348,14 @@ async def revoke_share_link(
     if not result:
         raise HTTPException(status_code=404, detail="Results not found")
     
+    # Revoke sharing: Set isPublic to False AND clear the share ID
+    # This ensures a new link is generated if user shares again
     await prisma.assessmentresult.update(
         where={"id": result.id},
-        data={"isPublic": False}
+        data={
+            "isPublic": False,
+            "publicShareId": None,  # Clear the share ID to invalidate old links
+        }
     )
     
     return {"success": True, "message": "Share link revoked"}
@@ -1413,15 +1439,30 @@ async def toggle_share(
         )
         return {"isPublic": True, "shareId": share_id}
     
-    # Toggle existing
+    # If enabling with existing share ID, just toggle isPublic
+    if enable:
+        await prisma.assessmentresult.update(
+            where={"id": result.id},
+            data={"isPublic": True}
+        )
+        return {
+            "isPublic": True,
+            "shareId": result.publicShareId,
+        }
+    
+    # If disabling, set isPublic to False AND clear the share ID
+    # This forces generation of a NEW share link when re-enabled
     await prisma.assessmentresult.update(
         where={"id": result.id},
-        data={"isPublic": enable}
+        data={
+            "isPublic": False,
+            "publicShareId": None,  # Clear the old share ID
+        }
     )
     
     return {
-        "isPublic": enable,
-        "shareId": result.publicShareId if enable else None,
+        "isPublic": False,
+        "shareId": None,
     }
 
 

@@ -244,6 +244,10 @@ class GetPreviousQuestionResponse(BaseModel):
         None, 
         description="Warning message about going back"
     )
+    pending_questions_cleared: bool = Field(
+        False,
+        description="Whether backend cleared pending questions (frontend should clear its queue)"
+    )
 
 
 class ValidationResult(BaseModel):
