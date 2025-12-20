@@ -250,17 +250,39 @@ class ValidationResult(BaseModel):
     """Response validation metrics."""
     
     consistency_score: float = Field(..., description="Response consistency (0-100)")
-    attention_score: float = Field(..., description="Attention/engagement score (0-100)")
+    attention_score: float = Field(default=100.0, description="Attention/engagement score (0-100)")
     flags: List[str] = Field(default_factory=list, description="Warning flags")
     consistency_report: Optional[Dict[str, Any]] = Field(
-        None, 
-        description="Detailed consistency breakdown"
+        default=None, 
+        description="Detailed consistency breakdown as dictionary"
     )
-    back_navigation_count: int = Field(0, description="Times user went back")
+    back_navigation_count: int = Field(default=0, description="Times user went back")
     back_navigation_analysis: Optional[str] = Field(
-        None, 
+        default=None, 
         description="Interpretation of back navigation behavior"
     )
+    
+    @field_validator('consistency_report', mode='before')
+    @classmethod
+    def ensure_dict_or_none(cls, v: Any) -> Optional[Dict[str, Any]]:
+        """
+        Ensure consistency_report is a dict or None.
+        
+        Handles legacy string values by wrapping them in a dict.
+        This provides backwards compatibility if old code still passes strings.
+        """
+        if v is None:
+            return None
+        if isinstance(v, dict):
+            return v
+        if isinstance(v, str):
+            # Legacy string format - wrap in dict for backwards compatibility
+            return {"message": v}
+        # For any other type, try to convert or return None
+        try:
+            return dict(v)
+        except (TypeError, ValueError):
+            return None
 
 
 class DimensionScores(BaseModel):
@@ -284,14 +306,14 @@ class GetResultsResponse(BaseModel):
     narrative: Dict[str, Any] = Field(..., description="Generated narrative content")
     completed_at: str = Field(..., description="ISO timestamp of completion")
     demographics: Optional[Dict[str, Any]] = Field(
-        None, 
+        default=None, 
         description="User demographics (sanitized)"
     )
     validation: Optional[ValidationResult] = Field(
-        None, 
+        default=None, 
         description="Response validation metrics"
     )
-    is_shared: bool = Field(False, description="Whether viewing shared results")
+    is_shared: bool = Field(default=False, description="Whether viewing shared results")
 
 
 class ProgressResponse(BaseModel):
@@ -398,6 +420,6 @@ class ErrorResponse(BaseModel):
     message: str = Field(..., description="Human-readable error message")
     status_code: int = Field(..., description="HTTP status code")
     details: Optional[Dict[str, Any]] = Field(
-        None, 
+        default=None, 
         description="Additional error context (debug only)"
     )

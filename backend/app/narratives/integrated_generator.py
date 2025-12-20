@@ -1,8 +1,11 @@
 """
 Integrated Narrative Generator
-Combines rule-based analysis with OpenAI-generated prose
+Combines rule-based analysis with OpenAI-generated prose.
+
+Optimized with parallel API calls for significant speed improvement.
 """
-from typing import Dict, Any, Optional
+import asyncio
+from typing import Dict, Any, Optional, List
 import logging
 import re
 from .synthesizer import PersonalityAnalyzer, NarrativePromptBuilder
@@ -23,6 +26,9 @@ def strip_markdown_headers(text: str) -> str:
     - **Section Title**
     at the start of lines.
     """
+    if not text:
+        return ""
+    
     # Remove markdown headers (## or #)
     text = re.sub(r'^#{1,6}\s+.*$', '', text, flags=re.MULTILINE)
     
@@ -36,8 +42,60 @@ def strip_markdown_headers(text: str) -> str:
     return text.strip()
 
 
+# Section configuration for parallel generation
+SECTION_CONFIG = {
+    'core_identity': {
+        'max_tokens': 1200,
+        'prompt_builder': 'build_core_identity_prompt',
+        'priority': 1,  # Higher priority = generated first on fallback
+    },
+    'motivations': {
+        'max_tokens': 800,
+        'prompt_builder': 'build_motivations_prompt',
+        'priority': 2,
+    },
+    'conflicts': {
+        'max_tokens': 800,
+        'prompt_builder': 'build_conflicts_prompt',
+        'priority': 3,
+    },
+    'strengths': {
+        'max_tokens': 800,
+        'prompt_builder': 'build_strengths_prompt',
+        'priority': 4,
+    },
+    'growth_areas': {
+        'max_tokens': 800,
+        'prompt_builder': 'build_growth_areas_prompt',
+        'priority': 5,
+    },
+    'relationships': {
+        'max_tokens': 800,
+        'prompt_builder': 'build_relationships_prompt',
+        'priority': 6,
+    },
+    'work_style': {
+        'max_tokens': 800,
+        'prompt_builder': 'build_work_style_prompt',
+        'priority': 7,
+    },
+}
+
+# System message used for all sections
+SYSTEM_MESSAGE = (
+    "You are a straight-talking personality psychologist. Write like you're having "
+    "a real conversation with someone - clear, direct, and honest. Use everyday language, "
+    "not flowery metaphors or dramatic prose. Be matter-of-fact and practical. "
+    "Talk like a friend who tells you the truth, not a novelist writing a character study."
+)
+
+
 class IntegratedNarrativeGenerator:
-    """Generates integrated personality narratives using hybrid approach"""
+    """
+    Generates integrated personality narratives using hybrid approach.
+    
+    Optimized with parallel OpenAI API calls for ~3-4x faster generation.
+    """
     
     def __init__(self, use_llm: bool = True, config: Optional[OpenAIConfig] = None):
         """
@@ -54,7 +112,7 @@ class IntegratedNarrativeGenerator:
         if use_llm:
             try:
                 self.llm = get_openai_generator(config)
-                logger.info("OpenAI generator initialized")
+                logger.info("OpenAI generator initialized for parallel generation")
             except Exception as e:
                 logger.warning(f"Could not initialize OpenAI: {e}")
                 logger.warning("Falling back to template mode")
@@ -62,7 +120,10 @@ class IntegratedNarrativeGenerator:
     
     def generate_narrative(self, scores: Dict[str, int]) -> Dict[str, Any]:
         """
-        Generate complete integrated narrative
+        Generate complete integrated narrative (sync wrapper).
+        
+        This method runs the async generation in an event loop for backwards
+        compatibility with sync callers.
         
         Args:
             scores: Dictionary of dimension scores (e.g., {'LUMEN': 50, 'AETHER': 37, ...})
@@ -70,17 +131,41 @@ class IntegratedNarrativeGenerator:
         Returns:
             Dictionary with narrative sections
         """
-        logger.info("Starting narrative generation")
+        try:
+            # Check if we're already in an async context
+            loop = asyncio.get_running_loop()
+            # If we get here, we're in an async context - create a new loop in thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, self.generate_narrative_async(scores))
+                return future.result()
+        except RuntimeError:
+            # No running loop - safe to use asyncio.run
+            return asyncio.run(self.generate_narrative_async(scores))
+    
+    async def generate_narrative_async(self, scores: Dict[str, int]) -> Dict[str, Any]:
+        """
+        Generate complete integrated narrative asynchronously.
+        
+        Uses parallel API calls for all sections simultaneously.
+        
+        Args:
+            scores: Dictionary of dimension scores
+            
+        Returns:
+            Dictionary with narrative sections
+        """
+        logger.info("Starting parallel narrative generation")
         logger.info(f"Scores: {scores}")
         
-        # Step 1: Rule-based analysis
+        # Step 1: Rule-based analysis (fast, sync)
         analyzer = PersonalityAnalyzer(scores, DIMENSION_TEMPLATES)
         prompt_builder = NarrativePromptBuilder(analyzer)
         
         # Match user to personality archetype
         archetype = match_archetype(scores)
         
-        # Safety check (should never happen with BALANCED_ARCHETYPE fallback, but be defensive)
+        # Safety check
         if archetype is None:
             logger.error("❌ match_archetype returned None! Using emergency fallback.")
             from .archetypes import BALANCED_ARCHETYPE
@@ -90,12 +175,11 @@ class IntegratedNarrativeGenerator:
         growth_priorities = analyzer.prioritize_growth_areas()
         
         logger.info(f"Matched archetype: {archetype.name}")
-        logger.info(f"Archetype essence: {archetype.essence}")
         logger.info(f"Detected {len(conflicts)} conflicts")
         logger.info(f"Identified {len(growth_priorities)} growth priorities")
         
-        # Step 2: Generate narrative sections
-        narrative = {
+        # Step 2: Initialize narrative structure
+        narrative: Dict[str, Any] = {
             'profile_pattern': {
                 'pattern': archetype.name,
                 'description': archetype.essence
@@ -118,82 +202,50 @@ class IntegratedNarrativeGenerator:
             'generation_cost': 0.0
         }
         
+        # Step 3: Generate sections
         if self.use_llm and self.llm:
-            # LLM-generated sections
-            logger.info("Generating sections with OpenAI...")
+            logger.info("Generating all sections in PARALLEL with OpenAI...")
             
-            # System message for all sections
-            system_message = (
-                "You are a straight-talking personality psychologist. Write like you're having "
-                "a real conversation with someone - clear, direct, and honest. Use everyday language, "
-                "not flowery metaphors or dramatic prose. Be matter-of-fact and practical. "
-                "Talk like a friend who tells you the truth, not a novelist writing a character study."
+            # Build all requests upfront
+            requests: List[Dict[str, Any]] = []
+            section_names: List[str] = []
+            
+            for section_name, config in SECTION_CONFIG.items():
+                prompt_method = getattr(prompt_builder, config['prompt_builder'])
+                requests.append({
+                    'prompt': prompt_method(),
+                    'system_message': SYSTEM_MESSAGE,
+                    'max_output_tokens': config['max_tokens']
+                })
+                section_names.append(section_name)
+            
+            # Execute all requests in parallel
+            import time
+            start_time = time.time()
+            
+            results = await self.llm.generate_batch_async(
+                requests, 
+                max_concurrent=5  # Limit to avoid rate limits
             )
             
-            # Core Identity (longest section - 400-600 words)
-            result = self.llm.generate(
-                prompt=prompt_builder.build_core_identity_prompt(),
-                system_message=system_message,
-                max_output_tokens=1200  # Increased to prevent cutoffs
-            )
-            narrative['sections']['core_identity'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
+            elapsed = time.time() - start_time
+            logger.info(f"Parallel generation completed in {elapsed:.2f}s")
             
-            # Motivations (300-400 words)
-            result = self.llm.generate(
-                prompt=prompt_builder.build_motivations_prompt(),
-                system_message=system_message,
-                max_output_tokens=800
-            )
-            narrative['sections']['motivations'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
+            # Process results
+            total_cost = 0.0
+            for section_name, result in zip(section_names, results):
+                if 'error' in result and result.get('text', '') == '':
+                    # Generation failed for this section - use fallback
+                    logger.warning(f"Section {section_name} failed, using fallback")
+                    narrative['sections'][section_name] = self._get_section_fallback(
+                        section_name, analyzer
+                    )
+                else:
+                    narrative['sections'][section_name] = strip_markdown_headers(result['text'])
+                    total_cost += result.get('cost', 0.0)
             
-            # Conflicts
-            result = self.llm.generate(
-                prompt=prompt_builder.build_conflicts_prompt(),
-                system_message=system_message,
-                max_output_tokens=800
-            )
-            narrative['sections']['conflicts'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
-            
-            # Strengths
-            result = self.llm.generate(
-                prompt=prompt_builder.build_strengths_prompt(),
-                system_message=system_message,
-                max_output_tokens=800
-            )
-            narrative['sections']['strengths'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
-            
-            # Growth Areas
-            result = self.llm.generate(
-                prompt=prompt_builder.build_growth_areas_prompt(),
-                system_message=system_message,
-                max_output_tokens=800
-            )
-            narrative['sections']['growth_areas'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
-            
-            # Relationships
-            result = self.llm.generate(
-                prompt=prompt_builder.build_relationships_prompt(),
-                system_message=system_message,
-                max_output_tokens=800
-            )
-            narrative['sections']['relationships'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
-            
-            # Work Style
-            result = self.llm.generate(
-                prompt=prompt_builder.build_work_style_prompt(),
-                system_message=system_message,
-                max_output_tokens=800
-            )
-            narrative['sections']['work_style'] = strip_markdown_headers(result['text'])
-            narrative['generation_cost'] += result['cost']
-            
-            logger.info(f"Total generation cost: ${narrative['generation_cost']:.4f}")
+            narrative['generation_cost'] = total_cost
+            logger.info(f"Total generation cost: ${total_cost:.4f}")
             
         else:
             # Template-based fallback
@@ -212,16 +264,21 @@ class IntegratedNarrativeGenerator:
                 }
                 for c in conflicts
             ],
-            'generation_method': 'openai' if self.use_llm else 'template',
+            'generation_method': 'openai_parallel' if self.use_llm else 'template',
             'model': self.llm.config.model if self.llm else None
         }
         
         logger.info("Narrative generation complete")
         return narrative
     
+    def _get_section_fallback(self, section_name: str, analyzer: PersonalityAnalyzer) -> str:
+        """Get fallback text for a section that failed to generate."""
+        templates = self._generate_with_templates(analyzer)
+        return templates.get(section_name, f"Unable to generate {section_name} section.")
+    
     def _generate_with_templates(self, analyzer: PersonalityAnalyzer) -> Dict[str, str]:
         """Fallback: Generate using templates only"""
-        sections = {}
+        sections: Dict[str, str] = {}
         
         # Core Identity (from templates)
         core_parts = []
@@ -254,18 +311,52 @@ class IntegratedNarrativeGenerator:
         if conflicts:
             conflict_text = "Key conflicts: " + "; ".join([c.impact for c in conflicts])
             sections['conflicts'] = conflict_text
+        else:
+            sections['conflicts'] = "You have a well-balanced personality with few internal conflicts."
+        
+        # Strengths
+        if high_traits:
+            strengths = []
+            for trait in high_traits[:3]:
+                if 'strengths' in trait.template:
+                    strengths.extend(trait.template['strengths'][:2])
+            sections['strengths'] = "Your key strengths: " + "; ".join(strengths[:5])
+        else:
+            sections['strengths'] = "Your balanced approach is itself a strength."
+        
+        # Growth Areas
+        if low_traits:
+            growth = []
+            for trait in low_traits[:3]:
+                if 'growth_actions' in trait.template:
+                    growth.extend(trait.template['growth_actions'][:2])
+            sections['growth_areas'] = "Areas for growth: " + "; ".join(growth[:5])
+        else:
+            sections['growth_areas'] = "Continue developing your already balanced traits."
+        
+        # Relationships (generic fallback)
+        sections['relationships'] = (
+            "Your personality influences how you connect with others. "
+            "Understanding your traits can help you build stronger relationships."
+        )
+        
+        # Work Style (generic fallback)
+        sections['work_style'] = (
+            "Your unique combination of traits shapes how you approach work. "
+            "Leveraging your strengths while being aware of growth areas can enhance your effectiveness."
+        )
         
         return sections
 
 
-# Convenience function
+# Convenience functions
 def generate_integrated_narrative(
     scores: Dict[str, int],
     use_llm: bool = True,
     config: Optional[OpenAIConfig] = None
 ) -> Dict[str, Any]:
     """
-    Generate integrated narrative from scores
+    Generate integrated narrative from scores (sync version).
     
     Args:
         scores: Dimension scores
@@ -279,4 +370,30 @@ def generate_integrated_narrative(
     return generator.generate_narrative(scores)
 
 
-__all__ = ['IntegratedNarrativeGenerator', 'generate_integrated_narrative']
+async def generate_integrated_narrative_async(
+    scores: Dict[str, int],
+    use_llm: bool = True,
+    config: Optional[OpenAIConfig] = None
+) -> Dict[str, Any]:
+    """
+    Generate integrated narrative from scores (async version).
+    
+    Use this when you're already in an async context for better performance.
+    
+    Args:
+        scores: Dimension scores
+        use_llm: Whether to use LLM generation
+        config: OpenAI configuration
+        
+    Returns:
+        Complete narrative dictionary
+    """
+    generator = IntegratedNarrativeGenerator(use_llm=use_llm, config=config)
+    return await generator.generate_narrative_async(scores)
+
+
+__all__ = [
+    'IntegratedNarrativeGenerator', 
+    'generate_integrated_narrative',
+    'generate_integrated_narrative_async'
+]

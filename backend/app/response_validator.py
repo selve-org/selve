@@ -3,7 +3,7 @@ Response validation and consistency tracking.
 Detects random clicking, attention issues, and response patterns.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import statistics
 
 
@@ -38,7 +38,7 @@ class ResponseValidator:
     def validate_responses(
         self, 
         responses: Dict[str, int]
-    ) -> Dict:
+    ) -> Dict[str, Any]:
         """
         Analyze response patterns for consistency and attention.
         
@@ -49,7 +49,7 @@ class ResponseValidator:
             - flags: List of issues detected
             - details: Detailed breakdown
         """
-        result = {
+        result: Dict[str, Any] = {
             "consistency_score": 100.0,
             "attention_score": 100.0,
             "flags": [],
@@ -89,11 +89,11 @@ class ResponseValidator:
     def _check_consistency_pairs(
         self, 
         responses: Dict[str, int]
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         Check how consistently user answered similar questions.
         """
-        checks = []
+        checks: List[Dict[str, Any]] = []
         
         for cluster_name, pairs in self.CONSISTENCY_PAIRS.items():
             for pair_info in pairs:
@@ -129,13 +129,13 @@ class ResponseValidator:
     def _check_response_patterns(
         self, 
         responses: Dict[str, int]
-    ) -> Dict:
+    ) -> Dict[str, Any]:
         """
         Check for suspicious response patterns that suggest random clicking.
         """
         values = list(responses.values())
         
-        suspicious_patterns = []
+        suspicious_patterns: List[str] = []
         
         # 1. All same value (e.g., all 3s)
         if len(set(values)) == 1:
@@ -205,15 +205,35 @@ class ResponseValidator:
     def get_consistency_report(
         self,
         responses: Dict[str, int]
-    ) -> str:
+    ) -> Dict[str, Any]:
         """
-        Generate human-readable consistency report for results page.
+        Generate consistency report for results page.
+        
+        Returns:
+            Dictionary with consistency analysis including:
+            - message: Human-readable summary
+            - consistency_score: Numeric score (0-100)
+            - status: 'high', 'medium', or 'low'
+            - details: Full validation details
         """
         validation = self.validate_responses(responses)
+        consistency_score = validation["consistency_score"]
         
-        if validation["consistency_score"] >= 90:
-            return "✅ Highly consistent responses - you paid close attention!"
-        elif validation["consistency_score"] >= 70:
-            return "⚠️ Mostly consistent - minor variations on similar questions"
+        if consistency_score >= 90:
+            message = "✅ Highly consistent responses - you paid close attention!"
+            status = "high"
+        elif consistency_score >= 70:
+            message = "⚠️ Mostly consistent - minor variations on similar questions"
+            status = "medium"
         else:
-            return "❌ Inconsistent responses detected - results may be less accurate"
+            message = "❌ Inconsistent responses detected - results may be less accurate"
+            status = "low"
+        
+        return {
+            "message": message,
+            "consistency_score": consistency_score,
+            "attention_score": validation["attention_score"],
+            "status": status,
+            "flags": validation["flags"],
+            "details": validation["details"]
+        }

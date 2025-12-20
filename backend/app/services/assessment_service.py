@@ -214,7 +214,7 @@ class AssessmentService:
         try:
             result = await self.db.assessmentresult.create(
                 data={
-                    "session": {"connect": {"id": session_id}},
+                    "sessionId": session_id,
                     "userId": session.userId,
                     "clerkUserId": session.clerkUserId,
                     "isCurrent": True,
@@ -231,7 +231,7 @@ class AssessmentService:
                     "profilePattern": profile_pattern,
                     "consistencyScore": consistency_score,
                     "attentionScore": attention_score,
-                    "validationFlags": fields.Json(validation_flags) if validation_flags else None,
+                    "validationFlags": fields.Json(validation_flags) if validation_flags is not None else fields.Json([]),
                     "generationCost": generation_cost,
                     "generationModel": generation_model,
                 }

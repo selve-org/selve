@@ -22,7 +22,10 @@ from fastapi.responses import JSONResponse
 from app.auth import get_current_user
 from app.scoring import SelveScorer
 from app.narratives import generate_narrative
-from app.narratives.integrated_generator import generate_integrated_narrative
+from app.narratives.integrated_generator import (
+    generate_integrated_narrative,
+    generate_integrated_narrative_async,
+)
 from app.response_validator import ResponseValidator
 from app.services.assessment_service import (
     AssessmentService, 
@@ -593,11 +596,11 @@ async def get_results(
         if validator:
             validation_result = validator.validate_responses(responses)
         
-        # Generate narrative
+        # Generate narrative (using async for parallel OpenAI calls - ~3-4x faster)
         int_scores = {dim: int(score) for dim, score in profile.dimension_scores.items()}
         
         try:
-            integrated_narrative = generate_integrated_narrative(int_scores, use_llm=True)
+            integrated_narrative = await generate_integrated_narrative_async(int_scores, use_llm=True)
             
             narrative_dict = {
                 'profile_pattern': integrated_narrative['profile_pattern'],
