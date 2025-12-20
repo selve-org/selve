@@ -343,6 +343,46 @@ class SessionManager:
         self._redis.release_lock(lock_name, token)
         logger.debug(f"Released results lock for session {session_id[:8]}...")
     
+    def acquire_back_navigation_lock(
+        self, 
+        session_id: str,
+        timeout: int = 5,  # Back navigation is fast, short timeout
+        blocking_timeout: int = 10,
+    ) -> Optional[str]:
+        """
+        Acquire distributed lock for back navigation operations.
+        
+        Prevents race conditions when user rapidly clicks back button
+        or when concurrent requests attempt to modify answer_history.
+        
+        Args:
+            session_id: Session to lock
+            timeout: Lock expiration (seconds) - short for quick operations
+            blocking_timeout: Max time to wait for lock
+            
+        Returns:
+            Lock token if acquired, None if timeout
+        """
+        lock_name = f"back_nav:{session_id}"
+        
+        token = self._redis.acquire_lock(
+            lock_name=lock_name,
+            lock_timeout=timeout,
+            blocking=True,
+            blocking_timeout=blocking_timeout,
+        )
+        
+        if token:
+            logger.debug(f"Acquired back navigation lock for session {session_id[:8]}...")
+        
+        return token
+    
+    def release_back_navigation_lock(self, session_id: str, token: str) -> None:
+        """Release distributed lock for back navigation."""
+        lock_name = f"back_nav:{session_id}"
+        self._redis.release_lock(lock_name, token)
+        logger.debug(f"Released back navigation lock for session {session_id[:8]}...")
+    
     # ========================================================================
     # Internal Storage Methods
     # ========================================================================

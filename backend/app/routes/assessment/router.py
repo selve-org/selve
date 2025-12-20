@@ -431,44 +431,103 @@ async def check_can_go_back(request: GetPreviousQuestionRequest):
     Check if user can go back without actually going back.
     
     Users can edit their last 10 answers to prevent disrupting adaptive flow.
+    
+    Security features:
+    - Distributed locking to prevent race conditions
+    - Input validation and type checking
+    - Edge case handling for empty/invalid state
+    - Proper error handling and logging
     """
-    session_id = validate_session_id(request.session_id)
-    session_mgr = get_session_manager()
-    
-    session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    
-    answer_history: List = session.get("answer_history", [])
-    
-    if not answer_history:
+    lock_token = None
+    try:
+        # Validate and normalize session_id
+        session_id = validate_session_id(request.session_id)
+        session_mgr = get_session_manager()
+        
+        # Acquire distributed lock to prevent concurrent modifications
+        lock_token = session_mgr.acquire_back_navigation_lock(
+            session_id,
+            timeout=5,  # Short timeout for quick read operation
+            blocking_timeout=10,
+        )
+        
+        if not lock_token:
+            raise HTTPException(
+                status_code=409,
+                detail="Another navigation operation is in progress. Please try again."
+            )
+        
+        # Get session with proper error handling
+        session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Extract state with defensive defaults
+        answer_history: List = session.get("answer_history", [])
+        
+        # Type validation (security check)
+        if not isinstance(answer_history, list):
+            logger.error(f"Invalid answer_history type for session {session_id[:8]}: {type(answer_history)}")
+            raise HTTPException(status_code=500, detail="Invalid session state")
+        
+        # Edge case: No history to go back to
+        if not answer_history:
+            return GetPreviousQuestionResponse(
+                question=None,
+                current_answer=None,
+                can_go_back=False,
+                warning="No questions answered yet",
+            )
+        
+        # Calculate navigation depth with validation
+        responses: Dict = session.get("responses", {})
+        demographics: Dict = session.get("demographics", {})
+        
+        # Type validation for response containers
+        if not isinstance(responses, dict) or not isinstance(demographics, dict):
+            logger.error(f"Invalid response containers for session {session_id[:8]}")
+            raise HTTPException(status_code=500, detail="Invalid session state")
+        
+        total_answered = len(responses) + len(demographics)
+        steps_back = total_answered - len(answer_history)
+        
+        # Sanity check: steps_back should never be negative
+        if steps_back < 0:
+            logger.error(
+                f"Negative steps_back for session {session_id[:8]}: "
+                f"total={total_answered}, history_len={len(answer_history)}"
+            )
+            raise HTTPException(status_code=500, detail="Invalid navigation state")
+        
+        # Check depth limit
+        if steps_back >= AssessmentConfig.MAX_BACK_DEPTH:
+            return GetPreviousQuestionResponse(
+                question=None,
+                current_answer=None,
+                can_go_back=False,
+                warning=f"You can only edit your last {AssessmentConfig.MAX_BACK_DEPTH} answers.",
+            )
+        
+        # Navigation is allowed
         return GetPreviousQuestionResponse(
             question=None,
             current_answer=None,
-            can_go_back=False,
-            warning="No questions answered yet",
+            can_go_back=True,
+            warning=None,
         )
     
-    # Calculate how far back user has already gone
-    responses: Dict = session["responses"]
-    demographics: Dict = session["demographics"]
-    total_answered = len(responses) + len(demographics)
-    steps_back = total_answered - len(answer_history)
-    
-    if steps_back >= AssessmentConfig.MAX_BACK_DEPTH:
-        return GetPreviousQuestionResponse(
-            question=None,
-            current_answer=None,
-            can_go_back=False,
-            warning=f"You can only edit your last {AssessmentConfig.MAX_BACK_DEPTH} answers.",
-        )
-    
-    return GetPreviousQuestionResponse(
-        question=None,
-        current_answer=None,
-        can_go_back=True,
-        warning=None,
-    )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking back navigation for session {session_id[:8] if 'session_id' in locals() else 'unknown'}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to check navigation state")
+    finally:
+        # Always release lock if acquired
+        if lock_token and 'session_id' in locals():
+            try:
+                session_mgr.release_back_navigation_lock(session_id, lock_token)
+            except Exception as e:
+                logger.error(f"Failed to release back navigation lock for {session_id[:8]}: {e}")
 
 
 @router.post("/assessment/back", response_model=GetPreviousQuestionResponse)
@@ -477,63 +536,152 @@ async def go_back(request: GetPreviousQuestionRequest):
     Go back to previous question.
     
     Allows users to review and edit their most recent answer (up to last 10).
+    
+    Security features:
+    - Distributed locking for atomic answer_history modification
+    - Input validation and type checking
+    - Defensive state handling
+    - Proper error recovery
+    
+    Note: back_navigation_count is tracked separately when user re-submits
+    an answer with is_going_back=True flag. This endpoint only handles navigation.
     """
-    session_id = validate_session_id(request.session_id)
-    session_mgr = get_session_manager()
-    
-    session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    
-    responses: Dict = session["responses"]
-    demographics: Dict = session["demographics"]
-    answer_history: List = session.get("answer_history", [])
-    
-    if not answer_history:
+    lock_token = None
+    try:
+        # Validate and normalize session_id
+        session_id = validate_session_id(request.session_id)
+        session_mgr = get_session_manager()
+        
+        # Acquire distributed lock to prevent race conditions on answer_history modifications
+        lock_token = session_mgr.acquire_back_navigation_lock(
+            session_id,
+            timeout=5,
+            blocking_timeout=10,
+        )
+        
+        if not lock_token:
+            raise HTTPException(
+                status_code=409,
+                detail="Another navigation operation is in progress. Please try again."
+            )
+        
+        # Get session with proper error handling
+        session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Extract state with defensive defaults
+        responses: Dict = session.get("responses", {})
+        demographics: Dict = session.get("demographics", {})
+        answer_history: List = session.get("answer_history", [])
+        
+        # Type validation (security checks)
+        if not isinstance(answer_history, list):
+            logger.error(f"Invalid answer_history type for session {session_id[:8]}: {type(answer_history)}")
+            raise HTTPException(status_code=500, detail="Invalid session state")
+        
+        if not isinstance(responses, dict) or not isinstance(demographics, dict):
+            logger.error(f"Invalid response containers for session {session_id[:8]}")
+            raise HTTPException(status_code=500, detail="Invalid session state")
+        
+        # Edge case: No history to go back to
+        if not answer_history:
+            return GetPreviousQuestionResponse(
+                question=None,
+                current_answer=None,
+                can_go_back=False,
+                warning="No questions answered yet",
+            )
+        
+        # Calculate navigation depth with validation
+        total_answered = len(responses) + len(demographics)
+        steps_back = total_answered - len(answer_history)
+        
+        # Sanity check: steps_back should never be negative
+        if steps_back < 0:
+            logger.error(
+                f"Negative steps_back for session {session_id[:8]}: "
+                f"total={total_answered}, history_len={len(answer_history)}"
+            )
+            raise HTTPException(status_code=500, detail="Invalid navigation state")
+        
+        # Check depth limit
+        if steps_back >= AssessmentConfig.MAX_BACK_DEPTH:
+            return GetPreviousQuestionResponse(
+                question=None,
+                current_answer=None,
+                can_go_back=False,
+                warning=f"You can only edit your last {AssessmentConfig.MAX_BACK_DEPTH} answers.",
+            )
+        
+        # Get last question from history (safely)
+        try:
+            last_question_id = answer_history[-1]
+        except IndexError:
+            # Race condition or invalid state
+            logger.error(f"IndexError accessing answer_history for session {session_id[:8]}")
+            raise HTTPException(status_code=500, detail="Failed to retrieve previous question")
+        
+        is_demographic = last_question_id.startswith("demo_")
+        
+        # Get current answer
+        current_answer = demographics.get(last_question_id) if is_demographic else responses.get(last_question_id)
+        
+        # CRITICAL FIX: Clear pending questions that come AFTER the question we're going back to
+        # This prevents duplicate question selection when user re-answers
+        # 
+        # Example flow:
+        # 1. User answers Q1, Q2, Q3 → pending: {Q4, Q5, Q6}
+        # 2. User goes back to Q3 → answer_history.pop() → pending should clear {Q4, Q5, Q6}
+        # 3. User re-answers Q3 → system generates NEW questions (not duplicates)
+        #
+        # Without this fix:
+        # - pending: {Q4, Q5, Q6} stays intact
+        # - User re-answers Q3 → removes Q3 from pending (but Q3 wasn't in pending!)
+        # - System sees pending has items → generates more questions
+        # - Emergency mode re-selects Q4, Q5, Q6 because they're "available" again
+        pending_questions = session.get("pending_questions", set())
+        if pending_questions:
+            # Clear all pending questions - they're all "ahead" of where we're going back to
+            cleared_count = len(pending_questions)
+            cleared_items = list(pending_questions)
+            pending_questions.clear()
+            logger.info(
+                f"Back navigation: Cleared {cleared_count} pending questions {cleared_items} "
+                f"to prevent duplicates when user re-answers from {last_question_id}"
+            )
+        
+        # Remove from history atomically (will be re-added on submit)
+        answer_history.pop()
+        
+        # Get question details
+        question_engine = QuestionEngine(session["tester"], session["scorer"])
+        question = question_engine.get_question_for_back_navigation(last_question_id)
+        
+        # Save session (atomic write)
+        session_mgr.save_session(session_id, session)
+        
+        logger.info(f"Back navigation to question {last_question_id} for session {session_id[:8]}")
+        
         return GetPreviousQuestionResponse(
-            question=None,
-            current_answer=None,
-            can_go_back=False,
-            warning="No questions answered yet",
+            question=question,
+            current_answer=current_answer,
+            can_go_back=len(answer_history) > 0,
+            warning="Changing previous answers may affect your results accuracy.",
         )
     
-    # Calculate how far back user has already gone
-    total_answered = len(responses) + len(demographics)
-    steps_back = total_answered - len(answer_history)
-    
-    if steps_back >= AssessmentConfig.MAX_BACK_DEPTH:
-        return GetPreviousQuestionResponse(
-            question=None,
-            current_answer=None,
-            can_go_back=False,
-            warning=f"You can only edit your last {AssessmentConfig.MAX_BACK_DEPTH} answers.",
-        )
-    
-    # Get last question
-    last_question_id = answer_history[-1]
-    is_demographic = last_question_id.startswith("demo_")
-    
-    # Get current answer
-    current_answer = demographics.get(last_question_id) if is_demographic else responses.get(last_question_id)
-    
-    # Remove from history (will be re-added on submit)
-    answer_history.pop()
-    
-    # Get question details
-    question_engine = QuestionEngine(session["tester"], session["scorer"])
-    question = question_engine.get_question_for_back_navigation(last_question_id)
-    
-    # Save session
-    session_mgr.save_session(session_id, session)
-    
-    logger.info(f"Back navigation to question {last_question_id}")
-    
-    return GetPreviousQuestionResponse(
-        question=question,
-        current_answer=current_answer,
-        can_go_back=len(answer_history) > 0,
-        warning="Changing previous answers may affect your results accuracy.",
-    )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error during back navigation for session {session_id[:8] if 'session_id' in locals() else 'unknown'}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to navigate back")
+    finally:
+        # Always release lock if acquired
+        if lock_token and 'session_id' in locals():
+            try:
+                session_mgr.release_back_navigation_lock(session_id, lock_token)
+            except Exception as e:
+                logger.error(f"Failed to release back navigation lock for {session_id[:8]}: {e}")
 
 
 # ============================================================================
