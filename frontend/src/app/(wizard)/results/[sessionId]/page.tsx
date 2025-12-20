@@ -151,6 +151,7 @@ export default function ResultsPage() {
       switch (data.status) {
         case 'ready':
           setResultsStatus('ready');
+          setGenerationProgress(100);
           cleanup();
           await fetchFullResults();
           break;
@@ -158,7 +159,8 @@ export default function ResultsPage() {
         case 'generating':
           setResultsStatus('generating');
           const elapsed = Date.now() - startTimeRef.current;
-          setGenerationProgress(Math.min(95, (elapsed / 60000) * 100));
+          // Expect generation to complete in ~20 seconds (was 60s before async optimization)
+          setGenerationProgress(Math.min(95, (elapsed / 20000) * 100));
           break;
           
         case 'pending':
