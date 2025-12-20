@@ -382,13 +382,8 @@ async def submit_answer(
         # Format questions for response
         next_questions = question_engine.format_questions(next_items)
 
-        # ROOT CAUSE FIX: Clear old pending questions before adding new ones.
-        # Since the frontend replaces the view with this new batch, any previous 
-        # questions are no longer visible/answerable. Clearing them prevents "ghosts".
-        pending_questions.clear()
-        logger.debug(f"✓ Cleared pending questions (frontend batch replacement)")
-
         # Mark as pending
+        # Frontend appends questions to queue, so backend must track all pending items
         for q in next_questions:
             pending_questions.add(q.id)
             logger.debug(f"✓ Added to pending: {q.id}")

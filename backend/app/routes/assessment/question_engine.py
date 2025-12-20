@@ -186,28 +186,39 @@ class QuestionEngine:
         if zero_dims:
             logger.warning(f"Zero-item dimensions detected: {zero_dims}")
             
-            # EMERGENCY MODE FIX: In emergency mode, we're desperate for ANY coverage.
-            # Only exclude:
-            #   1. Already answered questions (responses)
-            #   2. Contextually invalid questions (e.g., driving questions for non-drivers)
-            # 
-            # We IGNORE:
-            #   - pending_questions (may be stuck/stale)
-            #   - dedup_exclusions (redundancy is fine if it gets us data!)
-            #
-            # This prevents the "cascading exclusion" problem where stale pending items
-            # poison dedup rules, creating a chain reaction that blocks even more items.
-            emergency_exclusions = set(responses.keys()) | set(context_exclusions)
-            
-            logger.info(
-                f"Emergency mode: Using minimal exclusions only. "
-                f"Ignoring {len(pending_questions)} pending + {len(dedup_exclusions)} dedup exclusions"
-            )
+            # ATTEMPT 1: Try strict exclusions (respect pending + dedup)
+            # This is the "nice" path - finds unique, non-pending questions
+            strict_exclusions = all_exclusions
             
             items = self._get_emergency_items(
                 zero_dims, 
                 responses, 
-                emergency_exclusions,  # Clean exclusions (no pending, no dedup)
+                strict_exclusions,
+                context_exclusions,
+                max_items
+            )
+            
+            if items:
+                logger.info(
+                    f"Emergency mode (Attempt 1): Found {len(items)} items using strict exclusions"
+                )
+                return items
+            
+            # ATTEMPT 2: Deadlock Breaker - relax exclusions
+            # Only reached if NO items found with strict rules
+            # Valid questions exist but locked in pending/dedup
+            logger.warning(
+                f"Emergency Deadlock detected for {zero_dims}. "
+                f"Relaxing exclusion rules (ignoring {len(pending_questions)} pending + {len(dedup_exclusions)} dedup)"
+            )
+            
+            # Only exclude answered questions + contextually invalid
+            relaxed_exclusions = set(responses.keys()) | set(context_exclusions)
+            
+            items = self._get_emergency_items(
+                zero_dims, 
+                responses, 
+                relaxed_exclusions,  # Relaxed: ignores pending + dedup
                 context_exclusions,
                 max_items
             )
@@ -262,17 +273,20 @@ class QuestionEngine:
         
         This prevents completing assessment with dimensions that have no data.
         
-        In emergency mode, we use minimal exclusions:
-        - Exclude: responses (already answered) + context (demographics)
-        - Ignore: pending (may be stuck) + dedup (redundancy OK in emergency)
+        Called twice in emergency mode:
+        1. Attempt 1: Uses strict exclusions (respects pending + dedup)
+           - Tries to find fresh, non-pending questions
+           - Most common path - avoids sending duplicate questions
         
-        This prevents the "cascading exclusion" problem where stale pending items
-        poison dedup rules, blocking even more questions.
+        2. Attempt 2 (Deadlock Breaker): Uses relaxed exclusions
+           - Only triggered if Attempt 1 finds nothing
+           - Ignores pending + dedup to break deadlock
+           - May re-send pending questions, but only as last resort
         
         Args:
             zero_dims: Dimensions with zero answered items
             responses: Answered questions dict
-            all_exclusions: Minimal exclusions (responses + context only)
+            all_exclusions: Exclusion set (strict or relaxed depending on attempt)
             demographic_exclusions: Context-based exclusions
             max_items: Maximum items to return
             
