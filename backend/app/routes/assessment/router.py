@@ -334,7 +334,7 @@ async def submit_answer(
         question_engine = QuestionEngine(tester, session["scorer"])
 
         # Check if we should continue testing
-        should_continue, reason = question_engine.should_continue_testing(responses)
+        should_continue, reason = question_engine.should_continue_testing(responses, pending_questions)
         log_adaptive_decision(len(responses), should_continue, reason)
 
         if not should_continue:
@@ -362,9 +362,12 @@ async def submit_answer(
             max_items=AssessmentConfig.DEFAULT_BATCH_SIZE,
         )
 
-        if not next_items:
-            # No more questions available
-            logger.info("No more questions available, completing assessment")
+        # Only complete if we have NO new items AND NO pending items.
+        # If we have pending items, the user still has work to do
+        # (even if we have nothing new to give them right now).
+        if not next_items and not pending_questions:
+            # No more questions available AND nothing pending -> Complete
+            logger.info("No more questions available and none pending, completing assessment")
             session_mgr.save_session(session_id, session)
             await update_session_from_state(service, session_id, session)
 
@@ -376,6 +379,10 @@ async def submit_answer(
                 total_questions=len(demographics) + len(responses),
                 can_go_back=True,
             )
+        
+        # If next_items is empty but pending_questions is NOT empty,
+        # we fall through here. next_questions will be empty list [],
+        # causing the frontend to continue with what it has.
 
         log_question_selection(next_items)
 
@@ -593,12 +600,13 @@ async def get_results(
         
         responses = session["responses"]
         demographics = session.get("demographics", {})
+        pending_questions = session.get("pending_questions", set())
         scorer: SelveScorer = session["scorer"]
         validator = session.get("validator")
         
-        # Check minimum coverage
+        # Check minimum coverage (including pending questions)
         question_engine = QuestionEngine(session["tester"], scorer)
-        is_valid, incomplete_dims = question_engine.check_minimum_coverage(responses)
+        is_valid, incomplete_dims = question_engine.check_minimum_coverage(responses, pending_questions)
         
         if not is_valid and len(responses) < AssessmentConfig.QUICK_SCREEN_ITEMS:
             raise HTTPException(

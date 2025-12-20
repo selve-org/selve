@@ -181,49 +181,32 @@ class QuestionEngine:
             logger.debug(f"Dedup exclusions: {len(dedup_exclusions)} items")
         
         # Check for zero-item dimensions (critical priority)
-        zero_dims = self._find_zero_item_dimensions(responses)
+        zero_dims = self._find_zero_item_dimensions(responses, pending_questions)
         
         if zero_dims:
             logger.warning(f"Zero-item dimensions detected: {zero_dims}")
             
-            # ATTEMPT 1: Try strict exclusions (respect pending + dedup)
-            # This is the "nice" path - finds unique, non-pending questions
-            strict_exclusions = all_exclusions
-            
+            # Try to find items using strict exclusions (respecting pending + dedup)
+            # If items are pending, they will be excluded here. This is GOOD.
+            # We don't want to re-send them. We want to wait for the user to answer them.
             items = self._get_emergency_items(
                 zero_dims, 
                 responses, 
-                strict_exclusions,
+                all_exclusions,
                 context_exclusions,
                 max_items
             )
             
             if items:
-                logger.info(
-                    f"Emergency mode (Attempt 1): Found {len(items)} items using strict exclusions"
-                )
+                logger.info(f"Emergency mode: Found {len(items)} items")
                 return items
             
-            # ATTEMPT 2: Deadlock Breaker - relax exclusions
-            # Only reached if NO items found with strict rules
-            # Valid questions exist but locked in pending/dedup
-            logger.warning(
-                f"Emergency Deadlock detected for {zero_dims}. "
-                f"Relaxing exclusion rules (ignoring {len(pending_questions)} pending + {len(dedup_exclusions)} dedup)"
-            )
-            
-            # Only exclude answered questions + contextually invalid
-            relaxed_exclusions = set(responses.keys()) | set(context_exclusions)
-            
-            items = self._get_emergency_items(
-                zero_dims, 
-                responses, 
-                relaxed_exclusions,  # Relaxed: ignores pending + dedup
-                context_exclusions,
-                max_items
-            )
-            if items:
-                return items
+            # If we get here, it means either:
+            # A) We ran out of questions for this dimension
+            # B) The questions are already in 'pending_questions'
+            # In either case, we return [] and let the router decide if we should wait.
+            logger.info(f"No new emergency items found for {zero_dims} (check pending)")
+            return []
         
         # Normal adaptive selection
         items = self.tester.select_next_items_excluding(
@@ -245,17 +228,36 @@ class QuestionEngine:
         
         return items
     
-    def _find_zero_item_dimensions(self, responses: Dict[str, Any]) -> List[str]:
-        """Find dimensions with zero answered items."""
+    def _find_zero_item_dimensions(
+        self, 
+        responses: Dict[str, Any],
+        pending_questions: Set[str]
+    ) -> List[str]:
+        """
+        Find dimensions with zero answered OR pending items.
+        
+        This prevents emergency mode from re-sending the same questions
+        when they're already on screen (pending) but not yet answered.
+        
+        Args:
+            responses: Answered questions dict
+            pending_questions: Questions currently on screen/unanswered
+            
+        Returns:
+            List of dimension names with zero coverage
+        """
         zero_dims = []
+        
+        # Combine answered + pending to check total coverage
+        all_sent = set(responses.keys()) | pending_questions
         
         for dim in DIMENSIONS:
             dim_items = self.scorer.get_items_by_dimension(dim)
-            answered = [
-                code for code in responses.keys()
+            coverage = [
+                code for code in all_sent
                 if any(item['item'] == code for item in dim_items)
             ]
-            if len(answered) == 0:
+            if len(coverage) == 0:
                 zero_dims.append(dim)
         
         return zero_dims
@@ -273,25 +275,22 @@ class QuestionEngine:
         
         This prevents completing assessment with dimensions that have no data.
         
-        Called twice in emergency mode:
-        1. Attempt 1: Uses strict exclusions (respects pending + dedup)
-           - Tries to find fresh, non-pending questions
-           - Most common path - avoids sending duplicate questions
+        Uses strict exclusions (respects pending + dedup + responses + context).
+        If no items are available:
+        - Likely because items are already pending (on user's screen)
+        - Returns empty list - router will wait for user to answer pending items
         
-        2. Attempt 2 (Deadlock Breaker): Uses relaxed exclusions
-           - Only triggered if Attempt 1 finds nothing
-           - Ignores pending + dedup to break deadlock
-           - May re-send pending questions, but only as last resort
+        We trust the pending mechanism rather than re-sending questions.
         
         Args:
             zero_dims: Dimensions with zero answered items
             responses: Answered questions dict
-            all_exclusions: Exclusion set (strict or relaxed depending on attempt)
+            all_exclusions: Full exclusion set (pending + dedup + responses + context)
             demographic_exclusions: Context-based exclusions
             max_items: Maximum items to return
             
         Returns:
-            List of emergency items for zero-coverage dimensions
+            List of emergency items for zero-coverage dimensions (or empty if all pending)
         """
         logger.info(f"Emergency mode: Getting items for {zero_dims}")
         
@@ -438,7 +437,8 @@ class QuestionEngine:
     
     def should_continue_testing(
         self, 
-        responses: Dict[str, Any]
+        responses: Dict[str, Any],
+        pending_questions: Set[str]
     ) -> Tuple[bool, str]:
         """
         Check if testing should continue.
@@ -449,31 +449,43 @@ class QuestionEngine:
         # Let adaptive tester make the decision
         should_continue, reason = self.tester.should_continue_testing(responses)
         
-        # Override if any dimension has 0 items
+        # Override if any dimension has 0 items (checking both answered and pending)
         if not should_continue:
-            zero_dims = self._find_zero_item_dimensions(responses)
+            zero_dims = self._find_zero_item_dimensions(responses, pending_questions)
             if zero_dims:
                 logger.warning(f"Override stop: Zero-item dimensions {zero_dims}")
                 return True, f"Need data for: {', '.join(zero_dims)}"
         
         return should_continue, reason
     
-    def check_minimum_coverage(self, responses: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    def check_minimum_coverage(
+        self, 
+        responses: Dict[str, Any],
+        pending_questions: Set[str]
+    ) -> Tuple[bool, List[str]]:
         """
         Check if minimum coverage requirements are met.
         
+        Counts both answered AND pending questions to avoid false negatives
+        when questions are on screen but not yet answered.
+        
+        Args:
+            responses: Already answered questions
+            pending_questions: Questions sent but not yet answered
+            
         Returns:
             Tuple of (is_valid, incomplete_dimensions)
         """
         incomplete = []
+        all_sent = set(responses.keys()) | pending_questions
         
         for dim in DIMENSIONS:
             dim_items = self.scorer.get_items_by_dimension(dim)
-            answered = [
-                code for code in responses.keys()
+            coverage = [
+                code for code in all_sent
                 if any(item['item'] == code for item in dim_items)
             ]
-            if len(answered) < AssessmentConfig.MIN_ITEMS_PER_DIMENSION:
+            if len(coverage) < AssessmentConfig.MIN_ITEMS_PER_DIMENSION:
                 incomplete.append(dim)
         
         return len(incomplete) == 0, incomplete
