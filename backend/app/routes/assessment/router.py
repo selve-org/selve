@@ -449,7 +449,13 @@ async def check_can_go_back(request: GetPreviousQuestionRequest):
             warning="No questions answered yet",
         )
     
-    if len(answer_history) > AssessmentConfig.MAX_BACK_DEPTH:
+    # Calculate how far back user has already gone
+    responses: Dict = session["responses"]
+    demographics: Dict = session["demographics"]
+    total_answered = len(responses) + len(demographics)
+    steps_back = total_answered - len(answer_history)
+    
+    if steps_back >= AssessmentConfig.MAX_BACK_DEPTH:
         return GetPreviousQuestionResponse(
             question=None,
             current_answer=None,
@@ -491,7 +497,11 @@ async def go_back(request: GetPreviousQuestionRequest):
             warning="No questions answered yet",
         )
     
-    if len(answer_history) > AssessmentConfig.MAX_BACK_DEPTH:
+    # Calculate how far back user has already gone
+    total_answered = len(responses) + len(demographics)
+    steps_back = total_answered - len(answer_history)
+    
+    if steps_back >= AssessmentConfig.MAX_BACK_DEPTH:
         return GetPreviousQuestionResponse(
             question=None,
             current_answer=None,
