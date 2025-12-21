@@ -68,6 +68,24 @@ export function useQuestionnaire(inviteCode?: string) {
   const [isGoingBack, setIsGoingBack] = useState(false);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
+  // Keep the latest queue/index/back-state available synchronously.
+  // This avoids stale closures when users answer quickly after a back.
+  const questionQueueRef = useRef<QuestionnaireQuestion[]>([]);
+  const currentQuestionIndexRef = useRef(0);
+  const isGoingBackRef = useRef(false);
+
+  useEffect(() => {
+    questionQueueRef.current = questionQueue;
+  }, [questionQueue]);
+
+  useEffect(() => {
+    currentQuestionIndexRef.current = currentQuestionIndex;
+  }, [currentQuestionIndex]);
+
+  useEffect(() => {
+    isGoingBackRef.current = isGoingBack;
+  }, [isGoingBack]);
+
   /**
    * Get or create a device fingerprint for this browser
    * Used to detect if sync is happening on same device vs different device
@@ -331,6 +349,11 @@ export function useQuestionnaire(inviteCode?: string) {
         return;
       }
 
+      // Use refs to avoid stale values immediately after goBack() updates.
+      const effectiveIsGoingBack = isGoingBackRef.current;
+      const effectiveCurrentQuestionIndex = currentQuestionIndexRef.current;
+      const effectiveQuestionQueue = questionQueueRef.current;
+
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
@@ -353,8 +376,8 @@ export function useQuestionnaire(inviteCode?: string) {
             session_id: sessionId,
             question_id: questionId,
             response: answer as number, // 1-5 scale
-            is_going_back: isGoingBack, // Flag if this is a resubmission after going back
-            current_question_index: currentQuestionIndex, // Send current position for sync check
+            is_going_back: effectiveIsGoingBack, // Flag if this is a resubmission after going back
+            current_question_index: effectiveCurrentQuestionIndex, // Send current position for sync check
             device_fingerprint: deviceFingerprint, // Track which device submitted this answer
           }),
         });
@@ -365,21 +388,124 @@ export function useQuestionnaire(inviteCode?: string) {
           // Check if this is a sync conflict (409 Conflict)
           if (response.status === 409 || errorData.sync_conflict) {
             const backendIndex = errorData.current_question_index || 0;
+            const pendingQuestions = errorData.pending_questions || [];
+            const answeredQuestions = errorData.answered_questions || [];
             
-            // More user-friendly message - doesn't assume "another device"
-            toast.warning("Question already answered", {
-              description: `This question was already answered. Moving to question ${backendIndex + 1}.`,
-              duration: 5000,
-            });
-            
-            // Sync to the correct question
-            if (backendIndex < questionQueue.length) {
-              setCurrentQuestionIndex(backendIndex);
-              setState((prev) => ({
-                ...prev,
-                currentQuestion: questionQueue[backendIndex],
-                isLoading: false,
-              }));
+            // Check if this is a resync required error (frontend out of sync)
+            if (errorData.resync_required) {
+              console.warn("🔄 Frontend out of sync with backend, performing resync", {
+                backendIndex,
+                pendingQuestions,
+                answeredQuestions,
+              });
+              
+              toast.warning("Sync required", {
+                description: "Questionnaire state was out of sync. Resetting to correct state.",
+                duration: 5000,
+              });
+              
+              // If backend provides pending questions, use them to reset queue
+              if (pendingQuestions.length > 0) {
+                // We need to get the full question details for pending questions
+                // For now, we'll fetch the session state to get full questions
+                try {
+                  const token = await getToken();
+                  const headers: Record<string, string> = {
+                    "Content-Type": "application/json",
+                  };
+                  if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                  }
+                  
+                  const sessionResponse = await fetch(
+                    `${API_BASE}/api/assessment/session/${sessionId}`,
+                    { headers }
+                  );
+                  
+                  if (sessionResponse.ok) {
+                    const sessionData = await sessionResponse.json();
+                    const pendingQuestionDetails = sessionData.pending_questions || [];
+                    
+                    // Convert to frontend format
+                    const formattedQuestions: QuestionnaireQuestion[] = pendingQuestionDetails.map(
+                      (q: any) => ({
+                        id: q.id,
+                        text: q.text,
+                        type: q.type || "scale-slider",
+                        sectionId: q.dimension,
+                        isRequired: q.isRequired,
+                        renderConfig: q.renderConfig || {
+                          min: 1,
+                          max: 5,
+                          step: 1,
+                          labels: {
+                            1: "Strongly Disagree",
+                            2: "Disagree",
+                            3: "Neutral",
+                            4: "Agree",
+                            5: "Strongly Agree",
+                          },
+                        },
+                      })
+                    );
+                    
+                    // Reset queue to backend's pending questions
+                    setQuestionQueue(formattedQuestions);
+                    questionQueueRef.current = formattedQuestions;
+                    
+                    // Set current index to 0 (first pending question)
+                    const newIndex = 0;
+                    setCurrentQuestionIndex(newIndex);
+                    currentQuestionIndexRef.current = newIndex;
+                    
+                    setState((prev) => ({
+                      ...prev,
+                      currentQuestion: formattedQuestions[newIndex] || null,
+                      isLoading: false,
+                    }));
+                    
+                    console.log("✅ Resynced frontend queue with backend pending questions");
+                    return;
+                  }
+                } catch (fetchError) {
+                  console.error("Failed to fetch session for resync:", fetchError);
+                }
+              }
+              
+              // Fallback: sync to the correct question index
+              if (backendIndex < effectiveQuestionQueue.length) {
+                setCurrentQuestionIndex(backendIndex);
+                setState((prev) => ({
+                  ...prev,
+                  currentQuestion: effectiveQuestionQueue[backendIndex],
+                  isLoading: false,
+                }));
+              } else {
+                // If index is out of bounds, go to last question
+                const lastIndex = Math.max(0, effectiveQuestionQueue.length - 1);
+                setCurrentQuestionIndex(lastIndex);
+                setState((prev) => ({
+                  ...prev,
+                  currentQuestion: effectiveQuestionQueue[lastIndex] || null,
+                  isLoading: false,
+                }));
+              }
+            } else {
+              // Regular sync conflict (another device)
+              toast.warning("Question already answered", {
+                description: `This question was already answered. Moving to question ${backendIndex + 1}.`,
+                duration: 5000,
+              });
+              
+              // Sync to the correct question
+              if (backendIndex < effectiveQuestionQueue.length) {
+                setCurrentQuestionIndex(backendIndex);
+                setState((prev) => ({
+                  ...prev,
+                  currentQuestion: effectiveQuestionQueue[backendIndex],
+                  isLoading: false,
+                }));
+              }
             }
             return;
           }
@@ -408,6 +534,7 @@ export function useQuestionnaire(inviteCode?: string) {
 
         // Reset going back flag after submission
         setIsGoingBack(false);
+        isGoingBackRef.current = false;
 
         // Update local answers map
         const newAnswers = new Map(state.answers);
@@ -416,7 +543,7 @@ export function useQuestionnaire(inviteCode?: string) {
         // Save progress to session context
         updateProgress({
           sessionId: sessionId,
-          lastQuestionIndex: currentQuestionIndex,
+          lastQuestionIndex: effectiveCurrentQuestionIndex,
           // Convert Map to object for storage
           responses: Object.fromEntries(newAnswers),
         });
@@ -455,8 +582,21 @@ export function useQuestionnaire(inviteCode?: string) {
           return;
         }
 
-        // Add next adaptive questions to queue
-        let updatedQueue = questionQueue;
+        // Add next adaptive questions to queue.
+        // IMPORTANT: Only truncate the "future" queue when re-answering after a back.
+        // The backend can legitimately return `next_questions=[]` while there are still
+        // pending questions already sent to the client. In that case the UI must keep
+        // and continue through the existing queue.
+        let questionIndexInQueue = effectiveCurrentQuestionIndex;
+        const foundIndex = effectiveQuestionQueue.findIndex((q) => q.id === questionId);
+        if (foundIndex !== -1) {
+          questionIndexInQueue = foundIndex;
+        }
+
+        let updatedQueue = effectiveQuestionQueue;
+        if (effectiveIsGoingBack) {
+          updatedQueue = effectiveQuestionQueue.slice(0, questionIndexInQueue + 1);
+        }
         if (next_questions && next_questions.length > 0) {
           const formattedQuestions: QuestionnaireQuestion[] =
             next_questions.map((q: any) => ({
@@ -479,22 +619,28 @@ export function useQuestionnaire(inviteCode?: string) {
               },
             }));
 
-          updatedQueue = [...questionQueue, ...formattedQuestions];
-          setQuestionQueue(updatedQueue);
+          const existingIds = new Set(updatedQueue.map((q) => q.id));
+          const dedupedNext = formattedQuestions.filter((q) => !existingIds.has(q.id));
+          updatedQueue = [...updatedQueue, ...dedupedNext];
         }
 
-        // Move to next question in queue (unless we went back)
-        if (!isGoingBack) {
-          const nextIndex = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIndex);
+        setQuestionQueue(updatedQueue);
+        questionQueueRef.current = updatedQueue;
 
+        // Always advance to the next question after submission.
+        // (After a back/resubmit, the backend returns the correct next_questions.)
+        const nextIndex = questionIndexInQueue + 1;
+        const nextQuestion = updatedQueue[nextIndex];
+        if (nextQuestion) {
+          setCurrentQuestionIndex(nextIndex);
+          currentQuestionIndexRef.current = nextIndex;
           setState((prev) => ({
             ...prev,
-            currentQuestion: updatedQueue[nextIndex] || null,
+            currentQuestion: nextQuestion,
             isLoading: false,
           }));
         } else {
-          // Stay on current question after resubmitting
+          // No next question available yet; keep currentQuestion in place.
           setState((prev) => ({
             ...prev,
             isLoading: false,
@@ -584,14 +730,7 @@ export function useQuestionnaire(inviteCode?: string) {
       setCanGoBack(can_go_back);
       setWarningMessage(warning || null);
       setIsGoingBack(true); // Set flag so next submission knows it's a resubmission
-
-      // CRITICAL FIX: If backend cleared pending questions, frontend must clear its queue too!
-      // This prevents showing stale questions that were invalidated by going back
-      if (pending_questions_cleared) {
-        console.log("🧹 Backend cleared pending questions - clearing frontend question queue");
-        setQuestionQueue([]);
-        setCurrentQuestionIndex(0);
-      }
+      isGoingBackRef.current = true;
 
       // Check if we have a question to go back to
       if (!question) {
@@ -623,6 +762,27 @@ export function useQuestionnaire(inviteCode?: string) {
           },
         },
       };
+
+      // Keep frontend queue in lockstep with backend after a back navigation.
+      // Always rebuild the queue to start with the returned question so the
+      // next submission advances to the correct next item.
+      if (pending_questions_cleared) {
+        console.log("🧹 Backend cleared pending questions - resetting frontend question queue");
+        setQuestionQueue([formattedQuestion]);
+        questionQueueRef.current = [formattedQuestion];
+        setCurrentQuestionIndex(0);
+        currentQuestionIndexRef.current = 0;
+      } else {
+        // Best-effort: keep the index aligned with the question the backend returned.
+        const currentQueue = questionQueueRef.current;
+        const foundBackIndex = currentQueue.findIndex((q) => q.id === formattedQuestion.id);
+        const newIndex =
+          foundBackIndex !== -1
+            ? foundBackIndex
+            : Math.max(currentQuestionIndexRef.current - 1, 0);
+        setCurrentQuestionIndex(newIndex);
+        currentQuestionIndexRef.current = newIndex;
+      }
 
       // Update current question
       setState((prev) => ({

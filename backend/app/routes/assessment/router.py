@@ -267,8 +267,11 @@ async def submit_answer(
             else:
                 demographics[question_id] = request.response
 
-            # Track in history (avoid duplicates)
-            if not request.is_going_back and question_id not in answer_history:
+            # Track in history (avoid duplicates).
+            # If the user is re-answering after a back navigation, the question
+            # was popped from history in /assessment/back, so we must add it back
+            # to keep navigation depth and ordering consistent.
+            if question_id not in answer_history:
                 answer_history.append(question_id)
 
             # Check if all demographics complete
@@ -304,22 +307,40 @@ async def submit_answer(
 
             # Remove from pending and add to history
             was_pending = question_id in pending_questions
+            
+            # CRITICAL FIX: Reject non-pending answers to prevent loops
+            if not was_pending and pending_questions:
+                # Frontend is trying to answer a question that isn't in the backend's pending set
+                # This indicates a sync issue - don't accept, force resync
+                logger.warning(
+                    f"Sync conflict: Frontend tried to answer non-pending question {question_id}. "
+                    f"Pending questions: {sorted(pending_questions)}. "
+                    f"Answer history: {answer_history[-5:]}"
+                )
+                
+                # Get current state for resync
+                current_question_engine = QuestionEngine(tester, session["scorer"])
+                
+                # Return sync conflict with current state
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "detail": "Question out of sync. Please resync.",
+                        "sync_conflict": True,
+                        "current_question_index": len(answer_history),
+                        "pending_questions": list(pending_questions),
+                        "answered_questions": list(responses.keys()),
+                        "resync_required": True
+                    }
+                )
+            
             pending_questions.discard(question_id)
             logger.debug(f"✓ Removed from pending: {question_id} (was_pending={was_pending})")
             
-            # STALE PENDING CLEANUP: If user answered a question that wasn't pending,
-            # it means frontend state is out of sync (page refresh, browser back, etc.)
-            # Clear all pending items to allow fresh question selection
-            if not was_pending and pending_questions:
-                stale_count = len(pending_questions)
-                stale_items = list(pending_questions)
-                pending_questions.clear()
-                logger.warning(
-                    f"Stale pending cleanup: Cleared {stale_count} items {stale_items} "
-                    f"(frontend out of sync - answered {question_id} which wasn't pending)"
-                )
-            
-            if not request.is_going_back and question_id not in answer_history:
+            # Track in history (avoid duplicates).
+            # If the user is re-answering after a back navigation, the question
+            # was popped from history in /assessment/back, so we must add it back.
+            if question_id not in answer_history:
                 answer_history.append(question_id)
 
             # Run periodic validation
@@ -574,6 +595,7 @@ async def go_back(request: GetPreviousQuestionRequest):
         responses: Dict = session.get("responses", {})
         demographics: Dict = session.get("demographics", {})
         answer_history: List = session.get("answer_history", [])
+        pending_questions: set = session.get("pending_questions", set())
         
         # Type validation (security checks)
         if not isinstance(answer_history, list):
@@ -627,24 +649,7 @@ async def go_back(request: GetPreviousQuestionRequest):
         # Get current answer
         current_answer = demographics.get(last_question_id) if is_demographic else responses.get(last_question_id)
         
-        # CRITICAL FIX: When going back, we must remove the question from responses/demographics
-        # This prevents duplicate question selection when user re-answers
-        # 
-        # Example flow:
-        # 1. User answers Q1, Q2, Q3 → responses: {Q1, Q2, Q3}, pending: {Q4, Q5, Q6}
-        # 2. User goes back to Q3 → answer_history.pop(Q3), responses should remove Q3
-        # 3. User re-answers Q3 → system treats it as a new answer, generates fresh questions
-        #
-        # ROOT CAUSE OF DUPLICATES:
-        # When going back to Q3, if we don't remove Q3 from `responses`, the system thinks
-        # "Q3 is already answered" and the question selector excludes it from filtering.
-        # Then when emergency mode runs, Q3 is still in responses, so it selects the NEXT
-        # available questions... which might be ones that were previously selected and shown!
-        #
-        # FIX: Remove the target question from responses/demographics so it's treated as unanswered
-        
         # Clear all pending questions - they're all "ahead" of where we're going back to
-        pending_questions = session.get("pending_questions", set())
         if pending_questions:
             cleared_count = len(pending_questions)
             cleared_items = list(pending_questions)
@@ -652,6 +657,12 @@ async def go_back(request: GetPreviousQuestionRequest):
             logger.info(
                 f"Back navigation: Cleared {cleared_count} pending questions {cleared_items}"
             )
+        
+        # Re-mark the target question as pending so the next submit matches backend state.
+        # NOTE: pending_questions is for personality items only; do not add demographic IDs.
+        if not is_demographic:
+            pending_questions.add(last_question_id)
+            logger.debug(f"Back navigation: Added {last_question_id} to pending for re-answer")
         
         # Remove the target question from responses/demographics
         # This is KEY - without this, the question is still "answered" and can cause duplicates

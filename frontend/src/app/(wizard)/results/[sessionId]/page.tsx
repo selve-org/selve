@@ -586,7 +586,6 @@ export default function ResultsPage() {
         <div className="mt-12 flex justify-center gap-4">
           <button onClick={() => window.print()} className="px-6 py-3 bg-gray-200 dark:bg-[#2e2e2e] hover:bg-gray-300 dark:hover:bg-[#3e3e3e] text-gray-900 dark:text-white rounded-full transition-colors cursor-pointer">Download PDF</button>
           <button onClick={() => router.push("/")} className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors cursor-pointer">Return Home</button>
-          <button onClick={() => router.push(chatbotRedirect)} className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full transition-colors cursor-pointer">Open SELVE-Chat</button>
         </div>
 
         {/* SELVE-Chat Section */}
