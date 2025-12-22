@@ -1267,25 +1267,39 @@ async def check_results_access(
     clerk_user_id: Optional[str] = None,
     service: AssessmentService = Depends(get_assessment_service),
 ):
-    """Check if a user has access to view results."""
+    """
+    Check if a user has access to view results.
+    
+    Access is granted if:
+    1. User is the owner (authenticated user who created the session)
+    2. Results are publicly shared
+    3. Session exists (anonymous sessions - session ID acts as access token)
+    """
     session_id = validate_session_id(session_id)
     
-    result = await service.get_result(session_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Results not found")
-    
+    # Check if session exists
     db_session = await service.get_session(session_id)
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
     
+    # Check if results exist (may not be ready yet, but session is valid)
+    result = await service.get_result(session_id)
+    
+    # Determine access rights
     is_owner = clerk_user_id and db_session.clerkUserId == clerk_user_id
-    is_public = result.isPublic
+    is_public = result.isPublic if result else False
+    is_anonymous = not db_session.clerkUserId
+    
+    # Anonymous sessions: anyone with the session ID has access
+    # Authenticated sessions: owner or public share
+    has_access = is_anonymous or is_owner or is_public
     
     return {
-        "hasAccess": is_owner or is_public,
+        "hasAccess": has_access,
         "isOwner": is_owner,
         "isPublic": is_public,
-        "publicShareId": result.publicShareId if is_public else None,
+        "publicShareId": result.publicShareId if result and is_public else None,
+        "resultsReady": result is not None,
     }
 
 
