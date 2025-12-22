@@ -32,7 +32,7 @@ class AssessmentConfig:
     ESTIMATED_TOTAL_QUESTIONS: Final[int] = 44  # demographics + personality
     
     # Dimension requirements
-    MIN_ITEMS_PER_DIMENSION: Final[int] = 2  # Minimum for valid results
+    MIN_ITEMS_PER_DIMENSION: Final[int] = 5  # Minimum for Cronbach's alpha > 0.75 (statistical reliability)
     QUICK_SCREEN_ITEMS: Final[int] = 16  # Initial quick screen size
     
     # Navigation limits

@@ -446,6 +446,14 @@ class QuestionEngine:
         Returns:
             Tuple of (should_continue, reason)
         """
+        # CRITICAL: Enforce minimum coverage BEFORE allowing completion
+        # This ensures statistical reliability (Cronbach's alpha > 0.75) for all dimensions
+        # With <5 items per dimension, estimates are unreliable (α < 0.6, mostly noise)
+        is_covered, incomplete_dims = self.check_minimum_coverage(responses, pending_questions)
+        if not is_covered:
+            logger.info(f"Enforcing minimum coverage: {incomplete_dims} need more items")
+            return True, f"Need minimum {AssessmentConfig.MIN_ITEMS_PER_DIMENSION} items for: {', '.join(incomplete_dims)}"
+        
         # Let adaptive tester make the decision
         should_continue, reason = self.tester.should_continue_testing(responses)
         
@@ -479,6 +487,8 @@ class QuestionEngine:
         incomplete = []
         all_sent = set(responses.keys()) | pending_questions
         
+        logger.info(f"Coverage check: {len(responses)} answered, {len(pending_questions)} pending, MIN_ITEMS={AssessmentConfig.MIN_ITEMS_PER_DIMENSION}")
+        
         for dim in DIMENSIONS:
             dim_items = self.scorer.get_items_by_dimension(dim)
             coverage = [
@@ -487,6 +497,9 @@ class QuestionEngine:
             ]
             if len(coverage) < AssessmentConfig.MIN_ITEMS_PER_DIMENSION:
                 incomplete.append(dim)
+                logger.info(f"  {dim}: {len(coverage)}/{AssessmentConfig.MIN_ITEMS_PER_DIMENSION} ❌ {coverage}")
+            else:
+                logger.info(f"  {dim}: {len(coverage)}/{AssessmentConfig.MIN_ITEMS_PER_DIMENSION} ✅")
         
         return len(incomplete) == 0, incomplete
     

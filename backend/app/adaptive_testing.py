@@ -63,10 +63,10 @@ class AdaptiveTester:
         
         # Adaptive testing parameters
         self.UNCERTAINTY_THRESHOLD = 0.5  # Above this = needs more items (lowered from 0.6)
-        self.MIN_ITEMS_PER_DIMENSION = 4  # Quick screen minimum (increased from 2 to ensure follow-ups)
+        self.MIN_ITEMS_PER_DIMENSION = 5  # Minimum for Cronbach's alpha > 0.75 (statistical reliability)
         self.MAX_ITEMS_PER_DIMENSION = 12  # Maximum items to ask
-        self.TARGET_TOTAL_ITEMS = 50  # Target for standard assessment
-        self.MAX_TOTAL_ITEMS = 70  # Absolute maximum
+        self.TARGET_TOTAL_ITEMS = 80  # Target for standard assessment (8 dims × 10 items)
+        self.MAX_TOTAL_ITEMS = 120  # Absolute maximum (8 dims × 15 items)
     
     def get_quick_screen(self) -> List[Dict]:
         """
@@ -280,6 +280,10 @@ class AdaptiveTester:
                 item for item in dim_items 
                 if item['item'] not in exclude_items
             ]
+            
+            # PRIORITY: Sort by correlation FIRST (highest first)
+            # This ensures we ask the most diagnostic questions first
+            available_items.sort(key=lambda x: x.get('correlation', 0), reverse=True)
             
             # CONFIRMATION SPACING: Avoid selecting reversed items if we recently
             # answered a non-reversed item (or vice versa) for this dimension
