@@ -192,17 +192,9 @@ export function SessionsTab() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-gray-600 dark:text-gray-400">
-                          {session.latestActivity?.ipAddress && (
+                          {session.latestActivity?.city && (
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3 h-3" />
-                              {session.latestActivity.ipAddress}
-                            </span>
-                          )}
-                          {session.latestActivity?.city && (
-                            <span className="hidden sm:block">•</span>
-                          )}
-                          {session.latestActivity?.city && (
-                            <span>
                               {session.latestActivity.city}
                               {session.latestActivity.country &&
                                 `, ${session.latestActivity.country}`}

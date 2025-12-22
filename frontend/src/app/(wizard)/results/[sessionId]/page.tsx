@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, SignUpButton } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Share2, Link2, Check, X, Lock, MessageCircle, Sparkles } from "lucide-react";
+import { Share2, Link2, Check, X, Lock, MessageCircle, Sparkles, UserPlus, AlertCircle } from "lucide-react";
 import { 
   FormattedText,
   LoadingSpinner,
@@ -552,6 +552,75 @@ export default function ResultsPage() {
 
         {/* Friend Insights */}
         <FriendInsights sessionId={sessionId} selfScores={scores} />
+
+        {/* Anonymous User CTA - Save Your Results */}
+        {!user && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mb-16 mt-12"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-900/20 dark:via-orange-900/20 dark:to-rose-900/20 border-2 border-amber-200 dark:border-amber-800/50 p-8">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-amber-300/30 to-transparent dark:from-amber-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-rose-300/30 to-transparent dark:from-rose-600/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+              
+              <div className="relative">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="flex-shrink-0">
+                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25">
+                      <AlertCircle className="w-7 h-7 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      Don't Lose Your Results!
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                      You're viewing your results as a guest. <strong className="text-amber-700 dark:text-amber-400">These results are temporary and will disappear</strong> when you close this page. 
+                      You'll need to retake the entire assessment to see them again.
+                    </p>
+                    <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-lg p-4 mb-6">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                        ✨ Create a free account to:
+                      </p>
+                      <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                        <li className="flex items-center gap-2">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">✓</span>
+                          <span><strong>Permanently save</strong> your personality profile</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">✓</span>
+                          <span><strong>Share</strong> your results with friends and family</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">✓</span>
+                          <span><strong>Access SELVE-Chat</strong> for personalized insights</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">✓</span>
+                          <span><strong>Track your growth</strong> over time</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <SignUpButton mode="modal" forceRedirectUrl={`/results/${sessionId}`}>
+                        <button className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-full text-sm font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer">
+                          <UserPlus className="w-5 h-5" />
+                          Create Free Account
+                        </button>
+                      </SignUpButton>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                        Takes less than 30 seconds • No credit card required
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        )}
 
         {/* Dimension Scores */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="mb-16 mt-12">
