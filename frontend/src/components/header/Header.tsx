@@ -74,7 +74,8 @@ export const Header = () => {
                       <li key={item.label}>
                         <Link
                           href={item.href}
-                          className="block text-sm text-muted-foreground hover:text-foreground"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-1 rounded-md"
                         >
                           {item.label}
                         </Link>
@@ -86,7 +87,8 @@ export const Header = () => {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-1 rounded-md"
                 >
                   {link.label}
                 </Link>
@@ -113,21 +115,21 @@ export const Header = () => {
                 <Link
                   href="/profile?tab=invites"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   Notifications
                 </Link>
                 <Link
                   href="/profile"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   View Profile
                 </Link>
                 <Link
                   href="/profile"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   Settings
                 </Link>
@@ -136,14 +138,14 @@ export const Header = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   Chat with SELVE
                 </Link>
                 <Link
                   href="/pricing"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground py-2"
+                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   Pricing & Plans
                 </Link>

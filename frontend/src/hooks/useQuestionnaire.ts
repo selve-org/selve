@@ -493,7 +493,7 @@ export function useQuestionnaire(inviteCode?: string) {
             } else {
               // Regular sync conflict (another device)
               toast.warning("Question already answered", {
-                description: `This question was already answered. Moving to question ${backendIndex + 1}.`,
+                description: "This question was already answered. Moving to the next question.",
                 duration: 5000,
               });
               
