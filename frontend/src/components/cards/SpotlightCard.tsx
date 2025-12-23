@@ -27,6 +27,9 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
     const card = cardRef.current;
     if (!card) return;
 
+    // Detect if device is mobile/touch
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
     const updateGlow = (e: any) => {
       card.style.setProperty("--glow-opacity", "1");
       const rect = card.getBoundingClientRect();
@@ -52,18 +55,25 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
       card.style.setProperty("--glow-opacity", "0");
     };
 
+    // Only add mouse events on desktop
     card.addEventListener("mousemove", updateGlow);
     card.addEventListener("mouseleave", turnOffGlow);
-    card.addEventListener("touchmove", updateGlow, { passive: false });
-    card.addEventListener("touchend", turnOffGlow);
-    card.addEventListener("touchcancel", turnOffGlow);
+    
+    // Don't add touch listeners on mobile to allow scrolling
+    if (!isTouchDevice) {
+      card.addEventListener("touchmove", updateGlow, { passive: true });
+      card.addEventListener("touchend", turnOffGlow);
+      card.addEventListener("touchcancel", turnOffGlow);
+    }
 
     return () => {
       card.removeEventListener("mousemove", updateGlow);
       card.removeEventListener("mouseleave", turnOffGlow);
-      card.removeEventListener("touchmove", updateGlow);
-      card.removeEventListener("touchend", turnOffGlow);
-      card.removeEventListener("touchcancel", turnOffGlow);
+      if (!isTouchDevice) {
+        card.removeEventListener("touchmove", updateGlow);
+        card.removeEventListener("touchend", turnOffGlow);
+        card.removeEventListener("touchcancel", turnOffGlow);
+      }
     };
   }, []);
 
@@ -88,7 +98,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
     backgroundAttachment: "fixed",
     border: "var(--border-size) solid var(--backup-border)",
     position: "relative" as const,
-    touchAction: "none" as const,
+    touchAction: "auto" as const,
   };
 
   return (

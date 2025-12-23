@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import { ParallaxHeroBackground } from "./ParallaxHeroBackground";
 
-const headingWords = ["Discover", '', "your ", "TRUE", "self"];
+const headingWords = ["Discover", '', "your ", "TRUE\u00A0self"];
 
 export const Hero = () => {
   return (
@@ -43,18 +43,23 @@ export const Hero = () => {
         initial="hidden"
         animate="show"
       >
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-tight flex justify-center flex-wrap gap-x-2 pointer-events-none">
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-tight flex justify-center flex-wrap gap-x-2 pointer-events-none">
           {headingWords.map((word, idx) => (
             <motion.span
               key={idx}
               variants={wordFadeLeft}
-              className={
-                word === "TRUE"
-                  ? "text-transparent bg-clip-text bg-gradient-to-tr from-red-500 via-orange-400 to-yellow-300 drop-shadow-sm skew-y-1 inline-block"
-                  : "inline-block"
-              }
+              className="inline-block"
             >
-              {word}
+              {word.includes("TRUE") ? (
+                <>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-tr from-red-500 via-orange-400 to-yellow-300 drop-shadow-sm skew-y-1 inline-block">
+                    TRUE
+                  </span>
+                  <span className="inline-block">&nbsp;self</span>
+                </>
+              ) : (
+                word
+              )}
             </motion.span>
           ))}
           {/* This span **always** renders */}
