@@ -40,13 +40,15 @@ export default function AssessmentPage() {
   const isCompleted = session.status === "completed" && session.completedAt;
   return (
     <div
-      className="min-h-screen text-slate-900 dark:text-white flex flex-col justify-start items-start p-4 md:justify-center md:items-center md:p-8"
+      className="min-h-screen text-slate-900 dark:text-white flex flex-col p-4 md:p-8"
       style={{
         fontFamily:
           '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
       }}
     >
-      <div className="text-left max-w-none md:text-center md:max-w-[800px]">
+      {/* Main content - takes up space, grows to fill viewport */}
+      <div className="flex-1 flex flex-col justify-center items-center">
+        <div className="text-center max-w-[800px]">
         {/* Subtitle */}
         <div className="font-sans text-[12px] font-normal text-slate-500 dark:text-[#888888] tracking-[0.8px] mt-8 mb-4 uppercase md:text-[14px] md:mb-6">
           The SELVE assessment
@@ -54,7 +56,7 @@ export default function AssessmentPage() {
 
         {/* Title */}
         <h1
-          className="text-[clamp(3rem,10vw,6rem)] font-normal leading-[1.0] mb-12 text-slate-900 dark:text-white tracking-[-0.02em] md:text-[clamp(4rem,12vw,8rem)] md:mb-16"
+          className="text-[clamp(3.2rem,12vw,7rem)] font-normal leading-[1.0] mb-12 text-slate-900 dark:text-white tracking-[-0.02em] md:text-[clamp(4rem,12vw,8rem)] md:mb-16"
           style={{
             fontFamily:
               '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
@@ -64,9 +66,12 @@ export default function AssessmentPage() {
           <br />
           driving you?
         </h1>
+        </div>
+      </div>
 
-        {/* Description */}
-        <div className="text-[16px] font-light text-slate-600 dark:text-[#b3b3b3] leading-[1.6] max-w-[500px] mx-0 md:text-[18px] md:mx-auto">
+      {/* Description - At bottom of viewport */}
+      <div className="flex flex-col justify-end items-center pb-8 mb-4">
+        <div className="text-[16px] font-light text-slate-600 dark:text-[#b3b3b3] leading-[1.6] max-w-[500px] mx-0 text-center md:text-[18px]">
           <p className="mb-0">
             What if every choice carries echoes of things you never realized
             shaped you? Every mind hides secrets—some guide you toward light,
@@ -74,9 +79,11 @@ export default function AssessmentPage() {
             knowing, until now...
           </p>
         </div>
+      </div>
 
-        {/* CTA */}
-        <div className="mt-12 md:mt-16">
+      {/* CTA Button - Always at bottom */}
+      <div className="flex flex-col justify-end items-center pb-8">
+
           {isCompleted ? (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -218,7 +225,6 @@ export default function AssessmentPage() {
             </motion.button>
           )}
         </div>
-      </div>
 
       {/* Confirmation Dialog */}
       <ConfirmDialog
