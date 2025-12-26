@@ -46,8 +46,8 @@ export default function AssessmentPage() {
           '"Tiempos Headline", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
       }}
     >
-      {/* Main content - takes up space, grows to fill viewport */}
-      <div className="flex-1 flex flex-col justify-center items-center">
+      {/* Main content - normal flow on mobile, centered on desktop */}
+      <div className="flex flex-col md:flex-1 md:justify-center items-center">
         <div className="text-center max-w-[800px]">
         {/* Subtitle */}
         <div className="font-sans text-[12px] font-normal text-slate-500 dark:text-[#888888] tracking-[0.8px] mt-8 mb-4 uppercase md:text-[14px] md:mb-6">
@@ -66,12 +66,9 @@ export default function AssessmentPage() {
           <br />
           driving you?
         </h1>
-        </div>
-      </div>
 
-      {/* Description - At bottom of viewport */}
-      <div className="flex flex-col justify-end items-center pb-8 mb-4">
-        <div className="text-[16px] font-light text-slate-600 dark:text-[#b3b3b3] leading-[1.6] max-w-[500px] mx-0 text-center md:text-[18px]">
+        {/* Description - flows normally on mobile, part of centered section on desktop */}
+        <div className="text-[16px] font-light text-slate-600 dark:text-[#b3b3b3] leading-[1.6] max-w-[500px] mx-auto text-center md:text-[18px]">
           <p className="mb-0">
             What if every choice carries echoes of things you never realized
             shaped you? Every mind hides secrets—some guide you toward light,
@@ -79,10 +76,11 @@ export default function AssessmentPage() {
             knowing, until now...
           </p>
         </div>
+        </div>
       </div>
 
       {/* CTA Button - Always at bottom */}
-      <div className="flex flex-col justify-end items-center pb-8">
+      <div className="flex flex-col justify-end items-center py-12 mt-8 md:mt-0">
 
           {isCompleted ? (
             <motion.div 
