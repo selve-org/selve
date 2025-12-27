@@ -8,6 +8,7 @@ import {
   SignedOut,
   SignInButton,
   SignUpButton,
+  useClerk,
 } from "@clerk/nextjs";
 import { AnimatedLogo } from "@/components/logo/AnimatedSelveLogo";
 import { DesktopNav } from "./navigation/DesktopNav";
@@ -19,6 +20,7 @@ import { CustomUserMenu } from "./CustomUserMenu";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { signOut } = useClerk();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md pb-1 border-b border-neutral-200 dark:border-neutral-800">
@@ -65,37 +67,38 @@ export const Header = () => {
 
         {isMenuOpen && (
           <div className="lg:hidden mt-2 bg-background/90 backdrop-blur-md p-4 rounded-md space-y-3 min-h-[calc(100vh-4rem)]">
-            {navLinks.map((link) =>
-              link.type === "dropdown" ? (
-                <div key={link.label}>
-                  <p className="font-semibold text-sm mb-1">{link.label}</p>
-                  <ul className="pl-2 space-y-1">
-                    {link.items.map((item) => (
-                      <li key={item.label}>
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-1 rounded-md"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-1 rounded-md"
-                >
-                  {link.label}
-                </Link>
-              )
-            )}
-            <hr className="border-neutral-200 dark:border-neutral-800" />
             <SignedOut>
+              {/* Show all navigation for guests */}
+              {navLinks.map((link) =>
+                link.type === "dropdown" ? (
+                  <div key={link.label}>
+                    <p className="font-semibold text-sm mb-1">{link.label}</p>
+                    <ul className="pl-2 space-y-1">
+                      {link.items.map((item) => (
+                        <li key={item.label}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-1 rounded-md"
+                          >
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-1 rounded-md"
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
+              <hr className="border-neutral-200 dark:border-neutral-800" />
               <div className="flex items-center space-x-2 pt-2">
                 <SignInButton>
                   <button className="flex-1 text-center text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">
@@ -110,45 +113,47 @@ export const Header = () => {
               </div>
             </SignedOut>
             <SignedIn>
-              {/* Mobile User Menu - Inline items instead of dropdown */}
-              <div className="pt-2 space-y-1">
-                <Link
-                  href="/profile?tab=invites"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
-                >
-                  Notifications
-                </Link>
+              {/* Simplified mobile menu for signed-in users - only 5 options */}
+              <div className="space-y-1">
                 <Link
                   href="/profile"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
+                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   View Profile
-                </Link>
-                <Link
-                  href="/profile"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
-                >
-                  Settings
                 </Link>
                 <Link
                   href={process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me"}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
+                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
                   Chat with SELVE
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="/about"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
+                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
                 >
-                  Pricing & Plans
+                  About
                 </Link>
+                <Link
+                  href="/blog"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block font-semibold text-sm text-muted-foreground hover:text-foreground active:text-purple-600 active:bg-purple-50 dark:active:bg-purple-900/20 transition-colors px-2 py-2 rounded-md"
+                >
+                  Blog
+                </Link>
+                <button
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left font-semibold text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 active:bg-red-50 dark:active:bg-red-900/20 transition-colors px-2 py-2 rounded-md cursor-pointer"
+                >
+                  Sign out
+                </button>
               </div>
               <IdentifyUser />
               <SyncClerkToDB />
