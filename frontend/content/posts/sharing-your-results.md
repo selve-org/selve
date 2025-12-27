@@ -132,6 +132,7 @@ Not yet, but that's a cool idea we're thinking about! For now, they'll have to t
 
 **Q: Is sharing anonymous?**  
 Not at the moment, but it’s in the works! 🙂
+
 ---
 
 ## The Technical Stuff (For the Curious)
