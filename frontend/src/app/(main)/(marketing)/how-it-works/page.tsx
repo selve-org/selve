@@ -37,7 +37,7 @@ const smoothScrollTo = (targetY: number, duration = 950) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function HowItWorksPage() {
-  const chatbotBaseUrl = process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me";
+  const chatbotBaseUrl = (process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me").trim();
   const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
 
   const handleScrollToSteps = (event: MouseEvent<HTMLAnchorElement>) => {

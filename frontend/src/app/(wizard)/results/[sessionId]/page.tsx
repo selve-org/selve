@@ -61,7 +61,7 @@ export default function ResultsPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef<boolean>(true);
 
-  const chatbotBaseUrl = process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me";
+  const chatbotBaseUrl = (process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me").trim();
   const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
 
   // Cleanup function to stop all polling and abort pending requests

@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation'
 export default function AuthRedirectPage() {
   const { isSignedIn, isLoaded } = useAuth()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect_to')
+  const redirectTo = searchParams.get('redirect_to')?.trim() || null
 
   // Validate redirect URL to prevent open redirect vulnerability
   const isValidRedirect = (url: string | null): boolean => {
