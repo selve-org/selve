@@ -274,7 +274,7 @@ export function CustomUserMenu() {
 
               {/* Chat with SELVE */}
               <Link
-                href={process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me"}
+                href={(process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me").trim()}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsOpen(false)}

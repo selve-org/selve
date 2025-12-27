@@ -123,7 +123,7 @@ export const Header = () => {
                   View Profile
                 </Link>
                 <Link
-                  href={process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me"}
+                  href={(process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me").trim()}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsMenuOpen(false)}

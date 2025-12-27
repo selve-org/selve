@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get('redirect_url')
+  const redirectUrl = searchParams.get('redirect_url')?.trim()
 
   // If we have a redirect_url, send user back to /auth/redirect
   // so it can properly handle the authenticated redirect
