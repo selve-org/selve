@@ -18,34 +18,49 @@ export default function AuthRedirectPage() {
       const allowedHosts = [
         'localhost:4000',
         'chat.selve.me',
-        process.env.NEXT_PUBLIC_CHATBOT_URL?.replace(/^https?:\/\//, '')
+        process.env.NEXT_PUBLIC_CHATBOT_URL?.trim().replace(/^https?:\/\//, '')
       ].filter(Boolean)
 
+      console.log('Validating redirect:', {
+        url,
+        redirectHost: redirectUrl.host,
+        allowedHosts,
+        isValid: allowedHosts.some(host => redirectUrl.host === host)
+      })
+
       return allowedHosts.some(host => redirectUrl.host === host)
-    } catch {
+    } catch (e) {
       // Invalid URL format
+      console.error('Redirect URL validation error:', e)
       return false
     }
   }
 
   useEffect(() => {
+    console.log('Auth redirect useEffect:', { isLoaded, isSignedIn, redirectTo })
+
     if (!isLoaded) return
 
     if (isSignedIn && redirectTo) {
       // Validate redirect URL before redirecting
       if (isValidRedirect(redirectTo)) {
+        console.log('Redirecting to:', redirectTo)
         window.location.href = redirectTo
       } else {
         // Invalid redirect, go to home
+        console.log('Invalid redirect, going to home')
         window.location.href = '/'
       }
     } else if (!isSignedIn) {
       // User is not signed in, redirect to sign-in with return URL
+      console.log('Not signed in, redirecting to sign-in')
       const signInUrl = new URL('/sign-in', window.location.origin)
       if (redirectTo && isValidRedirect(redirectTo)) {
         signInUrl.searchParams.set('redirect_url', redirectTo)
       }
       window.location.href = signInUrl.toString()
+    } else {
+      console.log('No action taken - signed in but no redirectTo')
     }
   }, [isSignedIn, isLoaded, redirectTo])
 
