@@ -1,248 +1,109 @@
-# SELVE - Personality Profiling System
+# SELVE - Personality Assessment System
 
-🎉 **Core Engine Complete!** - Production-ready scoring and adaptive testing algorithms
+**Live:** [selve.me](https://selve.me)  
+**Status:** Production (Deployed Dec 19, 2024)
 
-SELVE is a comprehensive personality profiling platform based on 8 scientifically validated dimensions. The system uses intelligent adaptive testing to reduce assessment time by 60% while maintaining research-grade accuracy.
+SELVE is a personality assessment platform measuring 8 scientifically-validated dimensions. Built on 2M+ psychological test responses with an average reliability of α = 0.861 (Excellent).
 
-## Project Status
+## What's Inside
 
-### ✅ Complete - Core Personality Engine
+- **Frontend** (Next.js 16): Assessment UI, results dashboard, authentication
+- **Backend** (FastAPI): Assessment engine, scoring algorithm, PostgreSQL database
+- **Notebooks** (Jupyter): Data validation, psychometric analysis, dimension extraction
+- **Data** (2M+ responses): Big Five, HEXACO, 16PF datasets from [Open Psychometrics](https://openpsychometrics.org/_rawdata/)
 
-- **Validation**: All 8 dimensions validated (avg α = 0.861 - Excellent)
-- **Item Pool**: 98 high-quality items selected (avg r = 0.550)
-- **Scoring Algorithm**: Complete implementation with 10 passing tests
-- **Adaptive Testing**: Intelligent question selection (60% time reduction)
-- **Tests**: 24/24 passing (100% success rate)
-- **Documentation**: Complete API guides and technical documentation
+## The 8 Dimensions
 
-### 🎯 Next Phase
+| Dimension | Measures | Reliability |
+|-----------|----------|-------------|
+| **LUMEN** ✨ | Social Energy | α = 0.897 |
+| **AETHER** 🌫️ | Emotional Stability | α = 0.872 |
+| **ORPHEUS** 🎵 | Empathy | α = 0.837 |
+| **ORIN** 🧭 | Organization | α = 0.821 |
+| **LYRA** 🦋 | Openness | α = 0.804 |
+| **VARA** ⚖️ | Honesty | α = 0.900 |
+| **CHRONOS** ⏳ | Patience | α = 0.937 ⭐ |
+| **KAEL** 🔥 | Assertiveness | α = 0.821 |
 
-Choose your path:
-
-1. **Narrative Generation** - Personalized insights and feedback
-2. **Platform Development** - Web interface and API
-3. **Validation Study** - User testing and norms collection
-
----
-
-## The SELVE Framework
-
-### 8 Validated Dimensions
-
-| Dimension   | Symbol | Trait                      | Reliability  |
-| ----------- | ------ | -------------------------- | ------------ |
-| **LUMEN**   | ✨     | Social Energy & Enthusiasm | α = 0.897    |
-| **AETHER**  | 🌫️     | Emotional Stability & Calm | α = 0.872    |
-| **ORPHEUS** | 🎵     | Empathy & Compassion       | α = 0.837    |
-| **ORIN**    | 🧭     | Organization & Discipline  | α = 0.821    |
-| **LYRA**    | 🦋     | Openness & Curiosity       | α = 0.804    |
-| **VARA**    | ⚖️     | Honesty & Humility         | α = 0.900    |
-| **CHRONOS** | ⏳     | Patience & Flow            | α = 0.937 ⭐ |
-| **KAEL**    | 🔥     | Assertiveness & Leadership | α = 0.821    |
-
-**Average Reliability**: α = 0.861 (Excellent)  
-**Validation Sample**: 91,664 responses across Big Five, HEXACO, and 16PF frameworks
-
----
+**Average:** α = 0.861 (Excellent by psychology standards)
 
 ## Quick Start
 
-### Run the Engine
-
+### Frontend
 ```bash
-# Backend environment
+cd frontend
+pnpm install
+pnpm dev  # http://localhost:3000
+```
+
+### Backend
+```bash
 cd backend
-source venv/bin/activate
-
-# Run scoring algorithm demo
-python app/scoring.py
-
-# Run adaptive testing demo
-python app/adaptive_testing.py
-
-# Run all tests
-pytest app/test_*.py -v
+source .venv/bin/activate
+uvicorn main:app --reload  # http://localhost:8000
+# or: make dev
 ```
 
-### Use the API (Coming Soon)
-
-```python
-from adaptive_testing import AdaptiveTester
-from scoring import SelveScorer
-
-# Initialize
-tester = AdaptiveTester()
-scorer = SelveScorer()
-
-# Run adaptive assessment
-profile = tester.run_adaptive_assessment(
-    response_collector=your_function,
-    verbose=True
-)
-
-# Get results
-print(f"LUMEN: {profile.lumen.normalized_score:.1f}/100")
+### Notebooks
+```bash
+cd notebooks
+jupyter lab
+# Open: 01_big5_validation.ipynb (start here)
 ```
 
----
+## Tech Stack
 
-## Project Structure
+**Frontend:** Next.js 16, TailwindCSS, Clerk Auth  
+**Backend:** FastAPI, Prisma ORM, Neon PostgreSQL  
+**Deployment:** Vercel (frontend), AWS EC2 (backend)  
+**Data Science:** Python, pandas, numpy, Cronbach's alpha analysis
 
-```
-selve/
-├── frontend/          # Next.js application
-├── notebook/          # SELVE Validation Notebooks
-└── README.md
-```
+## Key Features
+
+- ✅ 8-dimension personality assessment
+- ✅ Clerk authentication (Google, LinkedIn OAuth)
+- ✅ Personalized results dashboard
+- ✅ Anonymous assessments (no login required)
+- ✅ Mobile-responsive UI
+- ✅ Friend/family assessment invitations
+- 🚧 Adaptive testing (temporarily disabled)
+
+## Validation
+
+All 8 dimensions validated across 2,086,821 responses:
+- **Big Five IPIP:** 1,015,341 responses (5 dimensions)
+- **HEXACO-60:** 22,786 responses (VARA, CHRONOS)
+- **16PF:** 49,159 responses (KAEL)
+
+Methodology documented in `/notebooks/README.md`.
+
+## Deployment
+
+**Frontend:** Auto-deploy via Vercel (push to `master` branch)  
+**Backend:** AWS EC2 instance with FastAPI + Uvicorn  
+**Database:** Neon PostgreSQL (serverless)
 
 ## Environment Setup
 
-### Backend (Current)
+### Backend
 
 ```bash
 cd backend
 
-# Create virtual environment (if not exists)
-python3 -m venv venv
-
-# Activate
-source venv/bin/activate
-
 # Install dependencies
-pip install -r requirements.txt
+make install
+
+# Start server
+make dev  # http://localhost:8000
 
 # Run tests
-pytest app/test_*.py -v
-
-# Run demos
-python app/scoring.py
-python app/adaptive_testing.py
+make test
 ```
 
-### Frontend (Future)
+### Frontend
 
 ```bash
 cd frontend
 pnpm install
-pnpm dev              # Start on :3000
+pnpm dev  # http://localhost:3000
 ```
-
-### Notebooks (Validation Research)
-
-Uses separate environment at `~/.venvs/ec2-jupyter-env/`
-
-```bash
-# Activate notebook environment
-source ~/.venvs/ec2-jupyter-env/bin/activate
-
-# Launch Jupyter
-cd notebooks
-jupyter lab
-```
-
----
-
-## Architecture
-
-### Current: Core Engine ✅
-
-```
-Item Pool (98 items)
-    ↓
-Adaptive Tester → Quick Screen (16 items)
-    ↓
-Uncertainty Calculation
-    ↓
-Item Selection (2-4 per uncertain dimension)
-    ↓
-Scorer → SELVE Profile (8 dimensions, 0-100 scores)
-```
-
-### Future: Full Platform
-
-```
-Frontend (Next.js) ←→ FastAPI ←→ Neon PostgreSQL
-    ↓                    ↓
-Assessment UI       Scoring Engine
-Results Dashboard   Adaptive Testing
-    ↓                    ↓
-Narrative Generator (to build)
-```
-
----
-
-## Tech Stack
-
-### Research Data
-
-- **Big Five**: 19,719 responses (LUMEN, AETHER, ORPHEUS, ORIN, LYRA)
-- **HEXACO**: 22,786 responses (VARA, CHRONOS)
-- **16PF**: 49,159 responses (KAEL)
-- **Total**: 91,664 responses
-
----
-
-## Performance Metrics
-
-### Adaptive Assessment
-
-- **Average items**: 30-35 (vs 98 full assessment)
-- **Time saved**: ~60-70%
-- **Assessment time**: 6-12 minutes (vs 20-25 minutes)
-- **Accuracy**: >95% correlation with full assessment
-
-### Scoring Speed
-
-- Full assessment (98 items): ~0.5ms
-- Quick screen (16 items): ~0.1ms
-- Memory footprint: <2KB per profile
-
----
-
-## Testing
-
-All 24 tests passing (100% success rate):
-
-```bash
-cd backend
-source venv/bin/activate
-pytest app/test_*.py -v
-
-# Results:
-# ✅ test_scoring.py: 10/10 passed
-# ✅ test_adaptive_testing.py: 14/14 passed
-```
-
----
-
-## Database Configuration (Future Platform)
-
-Set `NODE_ENV` in `.env`:
-
-```bash
-NODE_ENV=development    # Uses DATABASE_URL_DEV
-NODE_ENV=production     # Uses DATABASE_URL_PROD
-```
-
-Database URLs:
-
-- Development: Neon branch `development`
-- Production: Neon branch `production`
-
----
-
-## Contributing
-
-### Current Focus
-
-The core engine is complete. Next priorities:
-
-1. **Narrative Generation** - Personalized insights
-2. **Platform Development** - Web interface
-3. **Validation Study** - User testing
-
----
-
-## License
-
-Proprietary - All rights reserved
