@@ -567,17 +567,17 @@ export default function ResultsPage() {
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-rose-300/30 to-transparent dark:from-rose-600/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
               
               <div className="relative">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="flex-shrink-0">
+                <div className="flex flex-col md:flex-row md:items-start gap-4 mb-6">
+                  <div className="flex-shrink-0 mx-auto md:mx-0">
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25">
                       <AlertCircle className="w-7 h-7 text-white" />
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center md:text-left">
                       Don't Lose Your Results!
                     </h3>
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 text-center md:text-left">
                       You're viewing your results as a guest. <strong className="text-amber-700 dark:text-amber-400">These results are temporary and will disappear</strong> when you close this page. 
                       You'll need to retake the entire assessment to see them again.
                     </p>
