@@ -11,7 +11,6 @@ import logging
 from typing import Optional
 from datetime import datetime, timedelta, timezone
 import os
-import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -20,12 +19,9 @@ class NotificationService:
     """Service for sending notifications across multiple channels."""
     
     def __init__(self):
-        """Initialize notification service with Mailgun config."""
-        self.mailgun_api_key = os.getenv('MAILGUN_API_KEY')
-        self.mailgun_domain = os.getenv('MAILGUN_DOMAIN', 'mg.selve.me')
-        self.mailgun_url = f'https://api.mailgun.net/v3/{self.mailgun_domain}/messages'
+        """Initialize notification service."""
         self.app_url = os.getenv('APP_URL', 'https://selve.me')
-        
+
         # In-memory toast flags (replace with Redis in production)
         self._toast_flags = {}
     
@@ -39,12 +35,12 @@ class NotificationService:
     ):
         """
         Send all notifications when friend completes assessment.
-        
+
         Channels:
         - Email (immediate)
         - UI notification (persistent)
         - Toast trigger (one-time flag)
-        
+
         Args:
             user_id: User ID who created the invite
             user_email: User's email address
@@ -53,10 +49,14 @@ class NotificationService:
             db: Database session
         """
         logger.info(f"Sending notifications: user={user_id}, friend={friend_name}")
-        
+
         try:
+            # Get user's actual name from database
+            user = await db.user.find_unique(where={"clerkId": user_id})
+            user_name = user.name if user and user.name else user_email.split('@')[0].title()
+
             # Send email
-            await self._send_email_notification(user_email, friend_name)
+            await self._send_email_notification(user_email, user_name, friend_name)
             logger.info(f"✅ Email sent to {user_email}")
         except Exception as e:
             logger.error(f"❌ Failed to send email: {e}")
@@ -78,95 +78,30 @@ class NotificationService:
     async def _send_email_notification(
         self,
         user_email: str,
+        user_name: str,
         friend_name: str
     ):
         """
         Send email via Mailgun when friend completes.
-        
+        Uses the professional MailgunService template for consistent branding.
+
         Args:
             user_email: User's email address
+            user_name: User's name
             friend_name: Name of friend who completed
         """
-        subject = "Your friend completed their assessment!"
-        
-        html_body = f"""
-        <html>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; 
-                     line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-                <div style="display: inline-flex; align-items: center; gap: 12px;">
-                    <img src="{self.app_url}/logo/selve-logo.png" alt="SELVE" width="40" height="40" style="vertical-align: middle;" />
-                    <img src="{self.app_url}/logo/selve-logo-text.svg" alt="SELVE" width="120" height="30" style="vertical-align: middle; filter: brightness(0) invert(1);" />
-                </div>
-            </div>
-            
-            <h2 style="color: #667eea; margin-bottom: 20px;">New Friend Insights Available</h2>
-            
-            <p style="font-size: 16px; margin-bottom: 20px;">Hi there,</p>
-            
-            <p style="font-size: 16px; margin-bottom: 20px;">
-                <strong>{friend_name}</strong> just completed their assessment of you.
-            </p>
-            
-            <p style="font-size: 16px; margin-bottom: 30px;">
-                We're updating your personality profile with their insights right now.
-            </p>
-            
-            <div style="text-align: center; margin: 40px 0;">
-                <a href="{self.app_url}/profile" 
-                   style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                          color: white; padding: 15px 40px; text-decoration: none; 
-                          border-radius: 25px; font-size: 16px; font-weight: 600;
-                          display: inline-block;">
-                    View Your Updated Profile
-                </a>
-            </div>
-            
-            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; 
-                        border-left: 4px solid #667eea; margin: 30px 0;">
-                <p style="margin: 0; font-size: 14px; color: #4a5568;">
-                    <strong>Privacy Note:</strong> Individual responses are never revealed. 
-                    You'll only see aggregated insights from all your friends.
-                </p>
-            </div>
-            
-            <p style="font-size: 16px; margin-top: 30px;">
-                Thank you for using SELVE!
-            </p>
-            
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 40px 0;">
-            
-            <p style="font-size: 12px; color: #718096; text-align: center;">
-                SELVE - Discover Your True Self<br>
-                <a href="{self.app_url}/settings" style="color: #667eea;">Manage Preferences</a> | 
-                <a href="{self.app_url}/privacy" style="color: #667eea;">Privacy Policy</a>
-            </p>
-        </body>
-        </html>
-        """
-        
-        # Send via Mailgun
-        data = {
-            'from': f'SELVE <hello@{self.mailgun_domain}>',
-            'to': user_email,
-            'subject': subject,
-            'html': html_body
-        }
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.mailgun_url,
-                auth=aiohttp.BasicAuth('api', self.mailgun_api_key),
-                data=data
-            ) as response:
-                if response.status != 200:
-                    text = await response.text()
-                    raise Exception(f"Mailgun error: {response.status} - {text}")
-                
-                result = await response.json()
-                logger.info(f"Mailgun response: {result}")
+        from app.services.mailgun_service import MailgunService
+
+        # Use professional template from MailgunService
+        mailgun = MailgunService()
+        result = mailgun.send_completion_notification(
+            to_email=user_email,
+            to_name=user_name,
+            friend_name=friend_name,
+            results_url=f"{self.app_url}/profile"
+        )
+
+        logger.info(f"Mailgun response: {result}")
     
     async def _create_ui_notification(
         self,

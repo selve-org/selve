@@ -60,7 +60,10 @@ export default function AuthRedirectPage() {
       }
       window.location.href = signInUrl.toString()
     } else {
-      console.log('No action taken - signed in but no redirectTo')
+      // User is signed in but no valid redirect_to parameter
+      // Redirect to home instead of staying on loading screen
+      console.log('Signed in but no valid redirect_to, redirecting to home')
+      window.location.href = '/'
     }
   }, [isSignedIn, isLoaded, redirectTo])
 
