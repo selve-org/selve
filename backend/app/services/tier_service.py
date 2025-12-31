@@ -50,22 +50,26 @@ class TierService:
         Returns:
             "free" or "premium"
         """
+        # TODO: Re-enable when pricing is implemented
+        # For now, everyone is on free tier since there's no pricing system yet
+        return "free"
+
         # Query user's subscription plan from database
-        user = await self.db.user.find_unique(
-            where={"id": user_id},
-            select={"subscriptionPlan": True}
-        )
-
-        if not user:
-            return "free"
-
-        # Map subscription plans: "pro" -> "premium", "free" -> "free"
-        subscription_plan = user.subscriptionPlan or "free"
-
-        if subscription_plan == "pro":
-            return "premium"
-        else:
-            return "free"
+        # user = await self.db.user.find_unique(
+        #     where={"id": user_id},
+        #     select={"subscriptionPlan": True}
+        # )
+        #
+        # if not user:
+        #     return "free"
+        #
+        # # Map subscription plans: "pro" -> "premium", "free" -> "free"
+        # subscription_plan = user.subscriptionPlan or "free"
+        #
+        # if subscription_plan == "pro":
+        #     return "premium"
+        # else:
+        #     return "free"
     
     async def get_invite_count(self, user_id: str) -> int:
         """
