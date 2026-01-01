@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function AuthRedirectPage() {
   const { isSignedIn, isLoaded } = useAuth()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect_to')?.trim() || null
+  const hasShownToast = useRef(false)
 
   // Validate redirect URL to prevent open redirect vulnerability
   const isValidRedirect = (url: string | null): boolean => {
@@ -41,14 +43,30 @@ export default function AuthRedirectPage() {
 
     if (!isLoaded) return
 
-    if (isSignedIn && redirectTo) {
-      // Validate redirect URL before redirecting
-      if (isValidRedirect(redirectTo)) {
-        console.log('Redirecting to:', redirectTo)
-        window.location.href = redirectTo
+    if (isSignedIn) {
+      // Show welcome toast (only once)
+      if (!hasShownToast.current) {
+        toast.success('Welcome! You\'re signed in', {
+          description: 'Great to have you here',
+          duration: 3000,
+        })
+        hasShownToast.current = true
+      }
+
+      if (redirectTo) {
+        // Validate redirect URL before redirecting
+        if (isValidRedirect(redirectTo)) {
+          console.log('Redirecting to:', redirectTo)
+          window.location.href = redirectTo
+        } else {
+          // Invalid redirect, go to home
+          console.log('Invalid redirect, going to home')
+          window.location.href = '/'
+        }
       } else {
-        // Invalid redirect, go to home
-        console.log('Invalid redirect, going to home')
+        // User is signed in but no valid redirect_to parameter
+        // Redirect to home instead of staying on loading screen
+        console.log('Signed in but no valid redirect_to, redirecting to home')
         window.location.href = '/'
       }
     } else if (!isSignedIn) {
@@ -59,11 +77,6 @@ export default function AuthRedirectPage() {
         signInUrl.searchParams.set('redirect_url', redirectTo)
       }
       window.location.href = signInUrl.toString()
-    } else {
-      // User is signed in but no valid redirect_to parameter
-      // Redirect to home instead of staying on loading screen
-      console.log('Signed in but no valid redirect_to, redirecting to home')
-      window.location.href = '/'
     }
   }, [isSignedIn, isLoaded, redirectTo])
 
