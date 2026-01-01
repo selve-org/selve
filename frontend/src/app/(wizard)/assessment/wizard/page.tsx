@@ -171,12 +171,26 @@ export default function WizardPage() {
       return;
     }
 
-    // Submit answer
-    await submitAnswer(currentQuestion.id, currentAnswer);
+    try {
+      // Submit answer
+      await submitAnswer(currentQuestion.id, currentAnswer);
 
-    // Reset for next question
-    setCurrentAnswer(null);
-    setValidationError(null);
+      // Reset for next question (only if submission succeeded)
+      setCurrentAnswer(null);
+      setValidationError(null);
+    } catch (error: any) {
+      // Check if this is a sync conflict resolution (not a real error)
+      if (error?.message === "SYNC_CONFLICT_RESOLVED") {
+        // Sync conflict was handled, reset UI
+        setCurrentAnswer(null);
+        setValidationError(null);
+        return;
+      }
+
+      // Real error - show to user
+      console.error("Failed to submit answer:", error);
+      setValidationError("Failed to submit answer. Please try again.");
+    }
   };
 
   /**

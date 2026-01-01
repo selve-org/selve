@@ -496,7 +496,7 @@ export function useQuestionnaire(inviteCode?: string) {
                 description: "This question was already answered. Moving to the next question.",
                 duration: 5000,
               });
-              
+
               // Sync to the correct question
               if (backendIndex < effectiveQuestionQueue.length) {
                 setCurrentQuestionIndex(backendIndex);
@@ -507,7 +507,12 @@ export function useQuestionnaire(inviteCode?: string) {
                 }));
               }
             }
-            return;
+
+            // Mark state as ready after resync
+            setState((prev) => ({ ...prev, isLoading: false }));
+
+            // Throw error to prevent calling code from continuing
+            throw new Error("SYNC_CONFLICT_RESOLVED");
           }
           
           throw new Error("Failed to submit answer");
