@@ -1,0 +1,56 @@
+═══════════════════════════════════════════════════════
+          WELCOME TO SELVE! 🎉
+═══════════════════════════════════════════════════════
+
+Self-Exploration · Learning · Validation · Evolution
+
+───────────────────────────────────────────────────────
+
+Hey {{first_name}}! 👋
+
+Welcome to SELVE — where modern psychology meets ancient wisdom. We're here to help you truly understand yourself through 8 scientifically validated dimensions of personality.
+
+Unlike simple personality quizzes, SELVE combines adaptive psychometrics with real insights from people who know you best, creating a living blueprint of who you are.
+
+───────────────────────────────────────────────────────
+HERE'S WHAT YOU CAN DO:
+───────────────────────────────────────────────────────
+
+✨ TAKE THE ASSESSMENT
+   Discover your unique profile across 8 dimensions: LUMEN,
+   AETHER, ORPHEUS, VARA, CHRONOS, KAEL, ORIN, and LYRA
+
+👥 INVITE FRIENDS
+   Get a 360° view with outside perspectives on how others see you
+
+🔍 UNCOVER BLIND SPOTS
+   See where self-perception meets reality and discover hidden patterns
+
+💬 CHAT WITH SELVE-CHAT
+   Your profile-aware AI coach for personalized insights and guidance
+
+───────────────────────────────────────────────────────
+
+👉 Start Your Journey: {{base_url}}/assessment
+
+Takes ~6-8 minutes · Validated across 1M+ responses · Free to start
+
+───────────────────────────────────────────────────────
+LEARN MORE ABOUT SELVE:
+───────────────────────────────────────────────────────
+
+• About SELVE: {{base_url}}/about
+• How It Works: {{base_url}}/how-it-works
+• Blog: {{base_url}}/blog
+• SELVE-Chat: {{chatbot_url}}
+
+───────────────────────────────────────────────────────
+
+We're excited to have you on this journey 💜
+
+"Know thyself" — Delphic Maxim
+
+— The SELVE Team
+
+SELVE · Personality Assessment Platform
+{{base_url_display}}

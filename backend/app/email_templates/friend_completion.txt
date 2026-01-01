@@ -1,0 +1,42 @@
+═══════════════════════════════════════════════════════
+          🎉 GREAT NEWS, {{to_name}}!
+═══════════════════════════════════════════════════════
+
+Your friend completed their assessment about you
+
+───────────────────────────────────────────────────────
+
+{{friend_name}} just completed their perspective on your personality!
+
+Their insights have been added to your Friend Assessment data. This outside perspective helps create a richer, more accurate understanding of your personality across all 8 dimensions.
+
+───────────────────────────────────────────────────────
+💡 WHAT THIS MEANS:
+───────────────────────────────────────────────────────
+
+By comparing how you see yourself with how {{friend_name}} sees you, you'll uncover valuable blind spots and discover patterns you might have missed.
+
+The more friend perspectives you gather, the clearer your complete personality blueprint becomes.
+
+───────────────────────────────────────────────────────
+
+👉 View Your Updated Results: {{results_url}}
+
+Your dashboard now includes {{friend_name}}'s perspective
+
+───────────────────────────────────────────────────────
+WANT EVEN DEEPER INSIGHTS?
+───────────────────────────────────────────────────────
+
+Invite more friends to complete their assessment. Each new perspective reveals more about your personality and helps you understand the gap between self-perception and how others experience you.
+
+👉 Invite More Friends: {{base_url}}/dashboard?tab=friends
+
+───────────────────────────────────────────────────────
+
+Keep discovering who you are 💜
+
+— The SELVE Team
+
+SELVE · Personality Assessment Platform
+{{base_url_display}}

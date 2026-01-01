@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to SELVE</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px; text-align: center;">
+                            <a href="{{base_url}}" style="text-decoration: none;">
+                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
+                                    <tr>
+                                        <td style="vertical-align: middle; padding-right: 8px;">
+                                            <img src="{{logo_icon_url}}" alt="" width="40" height="40" style="display: block;" />
+                                        </td>
+                                        <td style="vertical-align: middle;">
+                                            <img src="{{logo_text_url}}" alt="SELVE" height="28" style="display: block;" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Hero Section -->
+                    <tr>
+                        <td style="padding: 0 40px;">
+                            <div style="background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%); border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 30px;">
+                                <h1 style="color: #1a1a1a; font-size: 28px; margin: 0 0 10px; font-weight: 600;">
+                                    Welcome to SELVE! 🎉
+                                </h1>
+                                <p style="color: #7c3aed; font-size: 14px; margin: 0; font-weight: 500; letter-spacing: 0.5px;">
+                                    Self-Exploration · Learning · Validation · Evolution
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 0 40px 40px;">
+                            <p style="color: #333; font-size: 16px; line-height: 1.7; margin: 0 0 20px;">
+                                Hey {{first_name}}! 👋
+                            </p>
+
+                            <p style="color: #333; font-size: 16px; line-height: 1.7; margin: 0 0 20px;">
+                                Welcome to SELVE — where modern psychology meets ancient wisdom. We're here to help you truly understand yourself through <strong>8 scientifically validated dimensions</strong> of personality.
+                            </p>
+
+                            <p style="color: #333; font-size: 16px; line-height: 1.7; margin: 0 0 30px;">
+                                Unlike simple personality quizzes, SELVE combines adaptive psychometrics with real insights from people who know you best, creating a living blueprint of who you are.
+                            </p>
+
+                            <!-- Features Grid -->
+                            <div style="background-color: #fafafa; border-radius: 8px; padding: 24px; margin: 0 0 30px;">
+                                <p style="color: #666; font-size: 14px; font-weight: 600; margin: 0 0 16px;">
+                                    Here's what you can do:
+                                </p>
+
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="padding: 0 0 12px 0;">
+                                            <span style="color: #7c3aed; font-size: 18px;">✨</span>
+                                            <strong style="color: #333; font-size: 15px;"> Take the Assessment</strong>
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 4px 0 0 26px;">
+                                                Discover your unique profile across 8 dimensions: LUMEN, AETHER, ORPHEUS, VARA, CHRONOS, KAEL, ORIN, and LYRA
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 0 12px 0;">
+                                            <span style="color: #7c3aed; font-size: 18px;">👥</span>
+                                            <strong style="color: #333; font-size: 15px;"> Invite Friends</strong>
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 4px 0 0 26px;">
+                                                Get a 360° view with outside perspectives on how others see you
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0 0 12px 0;">
+                                            <span style="color: #7c3aed; font-size: 18px;">🔍</span>
+                                            <strong style="color: #333; font-size: 15px;"> Uncover Blind Spots</strong>
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 4px 0 0 26px;">
+                                                See where self-perception meets reality and discover hidden patterns
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 0;">
+                                            <span style="color: #7c3aed; font-size: 18px;">💬</span>
+                                            <strong style="color: #333; font-size: 15px;"> Chat with SELVE-Chat</strong>
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 4px 0 0 26px;">
+                                                Your profile-aware AI coach for personalized insights and guidance
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px;">
+                                <tr>
+                                    <td align="center" style="padding: 10px 0;">
+                                        <a href="{{base_url}}/assessment"
+                                           style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);">
+                                            Start Your Journey →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="color: #999; font-size: 13px; line-height: 1.6; margin: 20px 0 0; text-align: center;">
+                                Takes ~6-8 minutes · Validated across 1M+ responses · Free to start
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
+
+                            <!-- Quick Links -->
+                            <div style="text-align: center;">
+                                <p style="color: #666; font-size: 14px; margin: 0 0 12px;">
+                                    Learn more about SELVE:
+                                </p>
+                                <p style="margin: 0;">
+                                    <a href="{{base_url}}/about" style="color: #7c3aed; text-decoration: none; font-size: 14px; margin: 0 8px;">About</a>
+                                    <span style="color: #ddd;">|</span>
+                                    <a href="{{base_url}}/how-it-works" style="color: #7c3aed; text-decoration: none; font-size: 14px; margin: 0 8px;">How It Works</a>
+                                    <span style="color: #ddd;">|</span>
+                                    <a href="{{base_url}}/blog" style="color: #7c3aed; text-decoration: none; font-size: 14px; margin: 0 8px;">Blog</a>
+                                    <span style="color: #ddd;">|</span>
+                                    <a href="{{chatbot_url}}" style="color: #7c3aed; text-decoration: none; font-size: 14px; margin: 0 8px;">SELVE-Chat</a>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 24px 40px; background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%); border-radius: 0 0 12px 12px;">
+                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0; line-height: 1.6;">
+                                We're excited to have you on this journey 💜<br>
+                                <em>"Know thyself"</em> — Delphic Maxim<br><br>
+                                <strong style="color: #666;">The SELVE Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Footer Links -->
+                <p style="color: #999; font-size: 11px; margin: 24px 0 0; text-align: center; line-height: 1.6;">
+                    SELVE · Personality Assessment Platform<br>
+                    <a href="{{base_url}}" style="color: #999; text-decoration: none;">{{base_url_display}}</a>
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

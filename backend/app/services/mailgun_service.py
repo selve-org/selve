@@ -14,22 +14,30 @@ import os
 import requests
 from typing import Optional, Dict, Any
 
+from app.services.email_template_service import EmailTemplateService
+
 
 class MailgunService:
     """Service for sending transactional emails via Mailgun"""
 
     def __init__(self):
         """Initialize Mailgun service with configuration"""
-        self.api_key = os.getenv('MAILGUN_API_KEY')
-        if not self.api_key:
-            raise ValueError("MAILGUN_API_KEY environment variable is required")
-
         # Environment configuration
         self.environment = os.getenv('ENVIRONMENT', 'development')
         self.is_production = self.environment == 'production'
 
-        # Use production domain when ready, sandbox for testing
-        self.domain = os.getenv('MAILGUN_DOMAIN', 'sandboxd8f97eaf0d0047738c071c1b4975ee4f.mailgun.org')
+        # Select API key and domain based on environment
+        if self.is_production:
+            # Production: Use production credentials
+            self.api_key = os.getenv('MAILGUN_API_KEY_PROD') or os.getenv('MAILGUN_API_KEY')
+            self.domain = os.getenv('MAILGUN_DOMAIN_PROD', 'mg.selve.me')
+        else:
+            # Development: Use sandbox credentials
+            self.api_key = os.getenv('MAILGUN_API_KEY_DEV') or os.getenv('MAILGUN_API_KEY')
+            self.domain = os.getenv('MAILGUN_DOMAIN_DEV', 'sandboxd8f97eaf0d0047738c071c1b4975ee4f.mailgun.org')
+
+        if not self.api_key:
+            raise ValueError(f"MAILGUN_API_KEY for {self.environment} environment is required")
 
         self.base_url = os.getenv('MAILGUN_BASE_URL', 'https://api.mailgun.net')
 
@@ -43,6 +51,12 @@ class MailgunService:
         # These are publicly accessible and don't depend on localhost or production server
         self.logo_icon_url = "https://res.cloudinary.com/dbjsmvbkl/image/upload/v1763536804/selve-logo_mjr8it.png"
         self.logo_text_url = "https://res.cloudinary.com/dbjsmvbkl/image/upload/v1732536849/selve-logo-text_fb3k38.png"
+
+        # Initialize email template service
+        self.template_service = EmailTemplateService()
+
+        # Log configuration for debugging
+        print(f"📧 Mailgun initialized: environment={self.environment}, domain={self.domain}")
         
     def _get_endpoint(self) -> str:
         """Get the full API endpoint for sending messages"""
@@ -243,100 +257,32 @@ SELVE · Personality Assessment Platform
     ) -> Dict[str, Any]:
         """
         Notify user when a friend completes their assessment
-        
+
         Args:
             to_email: User's email
             to_name: User's name
             friend_name: Name of friend who completed assessment
             results_url: URL to view updated results
-            
+
         Returns:
             Mailgun API response dict
         """
-        subject = f"{friend_name} completed your SELVE friend assessment!"
-        
-        html_body = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
-        <tr>
-            <td align="center" style="padding: 40px 20px;">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <!-- Header -->
-                    <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center;">
-                            <a href="https://selve.me" style="text-decoration: none;">
-                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
-                                    <tr>
-                                        <td style="vertical-align: middle; padding-right: 8px;">
-                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
-                                        </td>
-                                        <td style="vertical-align: middle;">
-                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
-                                        </td>
-                                    </tr>
-                                </table>
-                            </a>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td style="padding: 20px 40px 40px;">
-                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px;">Great news, {to_name}! 🎉</h1>
-                            
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                <strong>{friend_name}</strong> just completed their assessment about you.
-                            </p>
-                            
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                                Your friend insights have been updated with their perspective. Check out how they see you!
-                            </p>
-                            
-                            <table width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td align="center">
-                                        <a href="{results_url}" 
-                                           style="display: inline-block; padding: 14px 32px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
-                                            View Your Results →
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td style="padding: 20px 40px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
-                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-                                — The SELVE Team
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
-        """
-        
-        text_body = f"""
-Great news, {to_name}! 🎉
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        base_url_display = base_url.replace('http://', '').replace('https://', '')
 
-{friend_name} just completed their assessment about you.
+        subject = f"{friend_name} completed your SELVE friend assessment! 🎉"
 
-Your friend insights have been updated with their perspective. Check out how they see you!
+        # Render email templates using template service
+        html_body, text_body = self.template_service.render_friend_completion_email(
+            to_name=to_name,
+            friend_name=friend_name,
+            results_url=results_url,
+            base_url=base_url,
+            base_url_display=base_url_display,
+            logo_icon_url=self.logo_icon_url,
+            logo_text_url=self.logo_text_url
+        )
 
-View your results: {results_url}
-
-— The SELVE Team
-        """
-        
         data = {
             "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
             "to": f"{to_name} <{to_email}>",
@@ -344,15 +290,15 @@ View your results: {results_url}
             "text": text_body,
             "html": html_body,
             "o:tracking": "yes",
-            "o:tag": ["completion-notification"],
+            "o:tag": ["completion-notification", "friend-assessment"],
         }
-        
+
         response = requests.post(
             self._get_endpoint(),
             auth=("api", self.api_key),
             data=data
         )
-        
+
         response.raise_for_status()
         return response.json()
 
@@ -512,137 +458,35 @@ Unsubscribe: {unsubscribe_url}
     ) -> Dict[str, Any]:
         """
         Send welcome email to newly registered user
-        
+
         Args:
             to_email: User's email address
             to_name: User's name
-            
+
         Returns:
             Mailgun API response dict
         """
         base_url = "https://selve.me" if self.is_production else self.frontend_url
-        
+        base_url_display = base_url.replace('http://', '').replace('https://', '')
+
         # Use first name if available
         first_name = to_name.split()[0] if to_name else "there"
-        
+
+        # Get chatbot URL from environment
+        chatbot_url = os.getenv('NEXT_PUBLIC_CHATBOT_URL', 'https://chat.selve.me').strip()
+
         subject = f"Welcome to SELVE, {first_name}! 🎉"
-        
-        html_body = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
-        <tr>
-            <td align="center" style="padding: 40px 20px;">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <!-- Header -->
-                    <tr>
-                        <td style="padding: 40px 40px 20px; text-align: center;">
-                            <a href="{base_url}" style="text-decoration: none;">
-                                <table cellpadding="0" cellspacing="0" style="display: inline-table;">
-                                    <tr>
-                                        <td style="vertical-align: middle; padding-right: 8px;">
-                                            <img src="{self.logo_icon_url}" alt="" width="32" height="32" style="display: block;" />
-                                        </td>
-                                        <td style="vertical-align: middle;">
-                                            <img src="{self.logo_text_url}" alt="SELVE" height="24" style="display: block;" />
-                                        </td>
-                                    </tr>
-                                </table>
-                            </a>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td style="padding: 20px 40px 40px;">
-                            <h1 style="color: #1a1a1a; font-size: 24px; margin: 0 0 20px;">Welcome to SELVE! 🎉</h1>
-                            
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                Hey {first_name}! 👋
-                            </p>
-                            
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                Thanks for joining SELVE — the personality platform designed to help you truly understand yourself.
-                            </p>
-                            
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                                Our assessment combines modern psychology with real insights from the people who know you best. Here's what you can do:
-                            </p>
-                            
-                            <ul style="color: #666; font-size: 14px; line-height: 1.8; margin: 0 0 30px; padding-left: 20px;">
-                                <li><strong>Take the assessment</strong> — Discover your unique personality profile across 8 dimensions</li>
-                                <li><strong>Invite friends</strong> — Get outside perspective on how others see you</li>
-                                <li><strong>Uncover blind spots</strong> — See where self-perception meets reality</li>
-                            </ul>
-                            
-                            <!-- CTA Button -->
-                            <table width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td align="center">
-                                        <a href="{base_url}/assessment" 
-                                           style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #9333ea 0%, #db2777 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
-                                            Start Your Assessment →
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-                            
-                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
-                                Takes 11-17 minutes · Results saved forever · Free to start
-                            </p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td style="padding: 20px 40px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
-                            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-                                We're excited to have you 💜<br>
-                                — The SELVE Team
-                            </p>
-                        </td>
-                    </tr>
-                </table>
 
-                <!-- Footer -->
-                <p style="color: #999; font-size: 11px; margin: 20px 0 0; text-align: center;">
-                    SELVE · Personality Assessment Platform<br>
-                    <a href="{base_url}" style="color: #999;">{base_url.replace('http://', '').replace('https://', '')}</a>
-                </p>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
-        """
-        
-        text_body = f"""
-Welcome to SELVE! 🎉
+        # Render email templates using template service
+        html_body, text_body = self.template_service.render_welcome_email(
+            first_name=first_name,
+            base_url=base_url,
+            base_url_display=base_url_display,
+            chatbot_url=chatbot_url,
+            logo_icon_url=self.logo_icon_url,
+            logo_text_url=self.logo_text_url
+        )
 
-Hey {first_name}! 👋
-
-Thanks for joining SELVE — the personality platform designed to help you truly understand yourself.
-
-Our assessment combines modern psychology with real insights from the people who know you best. Here's what you can do:
-
-• Take the assessment — Discover your unique personality profile across 8 dimensions
-• Invite friends — Get outside perspective on how others see you
-• Uncover blind spots — See where self-perception meets reality
-
-Start Your Assessment: {base_url}/assessment
-
-Takes 11-17 minutes · Results saved forever · Free to start
-
-We're excited to have you 💜
-— The SELVE Team
-
-SELVE · Personality Assessment Platform
-{base_url}
-        """
-        
         data = {
             "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
             "to": f"{to_name} <{to_email}>",
@@ -652,13 +496,13 @@ SELVE · Personality Assessment Platform
             "o:tracking": "yes",
             "o:tag": ["welcome", "new-user"],
         }
-        
+
         response = requests.post(
             self._get_endpoint(),
             auth=("api", self.api_key),
             data=data
         )
-        
+
         response.raise_for_status()
         return response.json()
 
