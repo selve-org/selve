@@ -418,6 +418,14 @@ class UserService:
                 }
             )
 
+            # Handle case where update returns None
+            if not user:
+                return {
+                    "success": True,
+                    "action": "user_not_found",
+                    "clerkId": clerk_id
+                }
+
             return {
                 "success": True,
                 "action": "archived",
@@ -427,10 +435,10 @@ class UserService:
 
         except PrismaError as e:
             # If user doesn't exist, consider it a success (idempotent)
-            if "Record to update not found" in str(e):
+            if "Record to update not found" in str(e) or "Record to delete does not exist" in str(e):
                 return {
                     "success": True,
-                    "action": "already_archived",
+                    "action": "user_not_found",
                     "clerkId": clerk_id
                 }
             raise HTTPException(
