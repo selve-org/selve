@@ -313,15 +313,17 @@ async def clerk_webhook(request: Request):
                 None
             )
 
+            # Handle missing email (common in test events)
             if not primary_email:
-                raise HTTPException(
-                    status_code=400,
-                    detail="No primary email found"
-                )
+                # For test events or users without email, use placeholder
+                email = f"user_{clerk_id}@placeholder.selve.me"
+                print(f"⚠️ No email in webhook data, using placeholder: {email}")
+            else:
+                email = primary_email.get("email_address")
 
             result = await service.handle_user_created(
                 clerk_id=clerk_id,
-                email=primary_email.get("email_address"),
+                email=email,
                 first_name=event_data.get("first_name"),
                 last_name=event_data.get("last_name"),
                 image_url=event_data.get("image_url")
@@ -342,15 +344,17 @@ async def clerk_webhook(request: Request):
                 None
             )
 
+            # Handle missing email (common in test events)
             if not primary_email:
-                raise HTTPException(
-                    status_code=400,
-                    detail="No primary email found"
-                )
+                # For test events, use placeholder
+                email = f"user_{clerk_id}@placeholder.selve.me"
+                print(f"⚠️ No email in webhook data, using placeholder: {email}")
+            else:
+                email = primary_email.get("email_address")
 
             result = await service.handle_user_updated(
                 clerk_id=clerk_id,
-                email=primary_email.get("email_address"),
+                email=email,
                 first_name=event_data.get("first_name"),
                 last_name=event_data.get("last_name"),
                 image_url=event_data.get("image_url")
