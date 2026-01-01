@@ -57,10 +57,19 @@ class UserService:
             )
 
             if existing:
+                # Update existing user with new data
+                user = await self.db.user.update(
+                    where={"clerkId": clerk_id},
+                    data={
+                        "email": email,
+                        "name": name or existing.name,  # Keep existing name if not provided
+                    }
+                )
                 return {
                     "success": True,
-                    "user": existing,
-                    "created": False
+                    "user": user,
+                    "created": False,
+                    "updated": True
                 }
 
             # Create new user
@@ -395,16 +404,17 @@ class UserService:
         """
         try:
             # Archive user instead of deleting
+            import json
             user = await self.db.user.update(
                 where={"clerkId": clerk_id},
                 data={
                     "isArchived": True,
                     "archivedAt": datetime.utcnow(),
-                    "archiveMetadata": {
+                    "archiveMetadata": json.dumps({
                         "reason": "user_initiated_deletion",
                         "deletedFromClerk": True,
                         "archivedAt": datetime.utcnow().isoformat(),
-                    }
+                    })
                 }
             )
 
