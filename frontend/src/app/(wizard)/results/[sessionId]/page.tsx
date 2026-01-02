@@ -171,20 +171,23 @@ export default function ResultsPage() {
           break;
           
         case 'pending':
-          // First time seeing pending - kick off generation
+          // Assessment complete but results not generated yet
+          // Don't call fetchFullResults() here - it blocks polling!
+          // Instead, just set state and let polling continue
+          // The backend will generate results on first /results call
           if (resultsStatus !== 'generating') {
             setResultsStatus('generating');
             startTimeRef.current = Date.now();
             setGenerationProgress(0);
-            setCurrentStep('Initializing...');
-            fetchFullResults(); // Don't await - fire and forget
-          } else {
-            // Already generating - use backend progress if available
-            const pendingProgress = data.progress ?? 0;
-            setGenerationProgress(prev => Math.max(prev, Math.min(95, pendingProgress)));
-            if (data.current_step) setCurrentStep(data.current_step);
-            if (data.completed_sections) setCompletedSections(data.completed_sections);
+            setCurrentStep('Starting generation...');
           }
+          // Update progress if backend provides it during pending state
+          const pendingProgress = data.progress ?? 0;
+          if (pendingProgress > 0) {
+            setGenerationProgress(prev => Math.max(prev, Math.min(95, pendingProgress)));
+          }
+          if (data.current_step) setCurrentStep(data.current_step);
+          if (data.completed_sections) setCompletedSections(data.completed_sections);
           break;
           
         case 'incomplete':

@@ -556,24 +556,44 @@ class RedisSessionStore:
 
     def complete_generation_progress(self, session_id: str) -> bool:
         """
-        Mark generation as complete and clean up progress data.
-        
+        Mark generation as complete and set progress to 100% with TTL.
+        Instead of deleting immediately, we keep it for 5 minutes to prevent race conditions.
+
         Args:
             session_id: Session ID
-            
+
         Returns:
             True if completed successfully
         """
         progress_key = f"progress:{session_id}"
-        
+
         if not self.redis_available:
             if hasattr(self, '_memory_progress') and session_id in self._memory_progress:
-                del self._memory_progress[session_id]
+                # Set to 100% instead of deleting for in-memory fallback
+                self._memory_progress[session_id] = {
+                    "completed_steps": 7,
+                    "total_steps": 7,
+                    "current_step": "Complete!",
+                    "completed_step_names": []
+                }
             return True
-        
+
         try:
-            self.client.delete(progress_key)
-            logger.debug(f"📊 Progress completed and cleaned for {session_id}")
+            # Set progress to 100% with 5-minute TTL instead of immediate delete
+            # This prevents race condition where frontend polls after results saved but before it sees them
+            final_progress = {
+                "completed_steps": 7,
+                "total_steps": 7,
+                "current_step": "Complete!",
+                "completed_step_names": [],
+                "percentage": 100
+            }
+            self.client.setex(
+                progress_key,
+                300,  # 5 minutes TTL - auto-cleanup
+                json.dumps(final_progress)
+            )
+            logger.debug(f"📊 Progress set to 100% with 5min TTL for {session_id}")
             return True
         except Exception as e:
             logger.error(f"❌ Redis progress complete error: {e}")

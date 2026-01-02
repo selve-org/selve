@@ -973,7 +973,7 @@ async def get_results_status(
     if is_generating:
         # Get real progress from Redis
         progress_data = session_mgr._redis.get_generation_progress(session_id)
-        
+
         if progress_data:
             return {
                 "status": "generating",
@@ -997,6 +997,22 @@ async def get_results_status(
                 "message": "Generating your personality narrative. This may take up to 3 minutes.",
             }
 
+    # Check for progress data even without lock (handles TTL window after completion)
+    # This prevents race condition where lock released but DB commit not yet visible
+    progress_data = session_mgr._redis.get_generation_progress(session_id)
+    if progress_data and progress_data.get("percentage", 0) == 100:
+        # Generation complete but might be in TTL window - tell frontend to fetch results
+        return {
+            "status": "generating",
+            "session_id": session_id,
+            "progress": 100,
+            "current_step": "Complete! Loading results...",
+            "completed_steps": 7,
+            "total_steps": 7,
+            "completed_sections": progress_data.get("completed_step_names", []),
+            "message": "Narrative generation complete",
+        }
+
     # Check if session exists
     session = await session_mgr.get_session_with_db_fallback(
         session_id, raise_if_missing=False
@@ -1009,12 +1025,12 @@ async def get_results_status(
             "error_message": "Session not found or expired",
         }
 
-    # Session exists but results not ready
+    # Session exists but results not ready yet - trigger generation on first /results call
     return {
         "status": "pending",
         "session_id": session_id,
         "progress": 0,
-        "message": "Assessment incomplete or results not yet generated",
+        "message": "Assessment complete. Ready to generate results.",
     }
 
 
