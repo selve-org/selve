@@ -21,6 +21,14 @@ LOG_LEVELS = {
     "production": logging.WARNING,
 }
 
+# Allow override via LOG_LEVEL env var (DEBUG, INFO, WARNING, ERROR)
+LOG_LEVEL_OVERRIDE = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+}
+
 
 class PIIScrubber:
     """Scrub PII from log messages"""
@@ -113,7 +121,14 @@ class JSONFormatter(logging.Formatter):
 def setup_logging(app_name: str = "selve-backend"):
     """Configure logging for production"""
     env = os.getenv("ENVIRONMENT", "development")
-    log_level = LOG_LEVELS.get(env, logging.INFO)
+    
+    # Check for LOG_LEVEL override first
+    log_level_str = os.getenv("LOG_LEVEL", "").upper()
+    if log_level_str in LOG_LEVEL_OVERRIDE:
+        log_level = LOG_LEVEL_OVERRIDE[log_level_str]
+        logging.info(f"📋 Log level override: {log_level_str}")
+    else:
+        log_level = LOG_LEVELS.get(env, logging.INFO)
 
     # Root logger
     root_logger = logging.getLogger()
