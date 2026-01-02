@@ -20,6 +20,7 @@ interface AssessmentSession {
   lastActiveAt: string | null;
   status: "in-progress" | "completed" | "abandoned";
   completedAt: string | null;
+  userId?: string | null; // Track which user owns this session for security
 }
 
 interface AssessmentSessionContextType {
@@ -36,7 +37,7 @@ const AssessmentSessionContext = createContext<AssessmentSessionContextType | nu
 const STORAGE_KEY = "selve_assessment_session";
 const SESSION_EXPIRY_HOURS = 24; // Sessions expire after 24 hours
 
-function getStoredSession(): AssessmentSession {
+function getStoredSession(currentUserId?: string | null): AssessmentSession {
   if (typeof window === "undefined") return getDefaultSession();
   
   try {
@@ -44,6 +45,14 @@ function getStoredSession(): AssessmentSession {
     if (!stored) return getDefaultSession();
     
     const session = JSON.parse(stored) as AssessmentSession;
+    
+    // SECURITY: If user is logged in, validate session belongs to them or is anonymous
+    // This prevents data leakage when switching between accounts
+    if (currentUserId && session.userId && session.userId !== currentUserId) {
+      console.warn("[AssessmentSession] Session belongs to different user, clearing localStorage");
+      localStorage.removeItem(STORAGE_KEY);
+      return getDefaultSession();
+    }
     
     // Check if session has expired
     if (session.lastActiveAt) {
@@ -79,6 +88,7 @@ function getDefaultSession(): AssessmentSession {
     lastActiveAt: null,
     status: "in-progress",
     completedAt: null,
+    userId: null,
   };
 }
 
@@ -226,7 +236,8 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
   useEffect(() => {
     const loadSession = async () => {
       try {
-        let storedSession = getStoredSession();
+        // Pass current userId to validate localStorage session ownership
+        let storedSession = getStoredSession(user?.id);
         
         // For authenticated users, always check what their CURRENT session is on backend
         // This prevents showing old completed sessions when they have a new active one
@@ -242,6 +253,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
               storedSession.completedAt = currentSession.completed_at;
               storedSession.startedAt = currentSession.created_at;
               storedSession.hasStartedAssessment = true;
+              storedSession.userId = user.id; // Set userId for security
               // Restore responses and demographics from backend
               storedSession.responses = currentSession.responses || {};
               storedSession.demographics = currentSession.demographics || {};
@@ -250,6 +262,7 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
               // localStorage session matches backend current - just update status and restore data
               storedSession.status = currentSession.status as "in-progress" | "completed" | "abandoned";
               storedSession.completedAt = currentSession.completed_at;
+              storedSession.userId = user.id; // Ensure userId is set
               // Always restore responses and demographics from backend (source of truth)
               storedSession.responses = currentSession.responses || {};
               storedSession.demographics = currentSession.demographics || {};
@@ -328,16 +341,18 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       hasStartedAssessment: true,
       startedAt: prev.startedAt || new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
+      userId: user?.id || null, // Track which user owns this session
     }));
-  }, []);
+  }, [user?.id]);
 
   const saveProgress = useCallback((data: Partial<AssessmentSession>) => {
     setSession(prev => ({
       ...prev,
       ...data,
       lastActiveAt: new Date().toISOString(),
+      userId: prev.userId || user?.id || null, // Ensure userId is always set
     }));
-  }, []);
+  }, [user?.id]);
 
   const clearSession = useCallback(() => {
     if (typeof window !== "undefined") {

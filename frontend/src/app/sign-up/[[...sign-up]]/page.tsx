@@ -7,17 +7,17 @@ export default function SignUpPage() {
   const searchParams = useSearchParams()
   const redirectUrl = searchParams.get('redirect_url')?.trim()
 
-  // If we have a redirect_url, send user back to /auth/redirect
-  // so it can properly handle the authenticated redirect
+  // Always send user through /auth/redirect so welcome toast is shown
+  // Pass the original redirect_to if available, otherwise just go to home after
   const afterSignUpUrl = redirectUrl
     ? `/auth/redirect?redirect_to=${encodeURIComponent(redirectUrl)}`
-    : undefined
+    : '/auth/redirect'
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <SignUp
         forceRedirectUrl={afterSignUpUrl}
-        fallbackRedirectUrl="/"
+        fallbackRedirectUrl="/auth/redirect"
       />
     </div>
   )

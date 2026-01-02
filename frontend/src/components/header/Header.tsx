@@ -22,6 +22,42 @@ export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { signOut } = useClerk();
 
+  // Clear all user-specific localStorage data on sign out to prevent data leakage
+  const clearUserData = () => {
+    if (typeof window !== 'undefined') {
+      const localStorageKeys = [
+        'selve_assessment_session',
+        'selve_device_fp',
+        'selve_chat_anon_id',
+        'selve_signin_prompt_dismissed',
+        'selve_sidebar_open',
+      ];
+      localStorageKeys.forEach(key => localStorage.removeItem(key));
+      
+      // Also clear any friend assessment keys
+      Object.keys(localStorage)
+        .filter(key => key.startsWith('friend_assessment_'))
+        .forEach(key => localStorage.removeItem(key));
+      
+      // Clear sessionStorage as well
+      const sessionStorageKeys = [
+        'currentSessionId',
+      ];
+      sessionStorageKeys.forEach(key => sessionStorage.removeItem(key));
+      
+      // Clear any inviter name session data
+      Object.keys(sessionStorage)
+        .filter(key => key.startsWith('inviter_name_'))
+        .forEach(key => sessionStorage.removeItem(key));
+    }
+  };
+
+  const handleSignOut = () => {
+    clearUserData();
+    signOut();
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-md pb-1 border-b border-neutral-200 dark:border-neutral-800">
       <div className="relative mx-auto px-4">
@@ -146,10 +182,7 @@ export const Header = () => {
                   Blog
                 </Link>
                 <button
-                  onClick={() => {
-                    signOut();
-                    setIsMenuOpen(false);
-                  }}
+                  onClick={handleSignOut}
                   className="block w-full text-left font-semibold text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 active:bg-red-50 dark:active:bg-red-900/20 transition-colors px-2 py-2 rounded-md cursor-pointer"
                 >
                   Sign out

@@ -69,6 +69,44 @@ export function CustomUserMenu() {
     return date.toLocaleDateString();
   };
 
+  // Clear all user-specific localStorage data on sign out to prevent data leakage
+  const clearUserData = () => {
+    if (typeof window !== 'undefined') {
+      // Clear all selve-related localStorage keys
+      const localStorageKeys = [
+        'selve_assessment_session',
+        'selve_device_fp',
+        'selve_chat_anon_id',
+        'selve_signin_prompt_dismissed',
+        'selve_sidebar_open',
+      ];
+      localStorageKeys.forEach(key => localStorage.removeItem(key));
+      
+      // Also clear any friend assessment keys (prefixed with friend_assessment_)
+      Object.keys(localStorage)
+        .filter(key => key.startsWith('friend_assessment_'))
+        .forEach(key => localStorage.removeItem(key));
+      
+      // Clear sessionStorage as well
+      const sessionStorageKeys = [
+        'currentSessionId',
+      ];
+      sessionStorageKeys.forEach(key => sessionStorage.removeItem(key));
+      
+      // Clear any inviter name session data
+      Object.keys(sessionStorage)
+        .filter(key => key.startsWith('inviter_name_'))
+        .forEach(key => sessionStorage.removeItem(key));
+    }
+  };
+
+  // Handle sign out with data cleanup
+  const handleSignOut = () => {
+    clearUserData();
+    signOut();
+    setIsOpen(false);
+  };
+
   // Loading state
   if (!isLoaded) {
     return (
@@ -355,10 +393,7 @@ export function CustomUserMenu() {
             {/* Sign Out */}
             <div className="px-2 pb-2">
               <button
-                onClick={() => {
-                  signOut();
-                  setIsOpen(false);
-                }}
+                onClick={handleSignOut}
                 className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors group cursor-pointer"
               >
                 <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/20 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
