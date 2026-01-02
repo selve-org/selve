@@ -158,16 +158,22 @@ export default function ResultsPage() {
           
         case 'generating':
           setResultsStatus('generating');
-          const elapsed = Date.now() - startTimeRef.current;
+          // Update progress based on elapsed time
+          const elapsedGenerating = Date.now() - startTimeRef.current;
           // Expect generation to complete in ~20 seconds (was 60s before async optimization)
-          setGenerationProgress(Math.min(95, (elapsed / 20000) * 100));
+          setGenerationProgress(Math.min(95, (elapsedGenerating / 20000) * 100));
           break;
           
         case 'pending':
+          // First time seeing pending - kick off generation
           if (resultsStatus !== 'generating') {
             setResultsStatus('generating');
             startTimeRef.current = Date.now();
-            fetchFullResults(); // Don't await
+            fetchFullResults(); // Don't await - fire and forget
+          } else {
+            // Already generating - update progress while we wait
+            const elapsedPending = Date.now() - startTimeRef.current;
+            setGenerationProgress(Math.min(95, (elapsedPending / 20000) * 100));
           }
           break;
           
