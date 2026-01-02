@@ -395,7 +395,8 @@ export function AssessmentSessionProvider({ children }: AssessmentSessionProvide
       // Show success toast
       if (data.archived_count > 0) {
         toast.success("Previous assessment saved!", {
-          description: `Your ${data.archived_count} previous ${data.archived_count === 1 ? 'assessment' : 'assessments'} archived successfully. Starting fresh!`,
+          // description: `Your ${data.archived_count} previous ${data.archived_count === 1 ? 'assessment' : 'assessments'} archived successfully. Starting fresh!`,
+          description: `Your last assessment is archived successfully. Starting fresh!`,
           duration: 4000,
         });
       } else {

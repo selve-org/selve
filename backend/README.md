@@ -30,6 +30,23 @@ backend/
 
 ## Quick Start
 
+### Prerequisites
+
+- Python 3.11+
+- Redis Server (required for progress tracking)
+
+**Install Redis:**
+```bash
+# macOS
+brew install redis && brew services start redis
+
+# Ubuntu/Debian
+sudo apt install -y redis-server && sudo systemctl start redis-server
+
+# Or use Docker (see docker-compose.yml)
+docker compose up redis -d
+```
+
 ### Setup
 
 ```bash

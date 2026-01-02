@@ -29,6 +29,10 @@ SELVE is a personality assessment platform measuring 8 scientifically-validated 
 
 ## Quick Start
 
+### Prerequisites
+
+- **Redis** is required for backend progress tracking. [See Redis Setup Guide](../REDIS_SETUP.md)
+
 ### Frontend
 ```bash
 cd frontend
@@ -38,6 +42,9 @@ pnpm dev  # http://localhost:3000
 
 ### Backend
 ```bash
+# Start Redis first
+docker compose up redis -d  # or: brew services start redis
+
 cd backend
 source .venv/bin/activate
 uvicorn main:app --reload  # http://localhost:8000
