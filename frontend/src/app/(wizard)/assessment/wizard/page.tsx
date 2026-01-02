@@ -1,10 +1,20 @@
 // src/app/(wizard)/assessment/wizard/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+
+// Apply slim scrollbar to html element for this page only
+function useSlimScrollbar() {
+  useLayoutEffect(() => {
+    document.documentElement.classList.add('scrollbar-slim');
+    return () => {
+      document.documentElement.classList.remove('scrollbar-slim');
+    };
+  }, []);
+}
 import { ArtisticCanvas } from "@/components/wizard/ArtisticCanvas";
 import { QuestionRenderer } from "@/components/wizard/QuestionRenderer";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
@@ -33,6 +43,9 @@ import { useQuestionnaire } from "@/hooks/useQuestionnaire";
  * - Support for friend assessment invites
  */
 export default function WizardPage() {
+  // Apply slim scrollbar to this page only
+  useSlimScrollbar();
+  
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get("invite");
 
@@ -215,7 +228,7 @@ export default function WizardPage() {
       
       {/* Main Assessment Interface - Only show when not initializing */}
       {!isInitializing && (
-        <div className="flex min-h-screen bg-white dark:bg-[#1c1c1c] text-foreground scrollbar-slim">
+        <div className="flex min-h-screen bg-white dark:bg-[#1c1c1c] text-foreground">
       {/* Left Side: Artistic Canvas (hidden on mobile/tablet) */}
       <div className="hidden lg:block lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:h-screen">
         <ArtisticCanvas />

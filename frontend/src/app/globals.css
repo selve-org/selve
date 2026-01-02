@@ -112,37 +112,59 @@ body {
   display: none; /* Chrome, Safari and Opera */
 }
 
-/* Slim scrollbar for assessment wizard */
+/* Ultra-slim scrollbar for assessment wizard */
+html.scrollbar-slim,
+html.scrollbar-slim body,
 .scrollbar-slim {
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: rgba(155, 155, 155, 0.4) transparent; /* Firefox */
+  scrollbar-color: rgba(180, 180, 180, 0.3) transparent; /* Firefox */
 }
 
+html.scrollbar-slim::-webkit-scrollbar,
+html.scrollbar-slim body::-webkit-scrollbar,
 .scrollbar-slim::-webkit-scrollbar {
-  width: 4px;
+  width: 2px;
 }
 
+html.scrollbar-slim::-webkit-scrollbar-track,
+html.scrollbar-slim body::-webkit-scrollbar-track,
 .scrollbar-slim::-webkit-scrollbar-track {
   background: transparent;
 }
 
+html.scrollbar-slim::-webkit-scrollbar-thumb,
+html.scrollbar-slim body::-webkit-scrollbar-thumb,
 .scrollbar-slim::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.4);
-  border-radius: 2px;
+  background-color: rgba(180, 180, 180, 0.3);
+  border-radius: 1px;
 }
 
+html.scrollbar-slim::-webkit-scrollbar-thumb:hover,
+html.scrollbar-slim body::-webkit-scrollbar-thumb:hover,
 .scrollbar-slim::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.6);
+  background-color: rgba(180, 180, 180, 0.5);
 }
 
+.dark html.scrollbar-slim,
+.dark html.scrollbar-slim body,
+html.dark.scrollbar-slim,
+html.dark.scrollbar-slim body,
 .dark .scrollbar-slim {
-  scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+  scrollbar-color: rgba(80, 80, 80, 0.4) transparent;
 }
 
+.dark html.scrollbar-slim::-webkit-scrollbar-thumb,
+.dark html.scrollbar-slim body::-webkit-scrollbar-thumb,
+html.dark.scrollbar-slim::-webkit-scrollbar-thumb,
+html.dark.scrollbar-slim body::-webkit-scrollbar-thumb,
 .dark .scrollbar-slim::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 100, 100, 0.5);
+  background-color: rgba(80, 80, 80, 0.4);
 }
 
+.dark html.scrollbar-slim::-webkit-scrollbar-thumb:hover,
+.dark html.scrollbar-slim body::-webkit-scrollbar-thumb:hover,
+html.dark.scrollbar-slim::-webkit-scrollbar-thumb:hover,
+html.dark.scrollbar-slim body::-webkit-scrollbar-thumb:hover,
 .dark .scrollbar-slim::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 100, 100, 0.7);
+  background-color: rgba(80, 80, 80, 0.6);
 }
