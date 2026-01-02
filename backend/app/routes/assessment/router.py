@@ -300,38 +300,40 @@ async def submit_answer(
             # Personality question - must be numeric
             try:
                 response_value = ensure_numeric_response(request.response, question_id)
-                responses[question_id] = response_value
-                logger.debug(f"✓ Stored response: {question_id} = {response_value}")
             except ValueError as e:
                 raise HTTPException(status_code=400, detail=str(e))
 
-            # Remove from pending and add to history
+            # Check if this question was already answered (duplicate submission)
+            already_answered = question_id in responses
             was_pending = question_id in pending_questions
             
-            # CRITICAL FIX: Reject non-pending answers to prevent loops
-            if not was_pending and pending_questions:
-                # Frontend is trying to answer a question that isn't in the backend's pending set
-                # This indicates a sync issue - don't accept, force resync
+            if already_answered and not request.is_going_back:
+                # Duplicate submission - reject unless user is re-answering after back navigation
                 logger.warning(
-                    f"Sync conflict: Frontend tried to answer non-pending question {question_id}. "
-                    f"Pending questions: {sorted(pending_questions)}. "
+                    f"Duplicate answer rejected: {question_id} already in responses. "
                     f"Answer history: {answer_history[-5:]}"
                 )
-                
-                # Get current state for resync
-                current_question_engine = QuestionEngine(tester, session["scorer"])
-                
-                # Return sync conflict with current state
                 raise HTTPException(
                     status_code=409,
                     detail={
-                        "detail": "Question out of sync. Please resync.",
+                        "detail": "Question already answered.",
                         "sync_conflict": True,
                         "current_question_index": len(answer_history),
                         "pending_questions": list(pending_questions),
                         "answered_questions": list(responses.keys()),
                         "resync_required": True
                     }
+                )
+            
+            # Accept the answer - either new or re-answer after back navigation
+            responses[question_id] = response_value
+            logger.debug(f"✓ Stored response: {question_id} = {response_value}")
+            
+            # Log if question wasn't in pending (stale pending set after restore)
+            if not was_pending and pending_questions:
+                logger.info(
+                    f"Accepted answer for non-pending question {question_id} "
+                    f"(pending set may be stale after session restore)"
                 )
             
             pending_questions.discard(question_id)
