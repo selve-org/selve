@@ -5,7 +5,7 @@ Combines rule-based analysis with OpenAI-generated prose.
 Optimized with parallel API calls for significant speed improvement.
 """
 import asyncio
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Callable, Awaitable
 import logging
 import re
 from .synthesizer import PersonalityAnalyzer, NarrativePromptBuilder
@@ -143,7 +143,11 @@ class IntegratedNarrativeGenerator:
             # No running loop - safe to use asyncio.run
             return asyncio.run(self.generate_narrative_async(scores))
     
-    async def generate_narrative_async(self, scores: Dict[str, int]) -> Dict[str, Any]:
+    async def generate_narrative_async(
+        self, 
+        scores: Dict[str, int],
+        on_section_complete: Optional[Callable[[str, int], Awaitable[None]]] = None
+    ) -> Dict[str, Any]:
         """
         Generate complete integrated narrative asynchronously.
         
@@ -151,6 +155,8 @@ class IntegratedNarrativeGenerator:
         
         Args:
             scores: Dictionary of dimension scores
+            on_section_complete: Optional async callback called when each section completes.
+                                 Receives (section_name, completed_count) as arguments.
             
         Returns:
             Dictionary with narrative sections
@@ -202,11 +208,22 @@ class IntegratedNarrativeGenerator:
             'generation_cost': 0.0
         }
         
+        # Human-readable names for progress display
+        SECTION_DISPLAY_NAMES = {
+            'core_identity': 'Core Identity',
+            'motivations': 'Motivations',
+            'conflicts': 'Inner Conflicts',
+            'strengths': 'Strengths',
+            'growth_areas': 'Growth Areas',
+            'relationships': 'Relationships',
+            'work_style': 'Work Style',
+        }
+        
         # Step 3: Generate sections
         if self.use_llm and self.llm:
             logger.info("Generating all sections in PARALLEL with OpenAI...")
             
-            # Build all requests upfront
+            # Build all requests upfront with section names for progress tracking
             requests: List[Dict[str, Any]] = []
             section_names: List[str] = []
             
@@ -215,17 +232,19 @@ class IntegratedNarrativeGenerator:
                 requests.append({
                     'prompt': prompt_method(),
                     'system_message': SYSTEM_MESSAGE,
-                    'max_output_tokens': config['max_tokens']
+                    'max_output_tokens': config['max_tokens'],
+                    'name': section_name  # For progress tracking
                 })
                 section_names.append(section_name)
             
-            # Execute all requests in parallel
+            # Execute all requests in parallel with progress callback
             import time
             start_time = time.time()
             
             results = await self.llm.generate_batch_async(
                 requests, 
-                max_concurrent=5  # Limit to avoid rate limits
+                max_concurrent=5,  # Limit to avoid rate limits
+                on_complete=on_section_complete  # Pass progress callback
             )
             
             elapsed = time.time() - start_time
@@ -373,7 +392,8 @@ def generate_integrated_narrative(
 async def generate_integrated_narrative_async(
     scores: Dict[str, int],
     use_llm: bool = True,
-    config: Optional[OpenAIConfig] = None
+    config: Optional[OpenAIConfig] = None,
+    on_section_complete: Optional[Callable[[str, int], Awaitable[None]]] = None
 ) -> Dict[str, Any]:
     """
     Generate integrated narrative from scores (async version).
@@ -384,12 +404,14 @@ async def generate_integrated_narrative_async(
         scores: Dimension scores
         use_llm: Whether to use LLM generation
         config: OpenAI configuration
+        on_section_complete: Optional async callback called when each section completes.
+                             Receives (section_name, completed_count) as arguments.
         
     Returns:
         Complete narrative dictionary
     """
     generator = IntegratedNarrativeGenerator(use_llm=use_llm, config=config)
-    return await generator.generate_narrative_async(scores)
+    return await generator.generate_narrative_async(scores, on_section_complete=on_section_complete)
 
 
 __all__ = [

@@ -5,7 +5,7 @@ Manages assessment session data with TTL and atomic operations
 import os
 import json
 import redis
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import timedelta
 import logging
 
@@ -402,6 +402,181 @@ class RedisSessionStore:
         try:
             return self.client.exists(lock_key) > 0
         except Exception:
+            return False
+
+    # ========================================================================
+    # Generation Progress Tracking
+    # ========================================================================
+
+    def init_generation_progress(
+        self,
+        session_id: str,
+        total_steps: int,
+        step_names: List[str],
+        ttl_seconds: int = 300
+    ) -> bool:
+        """
+        Initialize progress tracking for narrative generation.
+        
+        Args:
+            session_id: Session ID
+            total_steps: Total number of steps (sections to generate)
+            step_names: Names of the steps for display
+            ttl_seconds: Time to live for progress data (default 5 minutes)
+            
+        Returns:
+            True if initialized successfully
+        """
+        progress_key = f"progress:{session_id}"
+        progress_data = {
+            "total_steps": total_steps,
+            "completed_steps": 0,
+            "current_step": step_names[0] if step_names else "Initializing",
+            "step_names": step_names,
+            "completed_step_names": [],
+            "started_at": __import__('time').time(),
+            "status": "generating"
+        }
+        
+        if not self.redis_available:
+            if not hasattr(self, '_memory_progress'):
+                self._memory_progress: Dict[str, Dict] = {}
+            self._memory_progress[session_id] = progress_data
+            return True
+        
+        try:
+            self.client.setex(
+                progress_key,
+                ttl_seconds,
+                json.dumps(progress_data)
+            )
+            logger.debug(f"📊 Progress initialized for {session_id}: {total_steps} steps")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Redis progress init error: {e}")
+            return False
+
+    def update_generation_progress(
+        self,
+        session_id: str,
+        completed_step: str,
+        next_step: Optional[str] = None
+    ) -> bool:
+        """
+        Update progress when a step completes.
+        
+        Args:
+            session_id: Session ID
+            completed_step: Name of the step that completed
+            next_step: Name of the next step (optional)
+            
+        Returns:
+            True if updated successfully
+        """
+        progress_key = f"progress:{session_id}"
+        
+        if not self.redis_available:
+            if hasattr(self, '_memory_progress') and session_id in self._memory_progress:
+                progress = self._memory_progress[session_id]
+                progress["completed_steps"] += 1
+                progress["completed_step_names"].append(completed_step)
+                if next_step:
+                    progress["current_step"] = next_step
+                elif progress["completed_steps"] >= progress["total_steps"]:
+                    progress["current_step"] = "Finalizing"
+                    progress["status"] = "finalizing"
+                return True
+            return False
+        
+        try:
+            cached = self.client.get(progress_key)
+            if not cached:
+                return False
+            
+            progress = json.loads(cached)
+            progress["completed_steps"] += 1
+            progress["completed_step_names"].append(completed_step)
+            
+            if next_step:
+                progress["current_step"] = next_step
+            elif progress["completed_steps"] >= progress["total_steps"]:
+                progress["current_step"] = "Finalizing"
+                progress["status"] = "finalizing"
+            
+            # Get remaining TTL and preserve it
+            ttl = self.client.ttl(progress_key)
+            if ttl > 0:
+                self.client.setex(progress_key, ttl, json.dumps(progress))
+            else:
+                self.client.setex(progress_key, 300, json.dumps(progress))
+            
+            logger.debug(f"📊 Progress updated for {session_id}: {progress['completed_steps']}/{progress['total_steps']}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Redis progress update error: {e}")
+            return False
+
+    def get_generation_progress(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get current generation progress.
+        
+        Args:
+            session_id: Session ID
+            
+        Returns:
+            Progress dict with completed_steps, total_steps, current_step, percentage
+        """
+        progress_key = f"progress:{session_id}"
+        
+        if not self.redis_available:
+            if hasattr(self, '_memory_progress') and session_id in self._memory_progress:
+                progress = self._memory_progress[session_id]
+                percentage = int((progress["completed_steps"] / progress["total_steps"]) * 100) if progress["total_steps"] > 0 else 0
+                return {
+                    **progress,
+                    "percentage": percentage
+                }
+            return None
+        
+        try:
+            cached = self.client.get(progress_key)
+            if not cached:
+                return None
+            
+            progress = json.loads(cached)
+            percentage = int((progress["completed_steps"] / progress["total_steps"]) * 100) if progress["total_steps"] > 0 else 0
+            
+            return {
+                **progress,
+                "percentage": percentage
+            }
+        except Exception as e:
+            logger.error(f"❌ Redis progress get error: {e}")
+            return None
+
+    def complete_generation_progress(self, session_id: str) -> bool:
+        """
+        Mark generation as complete and clean up progress data.
+        
+        Args:
+            session_id: Session ID
+            
+        Returns:
+            True if completed successfully
+        """
+        progress_key = f"progress:{session_id}"
+        
+        if not self.redis_available:
+            if hasattr(self, '_memory_progress') and session_id in self._memory_progress:
+                del self._memory_progress[session_id]
+            return True
+        
+        try:
+            self.client.delete(progress_key)
+            logger.debug(f"📊 Progress completed and cleaned for {session_id}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Redis progress complete error: {e}")
             return False
 
 

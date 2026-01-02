@@ -52,6 +52,8 @@ export default function ResultsPage() {
   // Polling state
   const [resultsStatus, setResultsStatus] = useState<ResultsStatus>('loading');
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState<string>('Initializing...');
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
   
   // Refs for polling control (prevents stale closures)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -152,16 +154,20 @@ export default function ResultsPage() {
         case 'ready':
           setResultsStatus('ready');
           setGenerationProgress(100);
+          setCurrentStep('Complete!');
           cleanup();
           await fetchFullResults();
           break;
           
         case 'generating':
           setResultsStatus('generating');
-          // Update progress based on elapsed time
-          const elapsedGenerating = Date.now() - startTimeRef.current;
-          // Expect generation to complete in ~20 seconds (was 60s before async optimization)
-          setGenerationProgress(Math.min(95, (elapsedGenerating / 20000) * 100));
+          // Use REAL progress from backend (0-100)
+          const backendProgress = data.progress ?? 0;
+          // Ensure we don't go backwards and cap at 95 until fully ready
+          setGenerationProgress(prev => Math.max(prev, Math.min(95, backendProgress)));
+          // Update current step and completed sections from backend
+          if (data.current_step) setCurrentStep(data.current_step);
+          if (data.completed_sections) setCompletedSections(data.completed_sections);
           break;
           
         case 'pending':
@@ -169,11 +175,15 @@ export default function ResultsPage() {
           if (resultsStatus !== 'generating') {
             setResultsStatus('generating');
             startTimeRef.current = Date.now();
+            setGenerationProgress(0);
+            setCurrentStep('Initializing...');
             fetchFullResults(); // Don't await - fire and forget
           } else {
-            // Already generating - update progress while we wait
-            const elapsedPending = Date.now() - startTimeRef.current;
-            setGenerationProgress(Math.min(95, (elapsedPending / 20000) * 100));
+            // Already generating - use backend progress if available
+            const pendingProgress = data.progress ?? 0;
+            setGenerationProgress(prev => Math.max(prev, Math.min(95, pendingProgress)));
+            if (data.current_step) setCurrentStep(data.current_step);
+            if (data.completed_sections) setCompletedSections(data.completed_sections);
           }
           break;
           
@@ -401,12 +411,13 @@ export default function ResultsPage() {
             {resultsStatus === 'generating' ? 'Crafting Your Personality Blueprint' : 'Preparing Your Results'}
           </motion.h2>
 
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
             Our AI is analyzing your responses and creating a unique narrative just for you...
           </p>
 
           {resultsStatus === 'generating' && (
             <div className="mb-8">
+              {/* Progress bar */}
               <div className="relative w-full h-3 bg-gray-200/50 dark:bg-gray-800/50 rounded-full overflow-hidden">
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 rounded-full"
@@ -415,14 +426,39 @@ export default function ResultsPage() {
                   transition={{ duration: 0.5, ease: "easeOut" }}
                 />
               </div>
+              
+              {/* Progress percentage and current step */}
               <div className="flex justify-between items-center mt-4">
                 <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
                   {Math.round(generationProgress)}% Complete
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Est. {Math.max(1, Math.ceil((60 - (Date.now() - startTimeRef.current) / 1000) / 60))} min remaining
-                </span>
+                <motion.span 
+                  key={currentStep}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-gray-500 dark:text-gray-400"
+                >
+                  {currentStep}
+                </motion.span>
               </div>
+              
+              {/* Completed sections list */}
+              {completedSections.length > 0 && (
+                <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                  {completedSections.map((section, idx) => (
+                    <motion.span
+                      key={section}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                    >
+                      <Check className="w-3 h-3 mr-1" />
+                      {section}
+                    </motion.span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

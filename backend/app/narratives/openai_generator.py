@@ -5,7 +5,7 @@ with async support for parallel generation.
 """
 import asyncio
 import logging
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List, Tuple, Callable, Awaitable
 from concurrent.futures import ThreadPoolExecutor
 from openai import OpenAI, AsyncOpenAI
 from openai.types.chat import ChatCompletion
@@ -110,21 +110,27 @@ class OpenAIGenerator:
     async def generate_batch_async(
         self,
         requests: List[Dict[str, Any]],
-        max_concurrent: int = 5
+        max_concurrent: int = 5,
+        on_complete: Optional[Callable[[str, int], Awaitable[None]]] = None
     ) -> List[Dict[str, Any]]:
         """
         Generate multiple texts in parallel with concurrency control.
         
         Args:
-            requests: List of dicts with 'prompt', 'system_message', 'max_output_tokens'
+            requests: List of dicts with 'prompt', 'system_message', 'max_output_tokens', 'name' (optional)
             max_concurrent: Maximum concurrent requests (default 5 to avoid rate limits)
+            on_complete: Optional async callback called when each request completes.
+                         Receives (request_name, completed_count) as arguments.
             
         Returns:
             List of results in same order as requests
         """
         semaphore = asyncio.Semaphore(max_concurrent)
+        completed_count = 0
+        completed_lock = asyncio.Lock()
         
         async def generate_with_semaphore(req: Dict[str, Any], index: int) -> Tuple[int, Dict[str, Any]]:
+            nonlocal completed_count
             async with semaphore:
                 try:
                     result = await self.generate_async(
@@ -132,9 +138,27 @@ class OpenAIGenerator:
                         system_message=req.get('system_message'),
                         max_output_tokens=req.get('max_output_tokens')
                     )
+                    # Track completion and call callback
+                    async with completed_lock:
+                        completed_count += 1
+                        if on_complete:
+                            request_name = req.get('name', f'request_{index}')
+                            try:
+                                await on_complete(request_name, completed_count)
+                            except Exception as e:
+                                logger.warning(f"Progress callback error: {e}")
                     return (index, result)
                 except Exception as e:
                     logger.error(f"Batch generation failed for request {index}: {e}")
+                    # Still increment count on failure
+                    async with completed_lock:
+                        completed_count += 1
+                        if on_complete:
+                            request_name = req.get('name', f'request_{index}')
+                            try:
+                                await on_complete(request_name, completed_count)
+                            except Exception as cb_error:
+                                logger.warning(f"Progress callback error: {cb_error}")
                     return (index, {
                         "text": "",
                         "model": self.config.model,

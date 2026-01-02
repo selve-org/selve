@@ -815,8 +815,48 @@ async def get_results(
         # Generate narrative (using async for parallel OpenAI calls - ~3-4x faster)
         int_scores = {dim: int(score) for dim, score in profile.dimension_scores.items()}
         
+        # Human-readable section names for progress display
+        SECTION_DISPLAY_NAMES = {
+            'core_identity': 'Core Identity',
+            'motivations': 'Motivations',
+            'conflicts': 'Inner Conflicts',
+            'strengths': 'Strengths',
+            'growth_areas': 'Growth Areas',
+            'relationships': 'Relationships',
+            'work_style': 'Work Style',
+        }
+        section_names = list(SECTION_DISPLAY_NAMES.keys())
+        display_names = list(SECTION_DISPLAY_NAMES.values())
+        
+        # Initialize progress tracking in Redis
+        session_mgr._redis.init_generation_progress(
+            session_id=session_id,
+            total_steps=len(section_names),
+            step_names=display_names
+        )
+        
+        # Create progress callback
+        async def on_section_complete(section_name: str, completed_count: int):
+            """Update progress when a section completes."""
+            display_name = SECTION_DISPLAY_NAMES.get(section_name, section_name)
+            remaining = len(section_names) - completed_count
+            next_step = None
+            if remaining > 0:
+                # Find a section that hasn't completed yet (approximate)
+                next_step = f"Generating section {completed_count + 1} of {len(section_names)}..."
+            session_mgr._redis.update_generation_progress(
+                session_id=session_id,
+                completed_step=display_name,
+                next_step=next_step
+            )
+            logger.debug(f"Progress: {completed_count}/{len(section_names)} - Completed: {display_name}")
+        
         try:
-            integrated_narrative = await generate_integrated_narrative_async(int_scores, use_llm=True)
+            integrated_narrative = await generate_integrated_narrative_async(
+                int_scores, 
+                use_llm=True,
+                on_section_complete=on_section_complete
+            )
             
             narrative_dict = {
                 'profile_pattern': integrated_narrative['profile_pattern'],
@@ -890,6 +930,8 @@ async def get_results(
         )
         
     finally:
+        # Clean up progress tracking
+        session_mgr._redis.complete_generation_progress(session_id)
         if lock_token:
             session_mgr.release_results_lock(session_id, lock_token)
 
@@ -904,8 +946,10 @@ async def get_results_status(
 
     Returns:
         - status: "generating" | "ready" | "error" | "not_found" | "pending"
-        - progress: Optional progress percentage
-        - estimated_time: Seconds remaining
+        - progress: Real progress percentage (0-100) when generating
+        - current_step: Human-readable step description
+        - completed_steps: Number of sections completed
+        - total_steps: Total number of sections
     """
     session_id = validate_session_id(session_id)
     session_mgr = get_session_manager()
@@ -917,6 +961,7 @@ async def get_results_status(
             "status": "ready",
             "session_id": session_id,
             "completed_at": existing_result.createdAt.isoformat(),
+            "progress": 100,
         }
 
     # Check if generation is in progress (lock exists)
@@ -924,12 +969,31 @@ async def get_results_status(
     is_generating = session_mgr._redis.is_locked(lock_name)
 
     if is_generating:
-        return {
-            "status": "generating",
-            "session_id": session_id,
-            "estimated_time": 180,  # Max timeout
-            "message": "Generating your personality narrative. This may take up to 3 minutes.",
-        }
+        # Get real progress from Redis
+        progress_data = session_mgr._redis.get_generation_progress(session_id)
+        
+        if progress_data:
+            return {
+                "status": "generating",
+                "session_id": session_id,
+                "progress": progress_data.get("percentage", 0),
+                "current_step": progress_data.get("current_step", "Generating..."),
+                "completed_steps": progress_data.get("completed_steps", 0),
+                "total_steps": progress_data.get("total_steps", 7),
+                "completed_sections": progress_data.get("completed_step_names", []),
+                "message": f"Generating your personality narrative ({progress_data.get('percentage', 0)}% complete)",
+            }
+        else:
+            # Fallback if progress not initialized yet
+            return {
+                "status": "generating",
+                "session_id": session_id,
+                "progress": 0,
+                "current_step": "Initializing...",
+                "completed_steps": 0,
+                "total_steps": 7,
+                "message": "Generating your personality narrative. This may take up to 3 minutes.",
+            }
 
     # Check if session exists
     session = await session_mgr.get_session_with_db_fallback(
@@ -947,6 +1011,7 @@ async def get_results_status(
     return {
         "status": "pending",
         "session_id": session_id,
+        "progress": 0,
         "message": "Assessment incomplete or results not yet generated",
     }
 
