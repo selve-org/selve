@@ -226,6 +226,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With", "X-User-ID"],
+    max_age=3600,  # Cache preflight responses for 1 hour
 )
 
 # Request logging middleware with tracing

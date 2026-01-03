@@ -1076,7 +1076,12 @@ async def session_heartbeat(session_id: str):
     """
     from fastapi.responses import Response
 
-    session_id = validate_session_id(session_id)
+    # Validate session ID - return 404 instead of 400 to avoid CORS preflight issues
+    try:
+        session_id = validate_session_id(session_id)
+    except HTTPException:
+        return Response(status_code=404)
+
     session_mgr = get_session_manager()
 
     # Check if session exists in Redis/memory
