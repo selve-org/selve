@@ -16,15 +16,105 @@ import type {
 // API base URL - defaults to localhost for development
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// =============================================================================
+// CONFIGURATION CONSTANTS
+// =============================================================================
+const CONFIG = {
+  POLLING_INTERVAL_MS: 10000,           // Session sync polling interval
+  HEARTBEAT_INTERVAL_MS: 30000,         // Keep-alive ping interval
+  MIN_LOADING_TIME_MS: 800,             // Minimum loading time to prevent flash
+  RETRY_ATTEMPTS: 3,                    // Max retry attempts for failed requests
+  RETRY_DELAY_MS: 1000,                 // Base delay between retries
+  REQUEST_TIMEOUT_MS: 30000,            // Request timeout
+} as const;
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Retry a function with exponential backoff
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  attempts: number = CONFIG.RETRY_ATTEMPTS,
+  delay: number = CONFIG.RETRY_DELAY_MS
+): Promise<T> {
+  let lastError: Error;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      if (i < attempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+      }
+    }
+  }
+  throw lastError!;
+}
+
+/**
+ * Fetch with timeout
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeout: number = CONFIG.REQUEST_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * Format question from backend to frontend format
+ */
+function formatQuestionFromBackend(q: any): QuestionnaireQuestion {
+  return {
+    id: q.id,
+    text: q.text,
+    type: q.type || "scale-slider",
+    sectionId: q.dimension,
+    isRequired: q.isRequired,
+    renderConfig: q.renderConfig || {
+      min: 1,
+      max: 5,
+      step: 1,
+      labels: {
+        1: "Strongly Disagree",
+        2: "Disagree",
+        3: "Neutral",
+        4: "Agree",
+        5: "Strongly Agree",
+      },
+    },
+  };
+}
+
+// =============================================================================
+// MAIN HOOK
+// =============================================================================
+
 /**
  * useQuestionnaire Hook
  *
  * Manages the complete questionnaire state including:
  * - Session creation and management via SELVE backend
  * - Adaptive question fetching
- * - Answer submission
+ * - Answer submission with sync conflict resolution
  * - Progress tracking
  * - Automatic completion and redirect to results
+ * - Heartbeat keep-alive for production stability
  *
  * Connected to SELVE Backend API:
  * - POST /api/assessment/start - Initialize session
@@ -38,8 +128,9 @@ export function useQuestionnaire(inviteCode?: string) {
   // Extract only the sessionId to prevent infinite re-renders
   const existingSessionId = currentProgress.sessionId;
   
-  // Track initialization to prevent multiple calls
-  const initializationAttempted = useRef(false);
+  // ==========================================================================
+  // STATE
+  // ==========================================================================
   
   const [state, setState] = useState<WizardState>({
     session: null,
@@ -55,25 +146,33 @@ export function useQuestionnaire(inviteCode?: string) {
     },
   });
 
-  const [showCheckpoint, setShowCheckpoint] =
-    useState<QuestionnaireCheckpoint | null>(null);
+  const [showCheckpoint, setShowCheckpoint] = useState<QuestionnaireCheckpoint | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [questionQueue, setQuestionQueue] = useState<QuestionnaireQuestion[]>(
-    []
-  );
+  const [questionQueue, setQuestionQueue] = useState<QuestionnaireQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [canGoBack, setCanGoBack] = useState(false);
   const [isGoingBack, setIsGoingBack] = useState(false);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
-
-  // Keep the latest queue/index/back-state available synchronously.
-  // This avoids stale closures when users answer quickly after a back.
+  
+  // ==========================================================================
+  // REFS - Used to avoid stale closures in async operations
+  // ==========================================================================
+  
+  // Track initialization to prevent multiple calls
+  const initializationAttempted = useRef(false);
+  const isMountedRef = useRef(true);
+  
+  // Use refs for values that need to be accessed in async callbacks
+  // These are updated synchronously with state to avoid stale closures
   const questionQueueRef = useRef<QuestionnaireQuestion[]>([]);
   const currentQuestionIndexRef = useRef(0);
   const isGoingBackRef = useRef(false);
-
+  const sessionIdRef = useRef<string | null>(null);
+  const answersRef = useRef<Map<string, unknown>>(new Map());
+  
+  // Keep refs in sync with state - use useLayoutEffect for synchronous updates
   useEffect(() => {
     questionQueueRef.current = questionQueue;
   }, [questionQueue]);
@@ -85,12 +184,19 @@ export function useQuestionnaire(inviteCode?: string) {
   useEffect(() => {
     isGoingBackRef.current = isGoingBack;
   }, [isGoingBack]);
+  
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
+  
+  useEffect(() => {
+    answersRef.current = state.answers;
+  }, [state.answers]);
 
-  /**
-   * Get or create a device fingerprint for this browser
-   * Used to detect if sync is happening on same device vs different device
-   * Memoized to prevent recreating on every render
-   */
+  // ==========================================================================
+  // DEVICE FINGERPRINT - Memoized for consistent identification
+  // ==========================================================================
+  
   const deviceFingerprint = useMemo(() => {
     if (typeof window === 'undefined') return null;
     
@@ -98,7 +204,6 @@ export function useQuestionnaire(inviteCode?: string) {
     let fingerprint = localStorage.getItem(FINGERPRINT_KEY);
     
     if (!fingerprint) {
-      // Create a simple fingerprint from browser info + random ID
       const browserInfo = `${navigator.userAgent}_${screen.width}x${screen.height}`;
       const randomId = Math.random().toString(36).substring(2, 15);
       fingerprint = btoa(`${browserInfo}_${randomId}`).substring(0, 32);
@@ -106,13 +211,77 @@ export function useQuestionnaire(inviteCode?: string) {
     }
     
     return fingerprint;
-  }, []); // Empty deps - only run once
+  }, []);
 
-  /**
-   * Initialize session and fetch first questions from SELVE backend
-   */
+  // ==========================================================================
+  // HELPER: Get Auth Headers
+  // ==========================================================================
+  
+  const getAuthHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const token = await getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+  }, [getToken]);
+
+  // ==========================================================================
+  // HELPER: Rebuild Question Queue from Backend
+  // ==========================================================================
+  
+  const rebuildQueueFromBackend = useCallback(async (sessionIdToUse: string): Promise<{
+    queue: QuestionnaireQuestion[];
+    currentIndex: number;
+    answers: Map<string, unknown>;
+  }> => {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetchWithTimeout(
+      `${API_BASE}/api/assessment/session/${sessionIdToUse}`,
+      { headers }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch session: ${response.status}`);
+    }
+    
+    const sessionData = await response.json();
+    
+    // Build answers map from backend data
+    const restoredAnswers = new Map<string, unknown>();
+    
+    // Load demographics
+    const demographics = sessionData.demographics || {};
+    Object.entries(demographics).forEach(([key, value]) => {
+      restoredAnswers.set(key, value);
+    });
+    
+    // Load personality responses
+    const responses = sessionData.responses || {};
+    Object.entries(responses).forEach(([key, value]) => {
+      restoredAnswers.set(key, value);
+    });
+    
+    // Format pending questions
+    const pendingQuestions = (sessionData.pending_questions || []).map(formatQuestionFromBackend);
+    
+    // The queue is the pending questions
+    // Current index is 0 since pending questions are the ones we need to answer
+    return {
+      queue: pendingQuestions,
+      currentIndex: 0,
+      answers: restoredAnswers,
+    };
+  }, [getAuthHeaders]);
+
+  // ==========================================================================
+  // INITIALIZE SESSION
+  // ==========================================================================
+  
   const initializeSession = useCallback(async () => {
-    // Prevent multiple initialization attempts
     if (initializationAttempted.current) {
       return;
     }
@@ -122,10 +291,7 @@ export function useQuestionnaire(inviteCode?: string) {
       setIsInitializing(true);
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      // Minimum loading time to prevent flash
-      const minLoadingTime = new Promise(resolve => setTimeout(resolve, 800));
-
-      // Track restored session data
+      const minLoadingTime = new Promise(resolve => setTimeout(resolve, CONFIG.MIN_LOADING_TIME_MS));
       let restoredSessionData: any = null;
 
       // Check if we have existing session to restore
@@ -133,25 +299,18 @@ export function useQuestionnaire(inviteCode?: string) {
         console.log("📦 Attempting to restore session:", existingSessionId);
         
         try {
-          // Get auth token if user is signed in
-          const token = await getToken();
-          const headers: Record<string, string> = {
-            "Content-Type": "application/json",
-          };
-          if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-          }
+          const headers = await getAuthHeaders();
           
-          // Try to restore session from backend
-          const restoreResponse = await fetch(
-            `${API_BASE}/api/assessment/session/${existingSessionId}`,
-            { headers }
+          const restoreResponse = await withRetry(() => 
+            fetchWithTimeout(
+              `${API_BASE}/api/assessment/session/${existingSessionId}`,
+              { headers }
+            )
           );
 
           if (restoreResponse.ok) {
             const sessionData = await restoreResponse.json();
             
-            // Check if session can be resumed
             if (sessionData.can_resume && sessionData.status === "in-progress") {
               console.log("✅ Session restored successfully:", {
                 progress: sessionData.progress,
@@ -159,9 +318,8 @@ export function useQuestionnaire(inviteCode?: string) {
               });
               
               setSessionId(existingSessionId);
-              restoredSessionData = sessionData; // Store for later use
+              restoredSessionData = sessionData;
               
-              // Continue with normal initialization using existing session
               setState((prev) => ({
                 ...prev,
                 progress: {
@@ -172,62 +330,52 @@ export function useQuestionnaire(inviteCode?: string) {
               }));
             } else {
               console.log("⚠️ Session exists but is completed or abandoned, starting new session");
-              // Session is complete/abandoned - start a new one
               updateProgress({ sessionId: undefined });
             }
           } else {
             console.log("⚠️ Session not found in database, starting new session");
-            // Session doesn't exist - start new one
             updateProgress({ sessionId: undefined });
           }
         } catch (restoreError) {
           console.warn("Failed to restore session, starting new:", restoreError);
-          // If restore fails, proceed with new session
           updateProgress({ sessionId: undefined });
         }
       }
 
-      // If we have a restored session with answers, DON'T call /start (would break adaptive flow)
-      // Instead, use pending questions from the restored session
-      let session_id, questions, total_questions, progress;
+      // Determine whether to use restored session or start new
+      let session_id: string;
+      let questions: any[];
+      let total_questions: number;
+      let progress: number;
       
       if (restoredSessionData && restoredSessionData.questions_answered > 0) {
-        // Session is being restored - use pending questions from backend
         console.log("♻️ Restored session detected - using pending questions to preserve adaptive flow");
         
-        session_id = existingSessionId;
-        // Use pending questions from restored session data
+        session_id = existingSessionId!;
         questions = restoredSessionData.pending_questions || [];
         total_questions = restoredSessionData.total_questions || 44;
         progress = restoredSessionData.progress || 0;
         
         setSessionId(session_id);
-        
         console.log(`📋 Loaded ${questions.length} pending questions from backend`);
       } else {
-        // New session - call /start to initialize
-        const token = await getToken();
+        // New session - call /start
+        const headers = await getAuthHeaders();
         
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-        
-        const response = await fetch(`${API_BASE}/api/assessment/start`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            user_id: null, // Clerk ID will be extracted from token on backend
-            metadata: {
-              source: "web",
-              restored_session: false,
-              invite_code: inviteCode || null,
-            },
-          }),
-        });
+        const response = await withRetry(() =>
+          fetchWithTimeout(`${API_BASE}/api/assessment/start`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              user_id: null,
+              metadata: {
+                source: "web",
+                restored_session: false,
+                invite_code: inviteCode || null,
+              },
+            }),
+          })
+        );
 
         if (!response.ok) {
           throw new Error("Failed to start assessment");
@@ -243,41 +391,20 @@ export function useQuestionnaire(inviteCode?: string) {
         updateProgress({ sessionId: session_id });
       }
 
-      // Convert backend questions to frontend format
-      const formattedQuestions: QuestionnaireQuestion[] = questions.map(
-        (q: any) => ({
-          id: q.id,
-          text: q.text,
-          type: q.type || "scale-slider", // Use backend type or default to scale-slider
-          sectionId: q.dimension,
-          isRequired: q.isRequired,
-          renderConfig: q.renderConfig || {
-            min: 1,
-            max: 5,
-            step: 1,
-            labels: {
-              1: "Strongly Disagree",
-              2: "Disagree",
-              3: "Neutral",
-              4: "Agree",
-              5: "Strongly Agree",
-            },
-          },
-        })
-      );
+      // Format questions
+      const formattedQuestions: QuestionnaireQuestion[] = questions.map(formatQuestionFromBackend);
 
       setQuestionQueue(formattedQuestions);
+      questionQueueRef.current = formattedQuestions;
       
-      // Restore previous answers from backend if available
-      const restoredAnswers = new Map();
+      // Restore previous answers
+      const restoredAnswers = new Map<string, unknown>();
       if (restoredSessionData) {
-        // Load demographics into answers map
         const demographics = restoredSessionData.demographics || {};
         Object.entries(demographics).forEach(([key, value]) => {
           restoredAnswers.set(key, value);
         });
         
-        // Load personality responses into answers map
         const responses = restoredSessionData.responses || {};
         Object.entries(responses).forEach(([key, value]) => {
           restoredAnswers.set(key, value);
@@ -286,17 +413,15 @@ export function useQuestionnaire(inviteCode?: string) {
         console.log(`✅ Restored ${restoredAnswers.size} previous answers from backend`);
       }
       
-      // Calculate which question to show based on already answered questions
-      // If restoring session, skip to first unanswered question
+      // Calculate start index
       let startIndex = 0;
-      if (restoredSessionData) {
-        // Count how many questions have been answered
-        const answeredCount = restoredSessionData.questions_answered || 0;
-        startIndex = Math.min(answeredCount, formattedQuestions.length - 1);
-        console.log(`📍 Resuming from question ${startIndex + 1} (${answeredCount} already answered)`);
+      if (restoredSessionData && formattedQuestions.length > 0) {
+        startIndex = 0; // Always start from first pending question
+        console.log(`📍 Starting from first pending question`);
       }
       
       setCurrentQuestionIndex(startIndex);
+      currentQuestionIndexRef.current = startIndex;
 
       setState((prev) => ({
         ...prev,
@@ -305,7 +430,7 @@ export function useQuestionnaire(inviteCode?: string) {
           createdAt: new Date().toISOString(),
         } as QuestionnaireSession,
         currentQuestion: formattedQuestions[startIndex] || null,
-        answers: restoredAnswers, // Load restored answers into state
+        answers: restoredAnswers,
         isLoading: false,
         progress: {
           current: restoredSessionData?.questions_answered || 0,
@@ -314,208 +439,121 @@ export function useQuestionnaire(inviteCode?: string) {
         },
       }));
       
-      // Wait for minimum loading time before clearing initializing state
       await minLoadingTime;
-      
-      // Clear initializing state
       setIsInitializing(false);
+      
     } catch (error) {
-      // Ensure minimum loading time even on error
-      const minLoadingTime = new Promise(resolve => setTimeout(resolve, 800));
+      const minLoadingTime = new Promise(resolve => setTimeout(resolve, CONFIG.MIN_LOADING_TIME_MS));
       await minLoadingTime;
       
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to initialize";
+      const errorMessage = error instanceof Error ? error.message : "Failed to initialize";
       Sentry.captureException(error);
       setState((prev) => ({
         ...prev,
         error: errorMessage,
         isLoading: false,
       }));
-      // Clear initializing state on error
       setIsInitializing(false);
-      // Reset initialization flag on error to allow retry
       initializationAttempted.current = false;
     }
-  }, [existingSessionId, updateProgress]);
+  }, [existingSessionId, updateProgress, getAuthHeaders, inviteCode]);
 
-  /**
-   * Submit an answer and get next adaptive questions from backend
-   */
+  // ==========================================================================
+  // SUBMIT ANSWER - The core answer submission logic with robust sync handling
+  // ==========================================================================
+  
   const submitAnswer = useCallback(
     async (questionId: string, answer: unknown) => {
-      if (!sessionId) {
+      const currentSessionId = sessionIdRef.current;
+      
+      if (!currentSessionId) {
         setState((prev) => ({ ...prev, error: "No active session" }));
         return;
       }
 
-      // Use refs to avoid stale values immediately after goBack() updates.
+      // Capture current state via refs to avoid stale closures
       const effectiveIsGoingBack = isGoingBackRef.current;
       const effectiveCurrentQuestionIndex = currentQuestionIndexRef.current;
-      const effectiveQuestionQueue = questionQueueRef.current;
+      const effectiveQuestionQueue = [...questionQueueRef.current]; // Clone to avoid mutation issues
 
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-        // Get auth token if user is signed in
-        const token = await getToken();
-        
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
+        const headers = await getAuthHeaders();
 
-        // Submit answer to SELVE backend
-        const response = await fetch(`${API_BASE}/api/assessment/answer`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            session_id: sessionId,
-            question_id: questionId,
-            response: answer as number, // 1-5 scale
-            is_going_back: effectiveIsGoingBack, // Flag if this is a resubmission after going back
-            current_question_index: effectiveCurrentQuestionIndex, // Send current position for sync check
-            device_fingerprint: deviceFingerprint, // Track which device submitted this answer
-          }),
-        });
+        const response = await withRetry(() =>
+          fetchWithTimeout(`${API_BASE}/api/assessment/answer`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              session_id: currentSessionId,
+              question_id: questionId,
+              response: answer as number,
+              is_going_back: effectiveIsGoingBack,
+              current_question_index: effectiveCurrentQuestionIndex,
+              device_fingerprint: deviceFingerprint,
+            }),
+          })
+        );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           
-          // Check if this is a sync conflict (409 Conflict)
+          // Handle sync conflict (409)
           if (response.status === 409 || errorData.sync_conflict) {
-            const backendIndex = errorData.current_question_index || 0;
-            const pendingQuestions = errorData.pending_questions || [];
-            const answeredQuestions = errorData.answered_questions || [];
+            console.warn("🔄 Sync conflict detected, recovering...");
             
-            // Check if this is a resync required error (frontend out of sync)
-            if (errorData.resync_required) {
-              console.warn("🔄 Frontend out of sync with backend, performing resync", {
-                backendIndex,
-                pendingQuestions,
-                answeredQuestions,
+            // Show user-friendly message
+            toast.warning("Syncing your progress...", {
+              description: "Your session is being synchronized. This may take a moment.",
+              duration: 3000,
+            });
+            
+            try {
+              // Rebuild queue from backend - this is the source of truth
+              const { queue, currentIndex, answers } = await rebuildQueueFromBackend(currentSessionId);
+              
+              if (!isMountedRef.current) return;
+              
+              // Update all state atomically
+              setQuestionQueue(queue);
+              questionQueueRef.current = queue;
+              setCurrentQuestionIndex(currentIndex);
+              currentQuestionIndexRef.current = currentIndex;
+              setIsGoingBack(false);
+              isGoingBackRef.current = false;
+              
+              setState((prev) => ({
+                ...prev,
+                answers: answers,
+                currentQuestion: queue[currentIndex] || null,
+                isLoading: false,
+                error: null,
+              }));
+              
+              toast.success("Sync complete!", {
+                description: "Continuing from where you left off.",
+                duration: 2000,
               });
               
-              toast.warning("Sync required", {
-                description: "Questionnaire state was out of sync. Resetting to correct state.",
-                duration: 5000,
-              });
+              console.log("✅ Recovered from sync conflict successfully");
+              return; // Exit without throwing - we've recovered
               
-              // If backend provides pending questions, use them to reset queue
-              if (pendingQuestions.length > 0) {
-                // We need to get the full question details for pending questions
-                // For now, we'll fetch the session state to get full questions
-                try {
-                  const token = await getToken();
-                  const headers: Record<string, string> = {
-                    "Content-Type": "application/json",
-                  };
-                  if (token) {
-                    headers["Authorization"] = `Bearer ${token}`;
-                  }
-                  
-                  const sessionResponse = await fetch(
-                    `${API_BASE}/api/assessment/session/${sessionId}`,
-                    { headers }
-                  );
-                  
-                  if (sessionResponse.ok) {
-                    const sessionData = await sessionResponse.json();
-                    const pendingQuestionDetails = sessionData.pending_questions || [];
-                    
-                    // Convert to frontend format
-                    const formattedQuestions: QuestionnaireQuestion[] = pendingQuestionDetails.map(
-                      (q: any) => ({
-                        id: q.id,
-                        text: q.text,
-                        type: q.type || "scale-slider",
-                        sectionId: q.dimension,
-                        isRequired: q.isRequired,
-                        renderConfig: q.renderConfig || {
-                          min: 1,
-                          max: 5,
-                          step: 1,
-                          labels: {
-                            1: "Strongly Disagree",
-                            2: "Disagree",
-                            3: "Neutral",
-                            4: "Agree",
-                            5: "Strongly Agree",
-                          },
-                        },
-                      })
-                    );
-                    
-                    // Reset queue to backend's pending questions
-                    setQuestionQueue(formattedQuestions);
-                    questionQueueRef.current = formattedQuestions;
-                    
-                    // Set current index to 0 (first pending question)
-                    const newIndex = 0;
-                    setCurrentQuestionIndex(newIndex);
-                    currentQuestionIndexRef.current = newIndex;
-                    
-                    setState((prev) => ({
-                      ...prev,
-                      currentQuestion: formattedQuestions[newIndex] || null,
-                      isLoading: false,
-                    }));
-                    
-                    console.log("✅ Resynced frontend queue with backend pending questions");
-                    return;
-                  }
-                } catch (fetchError) {
-                  console.error("Failed to fetch session for resync:", fetchError);
-                }
-              }
+            } catch (recoveryError) {
+              console.error("Failed to recover from sync conflict:", recoveryError);
+              Sentry.captureException(recoveryError);
               
-              // Fallback: sync to the correct question index
-              if (backendIndex < effectiveQuestionQueue.length) {
-                setCurrentQuestionIndex(backendIndex);
-                setState((prev) => ({
-                  ...prev,
-                  currentQuestion: effectiveQuestionQueue[backendIndex],
-                  isLoading: false,
-                }));
-              } else {
-                // If index is out of bounds, go to last question
-                const lastIndex = Math.max(0, effectiveQuestionQueue.length - 1);
-                setCurrentQuestionIndex(lastIndex);
-                setState((prev) => ({
-                  ...prev,
-                  currentQuestion: effectiveQuestionQueue[lastIndex] || null,
-                  isLoading: false,
-                }));
-              }
-            } else {
-              // Regular sync conflict (another device)
-              toast.warning("Question already answered", {
-                description: "This question was already answered. Moving to the next question.",
-                duration: 5000,
-              });
-
-              // Sync to the correct question
-              if (backendIndex < effectiveQuestionQueue.length) {
-                setCurrentQuestionIndex(backendIndex);
-                setState((prev) => ({
-                  ...prev,
-                  currentQuestion: effectiveQuestionQueue[backendIndex],
-                  isLoading: false,
-                }));
-              }
+              // If recovery fails, show error and let user retry
+              setState((prev) => ({
+                ...prev,
+                isLoading: false,
+                error: "Failed to sync. Please refresh the page.",
+              }));
+              return;
             }
-
-            // Mark state as ready after resync
-            setState((prev) => ({ ...prev, isLoading: false }));
-
-            // Throw error to prevent calling code from continuing
-            throw new Error("SYNC_CONFLICT_RESOLVED");
           }
           
-          throw new Error("Failed to submit answer");
+          throw new Error(errorData.detail || "Failed to submit answer");
         }
 
         const data = await response.json();
@@ -529,7 +567,9 @@ export function useQuestionnaire(inviteCode?: string) {
           warning_message,
         } = data;
 
-        // Update can_go_back state from backend
+        if (!isMountedRef.current) return;
+
+        // Update navigation state
         if (can_go_back !== undefined) {
           setCanGoBack(can_go_back);
         }
@@ -537,19 +577,18 @@ export function useQuestionnaire(inviteCode?: string) {
           setWarningMessage(warning_message);
         }
 
-        // Reset going back flag after submission
+        // Reset going back flag
         setIsGoingBack(false);
         isGoingBackRef.current = false;
 
-        // Update local answers map
-        const newAnswers = new Map(state.answers);
+        // Update answers map
+        const newAnswers = new Map(answersRef.current);
         newAnswers.set(questionId, answer);
 
-        // Save progress to session context
+        // Save progress
         updateProgress({
-          sessionId: sessionId,
+          sessionId: currentSessionId,
           lastQuestionIndex: effectiveCurrentQuestionIndex,
-          // Convert Map to object for storage
           responses: Object.fromEntries(newAnswers),
         });
 
@@ -563,12 +602,12 @@ export function useQuestionnaire(inviteCode?: string) {
           },
         }));
 
-        // Check if assessment is complete
+        // Check completion
         if (is_complete) {
           setIsComplete(true);
           setState((prev) => ({ ...prev, isLoading: false }));
 
-          // Mark invite as completed if this was from an invite
+          // Mark invite as completed if applicable
           if (inviteCode) {
             try {
               await fetch(`${API_BASE}/api/invites/${inviteCode}/mark-completed`, {
@@ -577,21 +616,15 @@ export function useQuestionnaire(inviteCode?: string) {
               });
             } catch (error) {
               console.error("Failed to mark invite as completed:", error);
-              // Don't block completion if this fails
             }
           }
 
-          // Redirect to results page immediately
-          // Results page handles waiting for narrative generation with polling
-          window.location.href = `/results/${sessionId}`;
+          // Redirect to results
+          window.location.href = `/results/${currentSessionId}`;
           return;
         }
 
-        // Add next adaptive questions to queue.
-        // IMPORTANT: Only truncate the "future" queue when re-answering after a back.
-        // The backend can legitimately return `next_questions=[]` while there are still
-        // pending questions already sent to the client. In that case the UI must keep
-        // and continue through the existing queue.
+        // Build updated queue
         let questionIndexInQueue = effectiveCurrentQuestionIndex;
         const foundIndex = effectiveQuestionQueue.findIndex((q) => q.id === questionId);
         if (foundIndex !== -1) {
@@ -600,42 +633,27 @@ export function useQuestionnaire(inviteCode?: string) {
 
         let updatedQueue = effectiveQuestionQueue;
         if (effectiveIsGoingBack) {
+          // Truncate future questions when re-answering after back
           updatedQueue = effectiveQuestionQueue.slice(0, questionIndexInQueue + 1);
         }
+        
+        // Add new questions from backend
         if (next_questions && next_questions.length > 0) {
-          const formattedQuestions: QuestionnaireQuestion[] =
-            next_questions.map((q: any) => ({
-              id: q.id,
-              text: q.text,
-              type: q.type || "scale-slider", // Use backend type or default to scale-slider
-              sectionId: q.dimension,
-              isRequired: q.isRequired,
-              renderConfig: q.renderConfig || {
-                min: 1,
-                max: 5,
-                step: 1,
-                labels: {
-                  1: "Strongly Disagree",
-                  2: "Disagree",
-                  3: "Neutral",
-                  4: "Agree",
-                  5: "Strongly Agree",
-                },
-              },
-            }));
+          const formattedQuestions = next_questions.map(formatQuestionFromBackend);
 
           const existingIds = new Set(updatedQueue.map((q) => q.id));
           const dedupedNext = formattedQuestions.filter((q) => !existingIds.has(q.id));
           updatedQueue = [...updatedQueue, ...dedupedNext];
         }
 
+        // Update queue
         setQuestionQueue(updatedQueue);
         questionQueueRef.current = updatedQueue;
 
-        // Always advance to the next question after submission.
-        // (After a back/resubmit, the backend returns the correct next_questions.)
+        // Advance to next question
         const nextIndex = questionIndexInQueue + 1;
         const nextQuestion = updatedQueue[nextIndex];
+        
         if (nextQuestion) {
           setCurrentQuestionIndex(nextIndex);
           currentQuestionIndexRef.current = nextIndex;
@@ -644,16 +662,37 @@ export function useQuestionnaire(inviteCode?: string) {
             currentQuestion: nextQuestion,
             isLoading: false,
           }));
+        } else if (updatedQueue.length > 0) {
+          // No next question but queue not empty - might need to refresh
+          console.warn("No next question available, attempting to refresh from backend");
+          
+          try {
+            const { queue, currentIndex } = await rebuildQueueFromBackend(currentSessionId);
+            if (queue.length > 0 && isMountedRef.current) {
+              setQuestionQueue(queue);
+              questionQueueRef.current = queue;
+              setCurrentQuestionIndex(currentIndex);
+              currentQuestionIndexRef.current = currentIndex;
+              setState((prev) => ({
+                ...prev,
+                currentQuestion: queue[currentIndex] || null,
+                isLoading: false,
+              }));
+            } else {
+              setState((prev) => ({ ...prev, isLoading: false }));
+            }
+          } catch (refreshError) {
+            console.error("Failed to refresh queue:", refreshError);
+            setState((prev) => ({ ...prev, isLoading: false }));
+          }
         } else {
-          // No next question available yet; keep currentQuestion in place.
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-          }));
+          setState((prev) => ({ ...prev, isLoading: false }));
         }
+        
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to submit answer";
+        if (!isMountedRef.current) return;
+        
+        const errorMessage = error instanceof Error ? error.message : "Failed to submit answer";
         Sentry.captureException(error);
         setState((prev) => ({
           ...prev,
@@ -662,29 +701,32 @@ export function useQuestionnaire(inviteCode?: string) {
         }));
       }
     },
-    [sessionId, state.answers, currentQuestionIndex, questionQueue, isGoingBack, deviceFingerprint, getToken, updateProgress, setState, setIsComplete]
+    [getAuthHeaders, deviceFingerprint, updateProgress, rebuildQueueFromBackend, inviteCode]
   );
 
-  /**
-   * Check if user can go back to previous question
-   * Returns: { canGoBack: boolean, warning: string | null }
-   */
+  // ==========================================================================
+  // BACK NAVIGATION
+  // ==========================================================================
+  
   const checkCanGoBack = useCallback(async (): Promise<{
     canGoBack: boolean;
     warning: string | null;
   }> => {
-    if (!sessionId) {
+    const currentSessionId = sessionIdRef.current;
+    
+    if (!currentSessionId) {
       return { canGoBack: false, warning: "No active session" };
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/assessment/can-go-back`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionId,
-        }),
-      });
+      const response = await fetchWithTimeout(
+        `${API_BASE}/api/assessment/can-go-back`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: currentSessionId }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to check back status");
@@ -700,29 +742,27 @@ export function useQuestionnaire(inviteCode?: string) {
       Sentry.captureException(error);
       return { canGoBack: false, warning: "Unable to check back status" };
     }
-  }, [sessionId]);
+  }, []);
 
-  /**
-   * Go back to previous question (if supported)
-   * Calls backend /assessment/back endpoint and loads the previous question
-   */
   const goBack = useCallback(async () => {
-    if (!sessionId || !canGoBack) {
-      console.log("Cannot go back: ", { sessionId, canGoBack });
+    const currentSessionId = sessionIdRef.current;
+    
+    if (!currentSessionId || !canGoBack) {
+      console.log("Cannot go back:", { sessionId: currentSessionId, canGoBack });
       return;
     }
 
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      // Call backend to go back
-      const response = await fetch(`${API_BASE}/api/assessment/back`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionId,
-        }),
-      });
+      const response = await fetchWithTimeout(
+        `${API_BASE}/api/assessment/back`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: currentSessionId }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to go back");
@@ -731,13 +771,13 @@ export function useQuestionnaire(inviteCode?: string) {
       const data = await response.json();
       const { question, current_answer, can_go_back, warning, pending_questions_cleared } = data;
 
-      // Update states
+      if (!isMountedRef.current) return;
+
       setCanGoBack(can_go_back);
       setWarningMessage(warning || null);
-      setIsGoingBack(true); // Set flag so next submission knows it's a resubmission
+      setIsGoingBack(true);
       isGoingBackRef.current = true;
 
-      // Check if we have a question to go back to
       if (!question) {
         setState((prev) => ({
           ...prev,
@@ -747,57 +787,33 @@ export function useQuestionnaire(inviteCode?: string) {
         return;
       }
 
-      // Format the previous question
-      const formattedQuestion: QuestionnaireQuestion = {
-        id: question.id,
-        text: question.text,
-        type: question.type || "scale-slider",
-        sectionId: question.dimension,
-        isRequired: question.isRequired,
-        renderConfig: question.renderConfig || {
-          min: 1,
-          max: 5,
-          step: 1,
-          labels: {
-            1: "Strongly Disagree",
-            2: "Disagree",
-            3: "Neutral",
-            4: "Agree",
-            5: "Strongly Agree",
-          },
-        },
-      };
+      const formattedQuestion = formatQuestionFromBackend(question);
 
-      // Keep frontend queue in lockstep with backend after a back navigation.
-      // Always rebuild the queue to start with the returned question so the
-      // next submission advances to the correct next item.
+      // Reset queue if backend cleared pending questions
       if (pending_questions_cleared) {
-        console.log("🧹 Backend cleared pending questions - resetting frontend question queue");
+        console.log("🧹 Backend cleared pending questions - resetting frontend queue");
         setQuestionQueue([formattedQuestion]);
         questionQueueRef.current = [formattedQuestion];
         setCurrentQuestionIndex(0);
         currentQuestionIndexRef.current = 0;
       } else {
-        // Best-effort: keep the index aligned with the question the backend returned.
         const currentQueue = questionQueueRef.current;
         const foundBackIndex = currentQueue.findIndex((q) => q.id === formattedQuestion.id);
-        const newIndex =
-          foundBackIndex !== -1
-            ? foundBackIndex
-            : Math.max(currentQuestionIndexRef.current - 1, 0);
+        const newIndex = foundBackIndex !== -1 ? foundBackIndex : Math.max(currentQuestionIndexRef.current - 1, 0);
         setCurrentQuestionIndex(newIndex);
         currentQuestionIndexRef.current = newIndex;
       }
 
-      // Update current question
       setState((prev) => ({
         ...prev,
         currentQuestion: formattedQuestion,
         isLoading: false,
       }));
+      
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to go back";
+      if (!isMountedRef.current) return;
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to go back";
       Sentry.captureException(error);
       setState((prev) => ({
         ...prev,
@@ -805,28 +821,21 @@ export function useQuestionnaire(inviteCode?: string) {
         isLoading: false,
       }));
     }
-  }, [sessionId, canGoBack]);
+  }, [canGoBack]);
 
-  /**
-   * Skip current question (if allowed)
-   */
+  // ==========================================================================
+  // OTHER ACTIONS
+  // ==========================================================================
+
   const skipQuestion = useCallback(async () => {
     if (!state.currentQuestion || !state.session) return;
-
-    // Submit null/empty answer
     await submitAnswer(state.currentQuestion.id, null);
   }, [state.currentQuestion, state.session, submitAnswer]);
 
-  /**
-   * Continue from checkpoint
-   */
   const continueFromCheckpoint = useCallback(() => {
     setShowCheckpoint(null);
   }, []);
 
-  /**
-   * Validate answer before submission
-   */
   const validateAnswer = useCallback(
     (answer: unknown): { isValid: boolean; error?: string } => {
       if (!state.currentQuestion) {
@@ -835,83 +844,50 @@ export function useQuestionnaire(inviteCode?: string) {
 
       const { isRequired, validation = [] } = state.currentQuestion;
 
-      // Check if required
       if (isRequired) {
         if (answer === null || answer === undefined || answer === "") {
           return { isValid: false, error: "This field is required" };
         }
-
-        // Check for empty arrays
         if (Array.isArray(answer) && answer.length === 0) {
           return { isValid: false, error: "Please select at least one option" };
         }
       }
 
-      // Run validation rules
       for (const rule of validation) {
         switch (rule.type) {
           case "minLength":
-            if (
-              typeof answer === "string" &&
-              answer.length < (rule.value as number)
-            ) {
-              return {
-                isValid: false,
-                error: rule.message || `Minimum length is ${rule.value}`,
-              };
+            if (typeof answer === "string" && answer.length < (rule.value as number)) {
+              return { isValid: false, error: rule.message || `Minimum length is ${rule.value}` };
             }
             break;
-
           case "maxLength":
-            if (
-              typeof answer === "string" &&
-              answer.length > (rule.value as number)
-            ) {
-              return {
-                isValid: false,
-                error: rule.message || `Maximum length is ${rule.value}`,
-              };
+            if (typeof answer === "string" && answer.length > (rule.value as number)) {
+              return { isValid: false, error: rule.message || `Maximum length is ${rule.value}` };
             }
             break;
-
           case "min":
             if (typeof answer === "number" && answer < (rule.value as number)) {
-              return {
-                isValid: false,
-                error: rule.message || `Minimum value is ${rule.value}`,
-              };
+              return { isValid: false, error: rule.message || `Minimum value is ${rule.value}` };
             }
             break;
-
           case "max":
             if (typeof answer === "number" && answer > (rule.value as number)) {
-              return {
-                isValid: false,
-                error: rule.message || `Maximum value is ${rule.value}`,
-              };
+              return { isValid: false, error: rule.message || `Maximum value is ${rule.value}` };
             }
             break;
-
           case "pattern":
             if (typeof answer === "string" && rule.value) {
               const regex = new RegExp(rule.value as string);
               if (!regex.test(answer)) {
-                return {
-                  isValid: false,
-                  error: rule.message || "Invalid format",
-                };
+                return { isValid: false, error: rule.message || "Invalid format" };
               }
             }
             break;
-
           case "email":
             if (typeof answer === "string") {
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(answer)) {
-                return {
-                  isValid: false,
-                  error: rule.message || "Invalid email address",
-                };
+                return { isValid: false, error: rule.message || "Invalid email address" };
               }
             }
             break;
@@ -923,106 +899,137 @@ export function useQuestionnaire(inviteCode?: string) {
     [state.currentQuestion]
   );
 
-  // Initialize on mount
+  // ==========================================================================
+  // INITIALIZATION
+  // ==========================================================================
+  
   useEffect(() => {
+    isMountedRef.current = true;
     initializeSession();
+    
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [initializeSession]);
 
-  /**
-   * Poll for session updates from other devices
-   * This prevents conflicts when user is taking assessment on multiple devices
-   */
+  // ==========================================================================
+  // HEARTBEAT / KEEP-ALIVE - Prevents session timeout on production
+  // ==========================================================================
+  
   useEffect(() => {
-    if (!sessionId || isComplete || isInitializing) return;
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId || isComplete || isInitializing) return;
+    
+    const sendHeartbeat = async () => {
+      try {
+        // Simple ping to keep session alive
+        await fetch(`${API_BASE}/api/assessment/session/${currentSessionId}`, {
+          method: 'HEAD',
+          headers: { 'X-Heartbeat': 'true' },
+        });
+      } catch (error) {
+        // Silent fail - don't disrupt user experience
+        console.debug('Heartbeat failed (non-critical):', error);
+      }
+    };
+    
+    const heartbeatInterval = setInterval(sendHeartbeat, CONFIG.HEARTBEAT_INTERVAL_MS);
+    
+    return () => clearInterval(heartbeatInterval);
+  }, [sessionId, isComplete, isInitializing]);
 
-    // Track the last known question index to detect changes
-    const lastKnownIndexRef = { current: currentQuestionIndex };
-    const hasShownSyncToastRef = { current: false }; // Prevent duplicate toasts
+  // ==========================================================================
+  // SESSION SYNC POLLING - Detects updates from other devices
+  // ==========================================================================
+  
+  useEffect(() => {
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId || isComplete || isInitializing) return;
+
+    let lastKnownIndex = currentQuestionIndexRef.current;
+    let hasShownSyncToast = false;
     const currentDeviceFP = deviceFingerprint;
+    const sessionStartTime = Date.now();
     
     const checkForUpdates = async () => {
       try {
-        const token = await getToken();
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
+        const headers = await getAuthHeaders();
 
         const response = await fetch(
-          `${API_BASE}/api/assessment/session/${sessionId}`,
+          `${API_BASE}/api/assessment/session/${currentSessionId}`,
           { headers }
         );
 
-        if (response.ok) {
-          const sessionData = await response.json();
-          const backendQuestionsAnswered = sessionData.questions_answered || 0;
-          const localQuestionsAnswered = currentQuestionIndex;
-          const lastDeviceFP = sessionData.last_device_fingerprint; // Backend should return this
+        if (!response.ok || !isMountedRef.current) return;
 
-          // Check if backend has more answers than our local state
-          // AND we haven't just initialized (to avoid showing message on page load)
-          if (backendQuestionsAnswered > localQuestionsAnswered && 
-              backendQuestionsAnswered > lastKnownIndexRef.current &&
-              !hasShownSyncToastRef.current) { // Only show toast once
-            
-            // Determine if this is from another device or same device
-            const isDifferentDevice = lastDeviceFP && lastDeviceFP !== currentDeviceFP;
-            
-            // Only show notification if we've been on the page for a bit
-            // (to avoid showing on initial page load/resume)
-            const timeSinceInit = Date.now() - (state.session?.createdAt ? new Date(state.session.createdAt).getTime() : 0);
-            const isLikelyPageRefresh = timeSinceInit < 5000; // Less than 5 seconds since init
-            
-            if (!isLikelyPageRefresh) {
-              if (isDifferentDevice) {
-                // Actually from another device - show warning
-                toast.warning("Active on another device", {
-                  description: `Progress detected from another device. Syncing to question ${backendQuestionsAnswered + 1}.`,
-                  duration: 6000,
-                });
-              } else {
-                // Same device, just resuming - gentle info message
-                toast.info("Progress synced", {
-                  description: `Continuing from question ${backendQuestionsAnswered + 1}.`,
-                  duration: 3000,
-                });
-              }
-              hasShownSyncToastRef.current = true; // Mark as shown
+        const sessionData = await response.json();
+        const backendQuestionsAnswered = sessionData.questions_answered || 0;
+        const localQuestionsAnswered = currentQuestionIndexRef.current;
+        const lastDeviceFP = sessionData.last_device_fingerprint;
+
+        // Check if backend has more progress than local
+        if (
+          backendQuestionsAnswered > localQuestionsAnswered &&
+          backendQuestionsAnswered > lastKnownIndex &&
+          !hasShownSyncToast
+        ) {
+          const isDifferentDevice = lastDeviceFP && lastDeviceFP !== currentDeviceFP;
+          const isRecentInit = Date.now() - sessionStartTime < 5000;
+          
+          if (!isRecentInit) {
+            if (isDifferentDevice) {
+              toast.warning("Progress from another device detected", {
+                description: `Syncing to question ${backendQuestionsAnswered + 1}.`,
+                duration: 4000,
+              });
+            } else {
+              toast.info("Progress synced", {
+                description: `Continuing from question ${backendQuestionsAnswered + 1}.`,
+                duration: 2000,
+              });
             }
+            hasShownSyncToast = true;
+          }
 
-            // Update to the correct question
-            if (backendQuestionsAnswered < questionQueue.length) {
-              setCurrentQuestionIndex(backendQuestionsAnswered);
+          // Rebuild queue from backend
+          try {
+            const { queue, currentIndex } = await rebuildQueueFromBackend(currentSessionId);
+            if (queue.length > 0 && isMountedRef.current) {
+              setQuestionQueue(queue);
+              questionQueueRef.current = queue;
+              setCurrentQuestionIndex(currentIndex);
+              currentQuestionIndexRef.current = currentIndex;
               setState((prev) => ({
                 ...prev,
-                currentQuestion: questionQueue[backendQuestionsAnswered],
+                currentQuestion: queue[currentIndex] || null,
                 progress: {
+                  ...prev.progress,
                   current: backendQuestionsAnswered,
-                  total: prev.progress.total,
                   percentage: sessionData.progress || 0,
                 },
               }));
-              lastKnownIndexRef.current = backendQuestionsAnswered;
+              lastKnownIndex = backendQuestionsAnswered;
             }
-          } else if (backendQuestionsAnswered === localQuestionsAnswered) {
-            // Reset toast flag when we're in sync
-            hasShownSyncToastRef.current = false;
+          } catch (rebuildError) {
+            console.warn("Failed to rebuild queue during sync:", rebuildError);
           }
+        } else if (backendQuestionsAnswered === localQuestionsAnswered) {
+          hasShownSyncToast = false; // Reset for future conflicts
         }
       } catch (error) {
-        // Silent fail - don't disrupt user experience
-        console.warn("Failed to check for session updates:", error);
+        console.debug("Session sync check failed (non-critical):", error);
       }
     };
 
-    // Poll every 10 seconds
-    const interval = setInterval(checkForUpdates, 10000);
+    const interval = setInterval(checkForUpdates, CONFIG.POLLING_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [sessionId, isComplete, isInitializing, currentQuestionIndex, questionQueue, getToken, setState, state.session?.createdAt, deviceFingerprint]);
+  }, [sessionId, isComplete, isInitializing, getAuthHeaders, deviceFingerprint, rebuildQueueFromBackend]);
 
+  // ==========================================================================
+  // RETURN PUBLIC API
+  // ==========================================================================
+  
   return {
     // State
     session: state.session,
