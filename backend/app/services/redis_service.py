@@ -29,6 +29,9 @@ class RedisSessionStore:
         redis_port = int(os.getenv("REDIS_PORT", 6379))
         redis_db = int(os.getenv("REDIS_DB", 1))  # Use DB 1 for assessment backend
 
+        # ALWAYS initialize memory store for dual-write pattern (Fix #9)
+        self._memory_store: Dict[str, Dict] = {}
+
         try:
             self.client = redis.Redis(
                 host=redis_host,
@@ -45,7 +48,6 @@ class RedisSessionStore:
         except Exception as e:
             logger.warning(f"⚠️ Redis unavailable, using in-memory fallback: {e}")
             self.redis_available = False
-            self._memory_store: Dict[str, Dict] = {}  # Fallback to in-memory
 
         # Default TTL for sessions (24 hours)
         self.default_ttl = timedelta(hours=24)
