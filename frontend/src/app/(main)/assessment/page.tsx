@@ -164,12 +164,12 @@ export default function AssessmentPage() {
               </div>
             </motion.div>
           ) : hasProgress ? (
-            <div className="space-y-4">{/* Continue Assessment Button */}
+            <div className="space-y-4 flex flex-col items-center">{/* Continue Assessment Button */}
               <motion.button
                 onClick={handleStartAssessment}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative cursor-pointer inline-block overflow-hidden rounded-2xl px-8 py-4 text-base font-bold shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white mr-4"
+                className="group relative cursor-pointer inline-block overflow-hidden rounded-2xl px-8 py-4 text-base font-bold shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white md:mr-4"
                 style={{ fontFamily: 'var(--font-inter)' }}
               >
                 <span className="relative z-10 flex items-center justify-between gap-3">
@@ -192,7 +192,7 @@ export default function AssessmentPage() {
               </motion.button>
 
               {/* Progress indicator */}
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                 You have progress saved from {session.startedAt ? new Date(session.startedAt).toLocaleDateString() : 'your previous session'}
               </div>
             </div>

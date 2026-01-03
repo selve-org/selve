@@ -28,7 +28,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         capture_pageview: false,
 
         // Sanitize events before sending to remove PII
-        sanitize_properties: (properties, event) => {
+        sanitize_properties: (properties) => {
           // Create a copy to avoid mutating original
           const sanitized = { ...properties };
 
@@ -50,6 +50,13 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
           return sanitized;
         },
       });
+
+      // Register super properties for app identification
+      posthog.register({
+        app_name: 'main-app',
+        app_domain: 'selve.me',
+      });
+
       posthog.opt_in_capturing();
     } else {
       posthog.opt_out_capturing();
