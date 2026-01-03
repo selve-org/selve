@@ -641,8 +641,8 @@ export function useQuestionnaire(inviteCode?: string) {
         if (next_questions && next_questions.length > 0) {
           const formattedQuestions = next_questions.map(formatQuestionFromBackend);
 
-          const existingIds = new Set(updatedQueue.map((q) => q.id));
-          const dedupedNext = formattedQuestions.filter((q) => !existingIds.has(q.id));
+          const existingIds = new Set(updatedQueue.map((q: QuestionnaireQuestion) => q.id));
+          const dedupedNext = formattedQuestions.filter((q: QuestionnaireQuestion) => !existingIds.has(q.id));
           updatedQueue = [...updatedQueue, ...dedupedNext];
         }
 
