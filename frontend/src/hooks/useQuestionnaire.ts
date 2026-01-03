@@ -1029,7 +1029,13 @@ export function useQuestionnaire(inviteCode?: string) {
   // ==========================================================================
   // RETURN PUBLIC API
   // ==========================================================================
-  
+
+  // Memoize getAnswer to prevent unnecessary re-renders
+  const getAnswer = useCallback(
+    (questionId: string) => state.answers.get(questionId),
+    [state.answers]
+  );
+
   return {
     // State
     session: state.session,
@@ -1053,6 +1059,6 @@ export function useQuestionnaire(inviteCode?: string) {
     validateAnswer,
 
     // Utilities
-    getAnswer: (questionId: string) => state.answers.get(questionId),
+    getAnswer,
   };
 }
