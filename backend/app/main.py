@@ -233,6 +233,25 @@ app.add_middleware(
 app.add_middleware(RequestLoggingMiddleware)
 
 
+# OPTIONS preflight handler - intercepts OPTIONS before validation
+@app.middleware("http")
+async def handle_options_preflight(request: Request, call_next):
+    """Handle OPTIONS requests before path validation to avoid CORS errors"""
+    if request.method == "OPTIONS":
+        from fastapi.responses import Response
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": request.headers.get("Origin", "*"),
+                "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, X-Requested-With, X-User-ID",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "3600",
+            }
+        )
+    return await call_next(request)
+
+
 # Sentry user context middleware
 @app.middleware("http")
 async def add_sentry_context(request: Request, call_next):
