@@ -225,7 +225,7 @@ app.add_middleware(
     allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With", "X-User-ID"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With", "X-User-ID", "X-Heartbeat"],
     max_age=3600,  # Cache preflight responses for 1 hour
 )
 
@@ -244,7 +244,7 @@ async def handle_options_preflight(request: Request, call_next):
             headers={
                 "Access-Control-Allow-Origin": request.headers.get("Origin", "*"),
                 "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, X-Requested-With, X-User-ID",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept, X-Requested-With, X-User-ID, X-Heartbeat",
                 "Access-Control-Allow-Credentials": "true",
                 "Access-Control-Max-Age": "3600",
             }
