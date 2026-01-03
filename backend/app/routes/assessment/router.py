@@ -363,6 +363,10 @@ async def submit_answer(
         if not should_continue:
             # Assessment complete
             logger.info(f"Assessment complete! Total items: {len(responses)}")
+
+            # FIX: Clear pending questions on completion
+            pending_questions.clear()
+
             session_mgr.save_session(session_id, session)
 
             # Persist to database
@@ -391,6 +395,10 @@ async def submit_answer(
         if not next_items and not pending_questions:
             # No more questions available AND nothing pending -> Complete
             logger.info("No more questions available and none pending, completing assessment")
+
+            # FIX: Clear pending questions
+            pending_questions.clear()
+
             session_mgr.save_session(session_id, session)
             await update_session_from_state(service, session_id, session)
 
@@ -738,53 +746,47 @@ async def get_results(
     """
     session_id = validate_session_id(session_id)
     session_mgr = get_session_manager()
-    
-    # Check for existing results first (cache hit)
-    existing_result = await service.get_result(session_id)
-    
-    if existing_result:
-        logger.info(f"Returning cached results for session {session_id[:8]}...")
-        
-        db_session = await service.get_session(session_id)
-        demographics = db_session.demographics if db_session else {}
-        
-        validation_data = None
-        if existing_result.consistencyScore is not None:
-            validation_data = ValidationResult(
-                consistency_score=existing_result.consistencyScore,
-                attention_score=existing_result.attentionScore or 0,
-                flags=existing_result.validationFlags or [],
-            )
-        
-        return GetResultsResponse(
-            session_id=session_id,
-            scores={
-                "LUMEN": existing_result.scoreLumen,
-                "AETHER": existing_result.scoreAether,
-                "ORPHEUS": existing_result.scoreOrpheus,
-                "ORIN": existing_result.scoreOrin,
-                "LYRA": existing_result.scoreLyra,
-                "VARA": existing_result.scoreVara,
-                "CHRONOS": existing_result.scoreChronos,
-                "KAEL": existing_result.scoreKael,
-            },
-            narrative=existing_result.narrative,
-            completed_at=existing_result.createdAt.isoformat(),
-            demographics=demographics,
-            validation=validation_data,
-        )
-    
-    # No cached results - need to generate
-    # Acquire distributed lock to prevent duplicate generation
+
+    # FIX: Acquire lock FIRST to prevent TOCTOU race condition
     lock_token = None
     try:
         lock_token = session_mgr.acquire_results_lock(session_id)
-        
-        # Double-check after acquiring lock (another request may have completed)
+
+        # NOW check for existing results (inside lock)
         existing_result = await service.get_result(session_id)
+
         if existing_result:
-            return await get_results(session_id, service)  # Recursive call will hit cache
-        
+            logger.info(f"Returning cached results for session {session_id[:8]}...")
+
+            db_session = await service.get_session(session_id)
+            demographics = db_session.demographics if db_session else {}
+
+            validation_data = None
+            if existing_result.consistencyScore is not None:
+                validation_data = ValidationResult(
+                    consistency_score=existing_result.consistencyScore,
+                    attention_score=existing_result.attentionScore or 0,
+                    flags=existing_result.validationFlags or [],
+                )
+
+            return GetResultsResponse(
+                session_id=session_id,
+                scores={
+                    "LUMEN": existing_result.scoreLumen,
+                    "AETHER": existing_result.scoreAether,
+                    "ORPHEUS": existing_result.scoreOrpheus,
+                    "ORIN": existing_result.scoreOrin,
+                    "LYRA": existing_result.scoreLyra,
+                    "VARA": existing_result.scoreVara,
+                    "CHRONOS": existing_result.scoreChronos,
+                    "KAEL": existing_result.scoreKael,
+                },
+                narrative=existing_result.narrative,
+                completed_at=existing_result.createdAt.isoformat(),
+                demographics=demographics,
+                validation=validation_data,
+            )
+
         # Get session
         session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
         if not session:
