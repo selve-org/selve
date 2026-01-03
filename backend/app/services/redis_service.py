@@ -50,6 +50,12 @@ class RedisSessionStore:
         # Default TTL for sessions (24 hours)
         self.default_ttl = timedelta(hours=24)
 
+        # Connection monitoring (Fix #9)
+        self._last_health_check = 0
+        self._health_check_interval = 30  # Check every 30 seconds
+        self._consecutive_failures = 0
+        self._max_failures_before_reconnect = 3
+
     def ping(self) -> bool:
         """Check if Redis is connected"""
         if not self.redis_available:
@@ -59,13 +65,81 @@ class RedisSessionStore:
         except Exception:
             return False
 
+    def _check_connection_health(self) -> bool:
+        """
+        Periodic health check with automatic reconnection.
+        Returns True if Redis is healthy/reconnected, False otherwise.
+        """
+        import time
+
+        current_time = time.time()
+
+        # Skip if checked recently
+        if current_time - self._last_health_check < self._health_check_interval:
+            return self.redis_available
+
+        self._last_health_check = current_time
+
+        try:
+            # Quick ping to check connection
+            self.client.ping()
+
+            # If we were previously unavailable, log recovery
+            if not self.redis_available:
+                logger.info("✅ Redis connection restored after failure")
+                self._consecutive_failures = 0
+
+            self.redis_available = True
+            return True
+
+        except Exception as e:
+            self._consecutive_failures += 1
+
+            # Log on first failure
+            if self._consecutive_failures == 1:
+                logger.warning(f"⚠️ Redis health check failed: {e}")
+
+            # Attempt reconnection after multiple failures
+            if self._consecutive_failures >= self._max_failures_before_reconnect:
+                logger.info("🔄 Attempting Redis reconnection...")
+                try:
+                    self._reconnect()
+                    return True
+                except Exception as reconnect_error:
+                    logger.error(f"❌ Redis reconnection failed: {reconnect_error}")
+
+            self.redis_available = False
+            return False
+
+    def _reconnect(self):
+        """Attempt to reconnect to Redis"""
+        redis_host = os.getenv("REDIS_HOST", "localhost")
+        redis_port = int(os.getenv("REDIS_PORT", 6379))
+        redis_db = int(os.getenv("REDIS_DB", 1))
+
+        self.client = redis.Redis(
+            host=redis_host,
+            port=redis_port,
+            db=redis_db,
+            decode_responses=True,
+            socket_connect_timeout=5,
+            socket_timeout=5,
+            retry_on_timeout=True,
+        )
+
+        # Verify connection
+        self.client.ping()
+        self.redis_available = True
+        self._consecutive_failures = 0
+        logger.info(f"✅ Redis reconnected: {redis_host}:{redis_port}/{redis_db}")
+
     # ========================================================================
     # Session Operations
     # ========================================================================
 
     def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
         """
-        Retrieve session data
+        Retrieve session data with connection health check
 
         Args:
             session_id: Session ID
@@ -73,7 +147,9 @@ class RedisSessionStore:
         Returns:
             Session data dict or None if not found
         """
-        if not self.redis_available:
+        # Check health before operation (Fix #9)
+        if not self._check_connection_health():
+            logger.debug(f"Redis unavailable, using memory fallback for {session_id[:8]}")
             return self._memory_store.get(session_id)
 
         try:
@@ -84,8 +160,9 @@ class RedisSessionStore:
                 return json.loads(cached)
             return None
         except Exception as e:
-            logger.error(f"❌ Redis get error for session {session_id}: {e}")
-            return None
+            logger.error(f"❌ Redis get error for session {session_id[:8]}: {e}")
+            self.redis_available = False
+            return self._memory_store.get(session_id)
 
     def set_session(
         self,
@@ -94,7 +171,7 @@ class RedisSessionStore:
         ttl: Optional[timedelta] = None
     ) -> bool:
         """
-        Store session data with TTL
+        Store session data with dual-write (Redis + memory fallback)
 
         Args:
             session_id: Session ID
@@ -102,11 +179,15 @@ class RedisSessionStore:
             ttl: Time to live (default: 24 hours)
 
         Returns:
-            True if stored successfully
+            True if stored successfully in Redis, False if only in memory
         """
-        if not self.redis_available:
-            self._memory_store[session_id] = session_data
-            return True
+        # Always write to memory as backup (Fix #9 - dual-write pattern)
+        self._memory_store[session_id] = session_data
+
+        # Check health before Redis write
+        if not self._check_connection_health():
+            logger.warning(f"Redis unavailable, session {session_id[:8]} in memory only")
+            return False
 
         try:
             key = f"session:{session_id}"
@@ -116,7 +197,8 @@ class RedisSessionStore:
             self.client.setex(key, ttl, value)
             return True
         except Exception as e:
-            logger.error(f"❌ Redis set error for session {session_id}: {e}")
+            logger.error(f"❌ Redis set error for session {session_id[:8]}: {e}")
+            self.redis_available = False
             return False
 
     def delete_session(self, session_id: str) -> bool:

@@ -62,6 +62,7 @@ export default function ResultsPage() {
   const isPollingRef = useRef<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef<boolean>(true);
+  const generationTriggeredRef = useRef<boolean>(false);
 
   const chatbotBaseUrl = (process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me").trim();
   const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
@@ -172,22 +173,30 @@ export default function ResultsPage() {
           
         case 'pending':
           // Assessment complete but results not generated yet
-          // Don't call fetchFullResults() here - it blocks polling!
-          // Instead, just set state and let polling continue
-          // The backend will generate results on first /results call
-          if (resultsStatus !== 'generating') {
+          // Trigger generation ONCE on first pending status
+          if (!generationTriggeredRef.current) {
+            generationTriggeredRef.current = true;
             setResultsStatus('generating');
             startTimeRef.current = Date.now();
             setGenerationProgress(0);
             setCurrentStep('Starting generation...');
+
+            // Trigger generation by calling /results endpoint
+            // This starts the actual OpenAI generation process
+            fetchFullResults().catch(err => {
+              console.error('Failed to trigger generation:', err);
+              // Reset flag to allow retry
+              generationTriggeredRef.current = false;
+            });
+          } else {
+            // Already triggered, just update progress from backend
+            const pendingProgress = data.progress ?? 0;
+            if (pendingProgress > 0) {
+              setGenerationProgress(prev => Math.max(prev, Math.min(95, pendingProgress)));
+            }
+            if (data.current_step) setCurrentStep(data.current_step);
+            if (data.completed_sections) setCompletedSections(data.completed_sections);
           }
-          // Update progress if backend provides it during pending state
-          const pendingProgress = data.progress ?? 0;
-          if (pendingProgress > 0) {
-            setGenerationProgress(prev => Math.max(prev, Math.min(95, pendingProgress)));
-          }
-          if (data.current_step) setCurrentStep(data.current_step);
-          if (data.completed_sections) setCompletedSections(data.completed_sections);
           break;
           
         case 'incomplete':

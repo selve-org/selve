@@ -16,6 +16,11 @@ import type {
 // API base URL - defaults to localhost for development
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Debug logging (only in development)
+const IS_DEV = process.env.NODE_ENV === "development";
+const debugLog = IS_DEV ? console.log : () => {};
+const debugWarn = IS_DEV ? console.warn : () => {};
+
 // =============================================================================
 // CONFIGURATION CONSTANTS
 // =============================================================================
@@ -296,7 +301,7 @@ export function useQuestionnaire(inviteCode?: string) {
 
       // Check if we have existing session to restore
       if (existingSessionId) {
-        console.log("📦 Attempting to restore session:", existingSessionId);
+        debugLog("📦 Attempting to restore session:", existingSessionId);
         
         try {
           const headers = await getAuthHeaders();
@@ -312,7 +317,7 @@ export function useQuestionnaire(inviteCode?: string) {
             const sessionData = await restoreResponse.json();
             
             if (sessionData.can_resume && sessionData.status === "in-progress") {
-              console.log("✅ Session restored successfully:", {
+              debugLog("✅ Session restored successfully:", {
                 progress: sessionData.progress,
                 questionsAnswered: sessionData.questions_answered,
               });
@@ -329,15 +334,15 @@ export function useQuestionnaire(inviteCode?: string) {
                 },
               }));
             } else {
-              console.log("⚠️ Session exists but is completed or abandoned, starting new session");
+              debugLog("⚠️ Session exists but is completed or abandoned, starting new session");
               updateProgress({ sessionId: undefined });
             }
           } else {
-            console.log("⚠️ Session not found in database, starting new session");
+            debugLog("⚠️ Session not found in database, starting new session");
             updateProgress({ sessionId: undefined });
           }
         } catch (restoreError) {
-          console.warn("Failed to restore session, starting new:", restoreError);
+          debugWarn("Failed to restore session, starting new:", restoreError);
           updateProgress({ sessionId: undefined });
         }
       }
@@ -349,7 +354,7 @@ export function useQuestionnaire(inviteCode?: string) {
       let progress: number;
       
       if (restoredSessionData && restoredSessionData.questions_answered > 0) {
-        console.log("♻️ Restored session detected - using pending questions to preserve adaptive flow");
+        debugLog("♻️ Restored session detected - using pending questions to preserve adaptive flow");
         
         session_id = existingSessionId!;
         questions = restoredSessionData.pending_questions || [];
@@ -357,7 +362,7 @@ export function useQuestionnaire(inviteCode?: string) {
         progress = restoredSessionData.progress || 0;
         
         setSessionId(session_id);
-        console.log(`📋 Loaded ${questions.length} pending questions from backend`);
+        debugLog(`📋 Loaded ${questions.length} pending questions from backend`);
       } else {
         // New session - call /start
         const headers = await getAuthHeaders();
@@ -410,14 +415,14 @@ export function useQuestionnaire(inviteCode?: string) {
           restoredAnswers.set(key, value);
         });
         
-        console.log(`✅ Restored ${restoredAnswers.size} previous answers from backend`);
+        debugLog(`✅ Restored ${restoredAnswers.size} previous answers from backend`);
       }
       
       // Calculate start index
       let startIndex = 0;
       if (restoredSessionData && formattedQuestions.length > 0) {
         startIndex = 0; // Always start from first pending question
-        console.log(`📍 Starting from first pending question`);
+        debugLog(`📍 Starting from first pending question`);
       }
       
       setCurrentQuestionIndex(startIndex);
@@ -501,7 +506,7 @@ export function useQuestionnaire(inviteCode?: string) {
           
           // Handle sync conflict (409)
           if (response.status === 409 || errorData.sync_conflict) {
-            console.warn("🔄 Sync conflict detected, recovering...");
+            debugWarn("🔄 Sync conflict detected, recovering...");
             
             // Show user-friendly message
             toast.warning("Syncing your progress...", {
@@ -536,7 +541,7 @@ export function useQuestionnaire(inviteCode?: string) {
                 duration: 2000,
               });
               
-              console.log("✅ Recovered from sync conflict successfully");
+              debugLog("✅ Recovered from sync conflict successfully");
               return; // Exit without throwing - we've recovered
               
             } catch (recoveryError) {
@@ -664,7 +669,7 @@ export function useQuestionnaire(inviteCode?: string) {
           }));
         } else if (updatedQueue.length > 0) {
           // No next question but queue not empty - might need to refresh
-          console.warn("No next question available, attempting to refresh from backend");
+          debugWarn("No next question available, attempting to refresh from backend");
           
           try {
             const { queue, currentIndex } = await rebuildQueueFromBackend(currentSessionId);
@@ -748,7 +753,7 @@ export function useQuestionnaire(inviteCode?: string) {
     const currentSessionId = sessionIdRef.current;
     
     if (!currentSessionId || !canGoBack) {
-      console.log("Cannot go back:", { sessionId: currentSessionId, canGoBack });
+      debugLog("Cannot go back:", { sessionId: currentSessionId, canGoBack });
       return;
     }
 
@@ -791,7 +796,7 @@ export function useQuestionnaire(inviteCode?: string) {
 
       // Reset queue if backend cleared pending questions
       if (pending_questions_cleared) {
-        console.log("🧹 Backend cleared pending questions - resetting frontend queue");
+        debugLog("🧹 Backend cleared pending questions - resetting frontend queue");
         setQuestionQueue([formattedQuestion]);
         questionQueueRef.current = [formattedQuestion];
         setCurrentQuestionIndex(0);
@@ -1011,7 +1016,7 @@ export function useQuestionnaire(inviteCode?: string) {
               lastKnownIndex = backendQuestionsAnswered;
             }
           } catch (rebuildError) {
-            console.warn("Failed to rebuild queue during sync:", rebuildError);
+            debugWarn("Failed to rebuild queue during sync:", rebuildError);
           }
         } else if (backendQuestionsAnswered === localQuestionsAnswered) {
           hasShownSyncToast = false; // Reset for future conflicts
@@ -1025,6 +1030,39 @@ export function useQuestionnaire(inviteCode?: string) {
 
     return () => clearInterval(interval);
   }, [sessionId, isComplete, isInitializing, getAuthHeaders, deviceFingerprint, rebuildQueueFromBackend]);
+
+  // ==========================================================================
+  // HEARTBEAT - Keep session alive during long operations
+  // ==========================================================================
+  useEffect(() => {
+    const currentSessionId = sessionIdRef.current;
+    if (!currentSessionId || isComplete || isInitializing) return;
+
+    let isActive = true;
+
+    const sendHeartbeat = async () => {
+      if (!isActive) return;
+
+      try {
+        await fetch(`${API_BASE}/api/assessment/session/${currentSessionId}`, {
+          method: "HEAD",
+          headers: { "X-Heartbeat": "true" },
+        });
+      } catch (error) {
+        // Silent fail - heartbeat is non-critical
+        debugLog("Heartbeat failed (non-critical):", error);
+      }
+    };
+
+    // Send immediately, then every 25 seconds (under AWS 30s timeout)
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, CONFIG.HEARTBEAT_INTERVAL_MS);
+
+    return () => {
+      isActive = false;
+      clearInterval(interval);
+    };
+  }, [sessionId, isComplete, isInitializing]);
 
   // ==========================================================================
   // RETURN PUBLIC API

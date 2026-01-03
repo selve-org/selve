@@ -1066,6 +1066,37 @@ async def get_progress(session_id: str):
 # Session Management
 # ============================================================================
 
+@router.head("/assessment/session/{session_id}")
+async def session_heartbeat(session_id: str):
+    """
+    Lightweight heartbeat endpoint - extends session TTL without loading full session.
+
+    HEAD requests don't transfer body = minimal bandwidth.
+    Used by frontend to keep long-running sessions alive during results generation.
+    """
+    from fastapi.responses import Response
+
+    session_id = validate_session_id(session_id)
+    session_mgr = get_session_manager()
+
+    # Check if session exists in Redis/memory
+    exists = session_mgr.get_session(session_id, raise_if_missing=False) is not None
+
+    if exists:
+        # Session found - extend TTL (this happens automatically in get_session)
+        return Response(
+            status_code=200,
+            headers={
+                "X-Session-Active": "true",
+                "X-TTL-Extended": "true",
+                "Cache-Control": "no-store, no-cache, must-revalidate",
+            }
+        )
+    else:
+        # Session not found
+        return Response(status_code=404)
+
+
 @router.get("/assessment/session/{session_id}")
 async def get_session_state(
     session_id: str,
