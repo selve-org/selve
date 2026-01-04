@@ -53,22 +53,25 @@ export default function AuthRedirectPage() {
         hasShownToast.current = true
       }
 
-      if (redirectTo) {
-        // Validate redirect URL before redirecting
-        if (isValidRedirect(redirectTo)) {
-          console.log('Redirecting to:', redirectTo)
-          window.location.href = redirectTo
+      // Delay redirect to allow toast to be visible
+      setTimeout(() => {
+        if (redirectTo) {
+          // Validate redirect URL before redirecting
+          if (isValidRedirect(redirectTo)) {
+            console.log('Redirecting to:', redirectTo)
+            window.location.href = redirectTo
+          } else {
+            // Invalid redirect, go to home
+            console.log('Invalid redirect, going to home')
+            window.location.href = '/'
+          }
         } else {
-          // Invalid redirect, go to home
-          console.log('Invalid redirect, going to home')
+          // User is signed in but no valid redirect_to parameter
+          // Redirect to home instead of staying on loading screen
+          console.log('Signed in but no valid redirect_to, redirecting to home')
           window.location.href = '/'
         }
-      } else {
-        // User is signed in but no valid redirect_to parameter
-        // Redirect to home instead of staying on loading screen
-        console.log('Signed in but no valid redirect_to, redirecting to home')
-        window.location.href = '/'
-      }
+      }, 1500) // 1.5 second delay to show toast
     } else if (!isSignedIn) {
       // User is not signed in, redirect to sign-in with return URL
       console.log('Not signed in, redirecting to sign-in')
