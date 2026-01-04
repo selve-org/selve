@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function AuthRedirectPage() {
   const { isSignedIn, isLoaded } = useAuth()
@@ -14,12 +15,6 @@ export default function AuthRedirectPage() {
   const isValidRedirect = (url: string | null): boolean => {
     if (!url) return false
 
-    // Allow relative paths (same-origin redirects like /pricing, /profile, etc.)
-    if (url.startsWith('/')) {
-      return true
-    }
-
-    // For absolute URLs, only allow specific external domains (chatbot)
     try {
       const redirectUrl = new URL(url)
       const allowedHosts = [
@@ -49,29 +44,34 @@ export default function AuthRedirectPage() {
     if (!isLoaded) return
 
     if (isSignedIn) {
-      // Set flag for destination page to show welcome toast
+      // Show welcome toast (only once)
       if (!hasShownToast.current) {
-        sessionStorage.setItem('show_welcome_toast', 'true')
+        toast.success('Welcome! You\'re signed in', {
+          description: 'Great to have you here',
+          duration: 3000,
+        })
         hasShownToast.current = true
       }
 
-      // Redirect immediately (toast will show on destination page)
-      if (redirectTo) {
-        // Validate redirect URL before redirecting
-        if (isValidRedirect(redirectTo)) {
-          console.log('Redirecting to:', redirectTo)
-          window.location.href = redirectTo
+      // Delay redirect to allow toast to be visible
+      setTimeout(() => {
+        if (redirectTo) {
+          // Validate redirect URL before redirecting
+          if (isValidRedirect(redirectTo)) {
+            console.log('Redirecting to:', redirectTo)
+            window.location.href = redirectTo
+          } else {
+            // Invalid redirect, go to home
+            console.log('Invalid redirect, going to home')
+            window.location.href = '/'
+          }
         } else {
-          // Invalid redirect, go to home
-          console.log('Invalid redirect, going to home')
+          // User is signed in but no valid redirect_to parameter
+          // Redirect to home instead of staying on loading screen
+          console.log('Signed in but no valid redirect_to, redirecting to home')
           window.location.href = '/'
         }
-      } else {
-        // User is signed in but no valid redirect_to parameter
-        // Redirect to home instead of staying on loading screen
-        console.log('Signed in but no valid redirect_to, redirecting to home')
-        window.location.href = '/'
-      }
+      }, 1500) // 1.5 second delay to show toast
     } else if (!isSignedIn) {
       // User is not signed in, redirect to sign-in with return URL
       console.log('Not signed in, redirecting to sign-in')
