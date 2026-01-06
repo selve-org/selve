@@ -202,7 +202,7 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
                 <button
                   key={option.id}
                   onClick={() => setTheme(option.id)}
-                  className={`relative p-4 rounded-lg border-2 transition-all text-left cursor-pointer ${
+                  className={`relative p-4 rounded-lg border-2 transition-all text-left cursor-pointer hover:cursor-pointer ${
                     isSelected
                       ? "border-purple-600 dark:border-purple-500 bg-purple-50 dark:bg-purple-950/20"
                       : "border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0c0c0c] hover:border-purple-300 dark:hover:border-purple-700"
