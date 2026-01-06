@@ -121,7 +121,7 @@ export const Footer = () => {
               >
                 Cookies & privacy
               </button>
-              <Link href="https://buymeacoffee.com/selve" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              <Link href="https://buymeacoffee.com/selve" target="_blank" rel="noopener noreferrer" className="text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors font-medium">
                 Buy me a coffee ☕
               </Link>
             </div>
