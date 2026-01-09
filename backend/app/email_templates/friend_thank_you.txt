@@ -1,0 +1,50 @@
+═══════════════════════════════════════════════════════
+          💜 THANK YOU, {{friend_name}}!
+═══════════════════════════════════════════════════════
+
+Your insights help {{inviter_name}} understand themselves better
+
+───────────────────────────────────────────────────────
+
+Thank you for taking the time to complete this friend assessment for {{inviter_name}}. Your honest perspective is incredibly valuable for helping them gain deeper self-awareness.
+
+By sharing how you see them, you've contributed to their journey of self-discovery. The gap between how we see ourselves and how others see us often reveals our biggest blind spots and growth opportunities.
+
+───────────────────────────────────────────────────────
+🔒 PRIVACY NOTE
+───────────────────────────────────────────────────────
+
+Your individual responses will never be shown to {{inviter_name}}. Only aggregated insights from all friends will be shared, ensuring your feedback remains confidential.
+
+───────────────────────────────────────────────────────
+🎯 CURIOUS ABOUT YOUR OWN PERSONALITY?
+───────────────────────────────────────────────────────
+
+Discover your complete personality blueprint across 8 dimensions. Get scientific insights into your personality traits, strengths, and growth areas.
+
+👉 Start Your SELVE Assessment: {{signup_url}}
+
+Free to start • Takes 15-20 minutes • Get instant insights
+
+───────────────────────────────────────────────────────
+WHAT YOU'LL DISCOVER:
+───────────────────────────────────────────────────────
+
+🎯 Your Core Personality Traits
+   Understand your unique patterns across 8 key dimensions of personality
+
+👥 360° Perspective
+   Invite friends to assess you and see the gap between self-perception
+   and reality
+
+📈 Actionable Insights
+   Receive personalized recommendations for personal growth and development
+
+───────────────────────────────────────────────────────
+
+Thank you for being part of the SELVE community 💜
+
+— The SELVE Team
+
+SELVE · Personality Assessment Platform
+{{base_url_display}}

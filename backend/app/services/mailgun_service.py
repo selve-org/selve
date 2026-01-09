@@ -301,6 +301,59 @@ SELVE · Personality Assessment Platform
 
         response.raise_for_status()
         return response.json()
+    
+    def send_friend_thank_you(
+        self,
+        to_email: str,
+        friend_name: str,
+        inviter_name: str
+    ) -> Dict[str, Any]:
+        """
+        Send thank you email to friend who completed the assessment
+
+        Args:
+            to_email: Friend's email address
+            friend_name: Friend's name (display name)
+            inviter_name: Name of person who sent the invite
+
+        Returns:
+            Mailgun API response dict
+        """
+        base_url = "https://selve.me" if self.is_production else self.frontend_url
+        base_url_display = base_url.replace('http://', '').replace('https://', '')
+        signup_url = f"{base_url}/?utm_source=friend_assessment&utm_medium=email&utm_campaign=thank_you"
+
+        subject = f"Thank you for helping {inviter_name} 💜"
+
+        # Render email templates using template service
+        html_body, text_body = self.template_service.render_friend_thank_you_email(
+            friend_name=friend_name,
+            inviter_name=inviter_name,
+            signup_url=signup_url,
+            base_url=base_url,
+            base_url_display=base_url_display,
+            logo_icon_url=self.logo_icon_url,
+            logo_text_url=self.logo_text_url
+        )
+
+        data = {
+            "from": f"SELVE <hello@{self.prod_domain if self.domain == self.prod_domain else self.domain}>",
+            "to": f"{friend_name} <{to_email}>",
+            "subject": subject,
+            "text": text_body,
+            "html": html_body,
+            "o:tracking": "yes",
+            "o:tag": ["friend-thank-you", "friend-assessment", "acquisition"],
+        }
+
+        response = requests.post(
+            self._get_endpoint(),
+            auth=("api", self.api_key),
+            data=data
+        )
+
+        response.raise_for_status()
+        return response.json()
 
     def send_newsletter_welcome_email(
         self,

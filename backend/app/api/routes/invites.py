@@ -677,9 +677,44 @@ async def submit_friend_responses(
                 invite_code=invite_code,
                 db=prisma
             )
-            print(f"✅ Notifications sent")
+            print(f"✅ Notifications sent to inviter")
         except Exception as e:
-            print(f"⚠️  Failed to send notifications: {str(e)}")
+            print(f"⚠️  Failed to send notifications to inviter: {str(e)}")
+        
+        # Send thank you email to friend (non-blocking)
+        try:
+            # Validate we have required data
+            if not invite.friendEmail:
+                print("⚠️  Cannot send thank you email: friend email is missing")
+            else:
+                friend_email = invite.friendEmail
+                
+                # Failsafe for friend name (fallback: email username -> "Friend")
+                if invite.friendNickname and invite.friendNickname.strip():
+                    friend_display_name = invite.friendNickname.strip()
+                elif friend_email:
+                    friend_display_name = friend_email.split('@')[0].title()
+                else:
+                    friend_display_name = "Friend"
+                
+                # Failsafe for inviter name (fallback: email username -> "your friend")
+                if invite.inviter and invite.inviter.name and invite.inviter.name.strip():
+                    inviter_name = invite.inviter.name.strip()
+                elif invite.inviter and invite.inviter.email:
+                    inviter_name = invite.inviter.email.split('@')[0].title()
+                else:
+                    inviter_name = "your friend"
+                
+                mailgun_service = MailgunService()
+                result = mailgun_service.send_friend_thank_you(
+                    to_email=friend_email,
+                    friend_name=friend_display_name,
+                    inviter_name=inviter_name
+                )
+                print(f"✅ Thank you email sent to friend: {friend_email} (as {friend_display_name})")
+        except Exception as e:
+            print(f"⚠️  Failed to send thank you email to friend: {str(e)}")
+            # Don't fail the request if email fails
         
         return {
             "success": True,

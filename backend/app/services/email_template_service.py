@@ -152,3 +152,47 @@ class EmailTemplateService:
         text_content = self._render_template(text_template, variables)
 
         return html_content, text_content
+
+    def render_friend_thank_you_email(
+        self,
+        friend_name: str,
+        inviter_name: str,
+        signup_url: str,
+        base_url: str,
+        base_url_display: str,
+        logo_icon_url: str,
+        logo_text_url: str
+    ) -> tuple[str, str]:
+        """
+        Render friend thank you email templates (HTML and text)
+
+        Args:
+            friend_name: Name of the friend who completed the assessment
+            inviter_name: Name of the person who invited them
+            signup_url: URL for friend to sign up and start their own assessment
+            base_url: Frontend base URL
+            base_url_display: Display version of base URL (without protocol)
+            logo_icon_url: URL to logo icon image
+            logo_text_url: URL to logo text image
+
+        Returns:
+            Tuple of (html_content, text_content)
+        """
+        variables = {
+            "friend_name": friend_name,
+            "inviter_name": inviter_name,
+            "signup_url": signup_url,
+            "base_url": base_url,
+            "base_url_display": base_url_display,
+            "logo_icon_url": logo_icon_url,
+            "logo_text_url": logo_text_url,
+        }
+
+        # Load and render both templates
+        html_template = self._load_template("friend_thank_you.html")
+        text_template = self._load_template("friend_thank_you.txt")
+
+        html_content = self._render_template(html_template, variables)
+        text_content = self._render_template(text_template, variables)
+
+        return html_content, text_content
