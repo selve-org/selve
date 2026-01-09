@@ -15,7 +15,7 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from app.db import prisma
 from app.routes.assessment import router as assessment_router
-from app.api.routes import invites, notifications, testimonials, newsletter, stats
+from app.api.routes import invites, notifications, testimonials, newsletter, stats, internal
 from app.api.routes.users import router as users_router, webhooks_router
 from app.logging_config import setup_logging
 from app.middleware.request_logging import RequestLoggingMiddleware
@@ -276,6 +276,7 @@ app.include_router(newsletter.router, tags=["newsletter"])
 app.include_router(stats.router, tags=["stats"])
 app.include_router(users_router, prefix="/api", tags=["users"])
 app.include_router(webhooks_router, prefix="/api", tags=["webhooks"])
+app.include_router(internal.router, prefix="/api", tags=["internal"])
 
 
 @app.get("/")
