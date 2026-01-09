@@ -1623,7 +1623,6 @@ async def get_friend_insights(
 ):
     """Get friend insights for a completed assessment session."""
     import json
-    from app.services.friend_insights_service import FriendInsightsService, get_fallback_message
     
     session_id = validate_session_id(session_id)
     
@@ -1680,43 +1679,77 @@ async def get_friend_insights(
             order={"createdAt": "desc"},
         )
         
-        # Generate narrative if we have friend data
+        # Get narrative from FriendInsightGeneration table
         narrative_summary = None
         narrative_generated_at = None
         narrative_friend_count = 0
         narrative_error = None
+        blind_spots_data = []
         
-        if friend_responses and aggregated_scores and last_result:
-            self_scores = {
-                "LUMEN": last_result.scoreLumen,
-                "AETHER": last_result.scoreAether,
-                "ORPHEUS": last_result.scoreOrpheus,
-                "ORIN": last_result.scoreOrin,
-                "LYRA": last_result.scoreLyra,
-                "VARA": last_result.scoreVara,
-                "CHRONOS": last_result.scoreChronos,
-                "KAEL": last_result.scoreKael,
-            }
+        if friend_responses and last_result:
+            # Get the most recent friend insight generation for this session
+            insight_generation = await prisma.friendinsightgeneration.find_first(
+                where={
+                    "sessionId": session_id,
+                    "isCurrent": True
+                },
+                order={"createdAt": "desc"}
+            )
             
-            try:
-                insights_service = FriendInsightsService(prisma)
-                result = await insights_service.get_or_generate_narrative(
-                    session_id=session_id,
-                    self_scores=self_scores,
-                    friend_scores=aggregated_scores,
-                    friend_response_ids=friend_response_ids,
-                )
+            if insight_generation:
+                narrative_summary = insight_generation.narrative
+                narrative_generated_at = insight_generation.createdAt.isoformat()
+                narrative_friend_count = insight_generation.friendCount
                 
-                narrative_summary = result.get("narrative")
-                narrative_generated_at = result.get("generatedAt")
-                narrative_friend_count = result.get("friendCount", len(friend_responses))
+                # Parse blind spots from JSON
+                try:
+                    if insight_generation.blindSpots:
+                        if isinstance(insight_generation.blindSpots, str):
+                            blind_spots_data = json.loads(insight_generation.blindSpots)
+                        else:
+                            blind_spots_data = insight_generation.blindSpots
+                except Exception as e:
+                    logger.warning(f"Failed to parse blind spots: {e}")
                 
-                if result.get("hasError"):
-                    narrative_error = get_fallback_message("error")
+                if insight_generation.generationError:
+                    narrative_error = insight_generation.generationError
+            else:
+                # FALLBACK: If no generation exists yet (legacy data or first-time view),
+                # trigger on-demand generation using FriendInsightsService
+                logger.info(f"No FriendInsightGeneration found for session {session_id}, generating on-demand")
+                try:
+                    from app.services.friend_insights_service import FriendInsightsService
                     
-            except Exception as e:
-                logger.warning(f"Failed to generate friend insights: {e}")
-                narrative_error = get_fallback_message("error")
+                    self_scores = {
+                        "LUMEN": last_result.scoreLumen,
+                        "AETHER": last_result.scoreAether,
+                        "ORPHEUS": last_result.scoreOrpheus,
+                        "ORIN": last_result.scoreOrin,
+                        "LYRA": last_result.scoreLyra,
+                        "VARA": last_result.scoreVara,
+                        "CHRONOS": last_result.scoreChronos,
+                        "KAEL": last_result.scoreKael,
+                    }
+                    
+                    insights_service = FriendInsightsService(prisma)
+                    result = await insights_service.get_or_generate_narrative(
+                        session_id=session_id,
+                        self_scores=self_scores,
+                        friend_scores=aggregated_scores,
+                        friend_response_ids=friend_response_ids,
+                    )
+                    
+                    narrative_summary = result.get("narrative")
+                    narrative_generated_at = result.get("generatedAt")
+                    narrative_friend_count = result.get("friendCount", len(friend_responses))
+                    blind_spots_data = result.get("blindSpots", [])
+                    
+                    if result.get("hasError"):
+                        narrative_error = result.get("error", "Failed to generate insights")
+                        
+                except Exception as e:
+                    logger.error(f"Fallback generation failed: {e}", exc_info=True)
+                    narrative_error = "Failed to generate friend insights"
         
         return {
             "friendResponses": friend_responses,
@@ -1725,6 +1758,7 @@ async def get_friend_insights(
             "narrativeGeneratedAt": narrative_generated_at,
             "narrativeFriendCount": narrative_friend_count,
             "narrativeError": narrative_error,
+            "blindSpots": blind_spots_data,
             "lastRegeneration": last_result.createdAt.isoformat() if last_result else None,
         }
         
