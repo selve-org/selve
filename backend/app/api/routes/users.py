@@ -171,6 +171,84 @@ async def update_profile(
         )
 
 
+@router.get("/theme")
+async def get_theme_preference(request: Request):
+    """
+    Get user's theme preference
+
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+
+    **Returns**:
+    - theme: "light" | "dark" | "system" | null
+    """
+    user_id = get_user_id(request)
+
+    try:
+        user = await prisma.user.find_unique(
+            where={"clerkId": user_id},
+            include={"profile": False}
+        )
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+
+        return {"theme": user.themePreference}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching theme preference: {str(e)}"
+        )
+
+
+@router.put("/theme")
+async def update_theme_preference(request: Request):
+    """
+    Update user's theme preference
+
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+
+    **Request Body**:
+    - theme: "light" | "dark" | "system"
+
+    **Returns**:
+    - theme: Updated theme preference
+    """
+    user_id = get_user_id(request)
+
+    try:
+        body = await request.json()
+        theme = body.get("theme")
+
+        if theme not in ["light", "dark", "system", None]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid theme. Must be 'light', 'dark', or 'system'"
+            )
+
+        user = await prisma.user.update(
+            where={"clerkId": user_id},
+            data={"themePreference": theme}
+        )
+
+        return {"theme": user.themePreference}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error updating theme preference: {str(e)}"
+        )
+
+
 @router.get("/subscription")
 async def get_subscription(request: Request):
     """

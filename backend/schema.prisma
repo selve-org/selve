@@ -33,6 +33,9 @@ model User {
   currentPeriodCost    Float     @default(0)
   lastUsageReset       DateTime  @default(now())
 
+  // User preferences
+  themePreference      String?   // "light" | "dark" | "system" | null
+
   inviteLinksSent     InviteLink[] @relation("InviterRelation")
   inviteLinksReceived InviteLink[] @relation("TargetRelation")
   profile             Profile?
