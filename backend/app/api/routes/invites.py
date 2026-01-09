@@ -5,6 +5,7 @@ Handles creating, managing, and tracking friend assessment invites
 
 import os
 import json
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Request
@@ -655,10 +656,89 @@ async def submit_friend_responses(
                     for fr in all_friend_responses
                 ]
                 
-                # Regenerate profile
-                print(f"✅ Regenerating profile with {len(friend_response_data)} friend responses...")
-                # TODO: Implement profile regeneration
-                # await regeneration_service.regenerate_profile_with_friend_data(...)
+                # Get self-assessment responses from session
+                # session.responses is a JSON object {question_id: score}
+                # Convert to Dict[str, int] as expected by regeneration service
+                self_responses = {}
+                if user_assessment.session.responses:
+                    session_responses = user_assessment.session.responses
+                    if isinstance(session_responses, dict):
+                        self_responses = {
+                            str(k): int(v) for k, v in session_responses.items()
+                        }
+                    else:
+                        print(f"⚠️  Unexpected session.responses type: {type(session_responses)}")
+                
+                if not self_responses:
+                    print("⚠️  No self-assessment responses found. Skipping regeneration.")
+                else:
+                    # Regenerate profile
+                    print(f"✅ Regenerating profile with {len(self_responses)} self-responses and {len(friend_response_data)} friend responses...")
+                    
+                    regenerated_profile = await regeneration_service.regenerate_profile_with_friend_data(
+                        user_id=invite.inviter.clerkId,
+                        self_responses=self_responses,
+                        friend_responses=friend_response_data,
+                        db=prisma
+                    )
+                    
+                    print(f"✅ Profile regenerated successfully!")
+                    print(f"   - Blind spots identified: {len(regenerated_profile.get('blind_spots', []))}")
+                    print(f"   - Friend scores: {list(regenerated_profile.get('friend_scores', {}).keys())}")
+                    
+                    # Mark all previous insight generations as not current
+                    await prisma.friendinsightgeneration.update_many(
+                        where={"sessionId": user_assessment.sessionId, "isCurrent": True},
+                        data={"isCurrent": False}
+                    )
+                    
+                    # Create new friend insight generation record
+                    # Calculate input hash for change detection
+                    friend_ids = sorted([fr.id for fr in all_friend_responses])
+                    input_str = f"{json.dumps(friend_ids)}|{json.dumps(regenerated_profile['self_scores'])}|{json.dumps(regenerated_profile['friend_scores'])}"
+                    input_hash = hashlib.sha256(input_str.encode()).hexdigest()
+                    
+                    # Extract narrative text (combine all sections)
+                    narrative_text = None
+                    generation_model = None
+                    generation_cost = None
+                    
+                    if regenerated_profile.get('narrative'):
+                        narrative_data = regenerated_profile['narrative']
+                        
+                        # Combine all sections into one narrative
+                        sections = narrative_data.get('sections', {})
+                        if sections:
+                            narrative_parts = []
+                            for section_name, section_text in sections.items():
+                                narrative_parts.append(f"## {section_name.replace('_', ' ').title()}\n\n{section_text}")
+                            narrative_text = "\n\n".join(narrative_parts)
+                        
+                        # Extract metadata
+                        metadata = narrative_data.get('metadata', {})
+                        generation_model = metadata.get('model')
+                        generation_cost = narrative_data.get('generation_cost')
+                    
+                    await prisma.friendinsightgeneration.create(
+                        data={
+                            "sessionId": user_assessment.sessionId,
+                            "selfScores": json.dumps(regenerated_profile['self_scores']),
+                            "friendScores": json.dumps(regenerated_profile['friend_scores']),
+                            "blindSpots": json.dumps(regenerated_profile['blind_spots']),
+                            "friendCount": len(all_friend_responses),
+                            "friendResponseIds": [fr.id for fr in all_friend_responses],
+                            "inputHash": input_hash,
+                            "selfScoresFrozenAt": datetime.now(timezone.utc),
+                            "friendScoresFrozenAt": datetime.now(timezone.utc),
+                            "narrative": narrative_text,
+                            "generationModel": generation_model,
+                            "generationCost": generation_cost,
+                            "regeneratedBecause": "new-friend-response",
+                            "isCurrent": True
+                        }
+                    )
+                    
+                    print(f"✅ Saved friend insight generation to database")
                 
             else:
                 print("⚠️  User has not completed self-assessment yet. Skipping profile regeneration.")
