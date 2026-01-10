@@ -1,6 +1,16 @@
 """
 Friend Insights Service
 
+⚠️ DEPRECATED: This service is being phased out in favor of RegenerationService.
+   - RegenerationService generates insights proactively when friends complete assessments
+   - This service generates insights reactively (on-demand) which causes slow page loads
+   
+Currently kept as FALLBACK ONLY for:
+- Legacy data (friend responses from before automatic regeneration was deployed)
+- Emergency fallback if RegenerationService fails
+
+DO NOT USE for new features. Use RegenerationService instead.
+
 Business logic for generating, caching, and retrieving friend insights narratives.
 Handles change detection via inputHash to avoid unnecessary regenerations.
 """
@@ -16,7 +26,12 @@ logger = logging.getLogger(__name__)
 
 
 class FriendInsightsService:
-    """Service for managing friend insights narratives."""
+    """
+    ⚠️ DEPRECATED: Use RegenerationService instead.
+    
+    Service for managing friend insights narratives.
+    Kept as fallback for legacy data only.
+    """
     
     BLIND_SPOT_THRESHOLD = 15.0  # Points difference to qualify as blind spot
     
