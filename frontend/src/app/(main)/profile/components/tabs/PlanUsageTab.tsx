@@ -40,7 +40,7 @@ export function PlanUsageTab({ tier, invites }: PlanUsageTabProps) {
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {tier === "free"
-                  ? "Limited to 3 friend assessments"
+                  ? "Limited to 15 friend assessments"
                   : "Unlimited friend assessments"}
               </p>
             </div>

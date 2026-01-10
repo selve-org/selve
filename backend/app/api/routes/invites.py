@@ -697,28 +697,23 @@ async def submit_friend_responses(
                     friend_ids = sorted([fr.id for fr in all_friend_responses])
                     input_str = f"{json.dumps(friend_ids)}|{json.dumps(regenerated_profile['self_scores'])}|{json.dumps(regenerated_profile['friend_scores'])}"
                     input_hash = hashlib.sha256(input_str.encode()).hexdigest()
-                    
-                    # Extract narrative text (combine all sections)
+
+                    # Extract ONLY friend insights narrative (220-350 words)
+                    # NOT the full profile (which goes to AssessmentResult)
                     narrative_text = None
                     generation_model = None
                     generation_cost = None
-                    
-                    if regenerated_profile.get('narrative'):
-                        narrative_data = regenerated_profile['narrative']
-                        
-                        # Combine all sections into one narrative
-                        sections = narrative_data.get('sections', {})
-                        if sections:
-                            narrative_parts = []
-                            for section_name, section_text in sections.items():
-                                narrative_parts.append(f"## {section_name.replace('_', ' ').title()}\n\n{section_text}")
-                            narrative_text = "\n\n".join(narrative_parts)
-                        
-                        # Extract metadata
-                        metadata = narrative_data.get('metadata', {})
-                        generation_model = metadata.get('model')
-                        generation_cost = narrative_data.get('generation_cost')
-                    
+                    prompt_tokens = None
+                    completion_tokens = None
+
+                    friend_insights = regenerated_profile.get('friend_insights_narrative', {})
+                    if friend_insights:
+                        narrative_text = friend_insights.get('narrative')
+                        generation_model = friend_insights.get('model')
+                        generation_cost = friend_insights.get('cost')
+                        prompt_tokens = friend_insights.get('promptTokens')
+                        completion_tokens = friend_insights.get('completionTokens')
+
                     await prisma.friendinsightgeneration.create(
                         data={
                             "sessionId": user_assessment.sessionId,
@@ -730,8 +725,10 @@ async def submit_friend_responses(
                             "inputHash": input_hash,
                             "selfScoresFrozenAt": datetime.now(timezone.utc),
                             "friendScoresFrozenAt": datetime.now(timezone.utc),
-                            "narrative": narrative_text,
+                            "narrative": narrative_text,  # Short friend insights only!
                             "generationModel": generation_model,
+                            "promptTokens": prompt_tokens,
+                            "completionTokens": completion_tokens,
                             "generationCost": generation_cost,
                             "regeneratedBecause": "new-friend-response",
                             "isCurrent": True

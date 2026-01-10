@@ -2,8 +2,9 @@
 Profile Regeneration Service
 
 Regenerates user personality profiles incorporating friend insights.
-Calculates quality-weighted friend scores, identifies blind spots,
-and regenerates narrative with friend data.
+Uses enhanced blind spot analysis to discover deep patterns.
+
+UPDATED: Now uses EnhancedBlindSpotAnalyzer for comprehensive analysis.
 """
 
 import logging
@@ -11,7 +12,9 @@ from typing import Dict, List, Any
 from datetime import datetime
 from app.scoring import SelveScorer
 from app.narratives.integrated_generator import IntegratedNarrativeGenerator
+from app.narratives.friend_insights_generator import generate_friend_insights_narrative
 from app.services.quality_scoring import QualityScoringService
+from app.services.enhanced_blind_spot_analyzer import EnhancedBlindSpotAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -44,20 +47,28 @@ class BlindSpot:
 
 
 class RegenerationService:
-    """Service for regenerating profiles with friend insights."""
-    
-    BLIND_SPOT_THRESHOLD = 15.0  # 15-point difference threshold
-    
+    """
+    Service for regenerating profiles with friend insights.
+
+    UPDATED: Now uses EnhancedBlindSpotAnalyzer for deep pattern discovery.
+    """
+
+    BLIND_SPOT_THRESHOLD = 15.0  # 15-point difference threshold (kept for backward compatibility)
+
     def __init__(
         self,
         friend_pool_path: str = 'app/data/selve_friend_item_pool.json',
         main_pool_path: str = 'app/data/selve_item_pool_expanded.json'
     ):
-        """Initialize with both item pools."""
+        """Initialize with both item pools and enhanced analyzer."""
         self.friend_scorer = SelveScorer(item_pool_path=friend_pool_path)
         self.main_scorer = SelveScorer(item_pool_path=main_pool_path)
         self.quality_service = QualityScoringService(item_pool_path=friend_pool_path)
         self.narrative_generator = IntegratedNarrativeGenerator(use_llm=True)
+        self.enhanced_analyzer = EnhancedBlindSpotAnalyzer(
+            friend_pool_path=friend_pool_path,
+            main_pool_path=main_pool_path
+        )
     
     async def regenerate_profile_with_friend_data(
         self,
@@ -68,20 +79,26 @@ class RegenerationService:
     ) -> Dict[str, Any]:
         """
         Regenerate user's personality profile incorporating friend insights.
-        
+
+        UPDATED: Now uses EnhancedBlindSpotAnalyzer for comprehensive analysis.
+
         Args:
             user_id: User ID
             self_responses: User's self-assessment responses {item_code: score}
             friend_responses: List of friend response records from database
             db: Database session
-        
+
         Returns:
-            Dictionary with updated profile data
+            Dictionary with:
+                - full_profile_narrative: Complete personality profile
+                - friend_insights_narrative: Separate friend section (220-350 words)
+                - enhanced_analysis: Deep blind spot analysis
+                - self_scores, friend_scores, blind_spots (backward compatibility)
         """
-        logger.info(f"Regenerating profile for user {user_id}")
-        logger.info(f"Self responses: {len(self_responses)} items")
-        logger.info(f"Friend responses: {len(friend_responses)} friends")
-        
+        logger.info(f"🔄 Regenerating profile for user {user_id}")
+        logger.info(f"   Self responses: {len(self_responses)} items")
+        logger.info(f"   Friend responses: {len(friend_responses)} friends")
+
         # Step 1: Calculate self scores
         self_profile = self.main_scorer.score_responses(self_responses, validate=True)
         self_scores = {
@@ -94,42 +111,70 @@ class RegenerationService:
             'CHRONOS': self_profile.chronos.normalized_score,
             'KAEL': self_profile.kael.normalized_score
         }
-        
-        logger.info(f"Self scores: {self_scores}")
-        
-        # Step 2: Calculate quality-weighted friend scores per dimension
-        friend_scores = self._calculate_friend_scores(friend_responses)
-        
-        logger.info(f"Friend scores: {friend_scores}")
-        
-        # Step 3: Identify blind spots
-        blind_spots = self._identify_blind_spots(self_scores, friend_scores)
-        
-        logger.info(f"Blind spots: {len(blind_spots)}")
-        for spot in blind_spots:
-            logger.info(f"  - {spot.dimension}: self={spot.self_score:.1f}, "
-                       f"friend={spot.friend_score:.1f}, diff={spot.difference:.1f}, "
-                       f"type={spot.type}")
-        
-        # Step 4: Generate enhanced narrative
-        narrative_data = self._generate_narrative_with_insights(
-            self_scores=self_scores,
-            friend_scores=friend_scores,
-            blind_spots=blind_spots,
-            n_friends=len(friend_responses)
+
+        logger.info(f"✅ Self scores calculated: {list(self_scores.keys())}")
+
+        # Step 2: Run enhanced blind spot analysis
+        enhanced_analysis = self.enhanced_analyzer.analyze(
+            self_responses=self_responses,
+            friend_responses=friend_responses,
+            self_scores=self_scores
         )
-        
-        # Step 5: Prepare result
+
+        logger.info(f"✅ Enhanced analysis complete:")
+        logger.info(f"   - {len(enhanced_analysis['enhanced_blind_spots'])} enhanced blind spots")
+        logger.info(f"   - {len(enhanced_analysis['item_discrepancies'])} item-level gaps")
+        logger.info(f"   - {len(enhanced_analysis['response_biases'])} detected biases")
+
+        # Step 3: Calculate legacy friend scores (for backward compatibility)
+        friend_scores = self._calculate_friend_scores(friend_responses)
+
+        # Step 4: Extract simple blind spots for legacy support
+        simple_blind_spots = []
+        for ebs in enhanced_analysis['enhanced_blind_spots']:
+            simple_blind_spots.append({
+                'dimension': ebs['dimension'],
+                'self_score': ebs['self_score'],
+                'friend_score': ebs['friend_score'],
+                'difference': ebs['difference'],
+                'type': ebs['type']
+            })
+
+        logger.info(f"✅ Legacy blind spots extracted: {len(simple_blind_spots)}")
+
+        # Step 5: Generate full profile narrative (includes friend context)
+        full_profile_narrative = self._generate_full_profile(
+            self_scores=self_scores,
+            enhanced_analysis=enhanced_analysis
+        )
+
+        logger.info(f"✅ Full profile narrative generated")
+
+        # Step 6: Generate separate friend insights narrative (220-350 words)
+        friend_insights_narrative = self._generate_friend_insights_narrative(
+            enhanced_analysis=enhanced_analysis,
+            friend_count=len(friend_responses)
+        )
+
+        logger.info(f"✅ Friend insights narrative generated")
+
+        # Step 7: Prepare result
         result = {
+            # New enhanced format
+            'full_profile_narrative': full_profile_narrative,
+            'friend_insights_narrative': friend_insights_narrative,
+            'enhanced_analysis': enhanced_analysis,
+
+            # Legacy format (backward compatibility)
             'self_scores': self_scores,
             'friend_scores': friend_scores,
-            'blind_spots': [spot.to_dict() for spot in blind_spots],
-            'narrative': narrative_data,
+            'blind_spots': simple_blind_spots,
+            'narrative': full_profile_narrative,  # Backward compat
             'n_friends': len(friend_responses),
             'updated_at': datetime.utcnow().isoformat()
         }
-        
-        logger.info("Profile regeneration complete")
+
+        logger.info("✅ Profile regeneration complete")
         return result
     
     def _calculate_friend_scores(
@@ -303,4 +348,123 @@ class RegenerationService:
                     'difference': round(friend_scores[dimension] - self_scores[dimension], 1)
                 })
         
+        return insights
+
+    def _generate_full_profile(
+        self,
+        self_scores: Dict[str, float],
+        enhanced_analysis: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Generate full personality profile narrative.
+
+        This is the main profile that includes all 7 sections.
+        It subtly incorporates friend insights context.
+
+        Args:
+            self_scores: User's dimension scores
+            enhanced_analysis: Enhanced blind spot analysis results
+
+        Returns:
+            Complete narrative dict with all sections
+        """
+        # Generate base narrative from self scores
+        int_scores = {k: int(round(v)) for k, v in self_scores.items()}
+        narrative = self.narrative_generator.generate_narrative(int_scores)
+
+        # TODO: Future enhancement - pass enhanced_analysis to narrative generator
+        # so it can subtly weave in friend context throughout the profile
+
+        return narrative
+
+    def _generate_friend_insights_narrative(
+        self,
+        enhanced_analysis: Dict[str, Any],
+        friend_count: int
+    ) -> Dict[str, Any]:
+        """
+        Generate SHORT friend insights narrative (220-350 words).
+
+        This is the "What Your Friends See" section.
+
+        Args:
+            enhanced_analysis: Enhanced blind spot analysis
+            friend_count: Number of friends
+
+        Returns:
+            Dict with friend insights narrative and metadata
+        """
+        # Extract data from enhanced analysis
+        enhanced_blind_spots = enhanced_analysis.get('enhanced_blind_spots', [])
+        consensus_analysis = enhanced_analysis.get('consensus_analysis', {})
+        biases = enhanced_analysis.get('response_biases', [])
+        summary = enhanced_analysis.get('summary', {})
+
+        # Convert enhanced blind spots to simple format for generator
+        simple_blind_spots = []
+        for ebs in enhanced_blind_spots:
+            simple_blind_spots.append({
+                'dimension': ebs['dimension'],
+                'selfScore': ebs['self_score'],
+                'friendScore': ebs['friend_score'],
+                'diff': ebs['difference'],
+                'type': ebs['type']
+            })
+
+        # Build self and friend scores dicts
+        self_scores = {}
+        friend_scores = {}
+        for ebs in enhanced_blind_spots:
+            dim = ebs['dimension']
+            self_scores[dim] = ebs['self_score']
+            friend_scores[dim] = ebs['friend_score']
+
+        # Generate narrative using existing friend insights generator
+        result = generate_friend_insights_narrative(
+            self_scores=self_scores,
+            friend_scores=friend_scores,
+            blind_spots=simple_blind_spots,
+            friend_count=friend_count
+        )
+
+        return {
+            'narrative': result.get('narrative'),
+            'model': result.get('model'),
+            'cost': result.get('cost'),
+            'promptTokens': result.get('promptTokens'),
+            'completionTokens': result.get('completionTokens'),
+            'error': result.get('error'),
+            'violations': result.get('violations', []),
+            # Add enhanced context for future use
+            'enhanced_context': {
+                'consensus_insights': self._format_consensus_insights(consensus_analysis),
+                'pattern_biases': [b['evidence'] for b in biases if 'evidence' in b],
+                'confidence_level': summary.get('high_confidence_count', 0)
+            }
+        }
+
+    def _format_consensus_insights(
+        self,
+        consensus_analysis: Dict[str, Dict]
+    ) -> List[str]:
+        """
+        Format consensus analysis into human-readable insights.
+
+        Args:
+            consensus_analysis: Dict of dimension -> consensus data
+
+        Returns:
+            List of insight strings
+        """
+        insights = []
+
+        for dim, consensus in consensus_analysis.items():
+            agreement = consensus.get('agreement_level', 'unknown')
+            confidence = consensus.get('confidence', 'unknown')
+
+            if agreement == 'strong' and confidence == 'high':
+                insights.append(f"All friends strongly agree on your {dim} score")
+            elif agreement == 'split':
+                insights.append(f"Friends have mixed views on your {dim} - may be context-dependent")
+
         return insights

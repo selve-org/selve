@@ -19,7 +19,7 @@ export default function PricingPage() {
       features: [
         "Basic personality assessment",
         "Limited chat tokens",
-        "3 friend invites",
+        "15 friend invites",
         "Access to SELVE knowledge base",
         "Basic insights and recommendations",
         "Community support",

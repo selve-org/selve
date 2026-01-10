@@ -23,7 +23,7 @@ SUBSCRIPTION_PLANS = {
         "features": [
             "$1 worth of chatbot usage per day",
             "Basic personality insights",
-            "3 friend assessments"
+            "15 friend assessments"
         ]
     },
     "pro": {

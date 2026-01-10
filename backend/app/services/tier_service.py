@@ -14,8 +14,8 @@ from typing import Dict, Literal, Optional, Tuple
 # Tier Configuration
 TIERS = {
     "free": {
-        "max_invites": 3,
-        "rate_limit_per_hour": 5,
+        "max_invites": 15,  # Updated from 3 to 15
+        "rate_limit_per_hour": 10,  # Increased rate limit proportionally
         "name": "Free"
     },
     "premium": {
