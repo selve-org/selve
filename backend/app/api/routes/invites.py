@@ -303,10 +303,14 @@ async def create_invite(
                                if invite_data.friend_nickname and invite_data.friend_nickname.strip()
                                else invite_data.friend_email)
 
+        # Use first name only for privacy
+        inviter_full_name = user.name or user.email
+        inviter_first_name = inviter_full_name.split()[0] if inviter_full_name and ' ' in inviter_full_name else inviter_full_name
+
         result = mailgun_service.send_invite_email(
             to_email=invite_data.friend_email,
             to_name=friend_display_name,
-            inviter_name=user.name or user.email,
+            inviter_name=inviter_first_name,
             invite_code=invite_code,
             relationship_type=invite_data.relationship_type
         )
@@ -379,9 +383,13 @@ async def get_invite(invite_code: str):
         if invite.status == "revoked":
             raise HTTPException(status_code=410, detail="This invite has been revoked")
         
+        # Get first name only for privacy
+        full_name = invite.inviter.name or invite.inviter.email
+        first_name = full_name.split()[0] if full_name and ' ' in full_name else full_name
+        
         # Return invite details
         return {
-            "inviter_name": invite.inviter.name or invite.inviter.email,
+            "inviter_name": first_name,
             "relationship_type": invite.relationshipType,
             "status": invite.status,
             "expires_at": invite.expiresAt,
@@ -462,8 +470,9 @@ async def get_friend_questions(invite_code: str):
         with open('app/data/selve_friend_item_pool.json', 'r') as f:
             item_pool = json.load(f)
         
-        # Get inviter's name
-        inviter_name = invite.inviter.name or "your friend"
+        # Get inviter's name (first name only for privacy)
+        full_name = invite.inviter.name or "your friend"
+        inviter_name = full_name.split()[0] if full_name and full_name != "your friend" else "your friend"
         
         # Flatten and substitute {Name}
         questions = []
@@ -774,9 +783,10 @@ async def submit_friend_responses(
                 else:
                     friend_display_name = "Friend"
                 
-                # Failsafe for inviter name (fallback: email username -> "your friend")
+                # Failsafe for inviter name (first name only for privacy)
                 if invite.inviter and invite.inviter.name and invite.inviter.name.strip():
-                    inviter_name = invite.inviter.name.strip()
+                    full_name = invite.inviter.name.strip()
+                    inviter_name = full_name.split()[0]
                 elif invite.inviter and invite.inviter.email:
                     inviter_name = invite.inviter.email.split('@')[0].title()
                 else:
