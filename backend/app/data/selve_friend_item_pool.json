@@ -11,7 +11,7 @@
     },
     {
       "id": "lumen_2",
-      "text": "{Name} says little.",
+      "text": "In conversations, {Name} tends to say little.",
       "dimension": "LUMEN",
       "reversed": true,
       "correlation": 0.7466828281389422,
@@ -87,7 +87,7 @@
     },
     {
       "id": "orpheus_3",
-      "text": "{Name} feels others' emotions.",
+      "text": "{Name} tends to feel what others are feeling.",
       "dimension": "ORPHEUS",
       "reversed": false,
       "correlation": 0.6312581090236026,
@@ -125,7 +125,7 @@
     },
     {
       "id": "orin_4",
-      "text": "{Name} is always prepared.",
+      "text": "{Name} tends to be well prepared.",
       "dimension": "ORIN",
       "reversed": false,
       "correlation": 0.5399088773685665,
@@ -145,7 +145,7 @@
     },
     {
       "id": "lyra_2",
-      "text": "{Name} is full of ideas.",
+      "text": "{Name} tends to come up with many ideas.",
       "dimension": "LYRA",
       "reversed": false,
       "correlation": 0.5895556930551805,
@@ -221,7 +221,7 @@
     },
     {
       "id": "chronos_4",
-      "text": "{Name} tries to forgive and forget.",
+      "text": "After conflicts, {Name} tries to forgive and move on.",
       "dimension": "CHRONOS",
       "reversed": false,
       "correlation": 0.5211774258457111,
@@ -250,7 +250,7 @@
     },
     {
       "id": "kael_3",
-      "text": "{Name} has a strong personality.",
+      "text": "In social situations, {Name} comes across as confident and assertive.",
       "dimension": "KAEL",
       "reversed": false,
       "correlation": 0.5776122649864508,
