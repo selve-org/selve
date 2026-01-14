@@ -12,14 +12,14 @@ import {
   FaInstagram, 
   FaYoutube, 
   FaXTwitter, 
-  FaRedditAlien,
+  // FaRedditAlien,
   FaThreads,
   FaMedium
 } from "react-icons/fa6";
 
 const socialLinks = [
   { icon: FaYoutube, href: "https://youtube.com/@selve_co", label: "YouTube", title: "Subscribe to our YouTube channel" },
-  { icon: FaRedditAlien, href: "https://reddit.com/u/selve_co", label: "Reddit", title: "Join us on Reddit" },
+  // { icon: FaRedditAlien, href: "https://reddit.com/u/selve_co", label: "Reddit", title: "Join us on Reddit" },
   { icon: FaXTwitter, href: "https://x.com/selve_co", label: "X (Twitter)", title: "Follow us on X" },
   { icon: FaThreads, href: "https://threads.net/@selve.me", label: "Threads", title: "Follow us on Threads" },
   { icon: FaInstagram, href: "https://www.instagram.com/selve.me/", label: "Instagram", title: "Follow us on Instagram" },
