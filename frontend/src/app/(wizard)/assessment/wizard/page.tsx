@@ -3,6 +3,8 @@
 
 import React, { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -69,6 +71,8 @@ export default function WizardPage() {
     getAnswer,
   } = useQuestionnaire(inviteCode || undefined);
 
+  const currentQuestionId = currentQuestion?.id;
+
   // Local UI state
   const [currentAnswer, setCurrentAnswer] = useState<unknown>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -117,13 +121,13 @@ export default function WizardPage() {
    * This handles both forward navigation and back navigation
    */
   useEffect(() => {
-    if (currentQuestion) {
-      const existingAnswer = getAnswer(currentQuestion.id);
+    if (currentQuestionId) {
+      const existingAnswer = getAnswer(currentQuestionId);
       setCurrentAnswer(existingAnswer ?? null);
       setValidationError(null);
       setIsSubmitting(false); // Reset submitting state on question change
     }
-  }, [currentQuestion?.id, getAnswer]);
+  }, [currentQuestionId, getAnswer]);
 
   /**
    * Reset local state when loading state changes
@@ -202,16 +206,26 @@ export default function WizardPage() {
       // handle setting the new answer value when question changes
       setCurrentAnswer(null);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Only show error if it's a real user-facing error
       // Sync conflicts are now handled internally by the hook
       console.error("Failed to submit answer:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "";
       
       // Check for specific error types that should be shown to user
-      if (error?.message?.includes("network") || error?.message?.includes("Failed to fetch")) {
+      if (
+        message.toLowerCase().includes("network") ||
+        message.includes("Failed to fetch")
+      ) {
         setValidationError("Network error. Please check your connection and try again.");
-      } else if (error?.message && !error?.message?.includes("sync")) {
-        setValidationError(error.message);
+      } else if (message && !message.toLowerCase().includes("sync")) {
+        setValidationError(message);
       }
       // Note: sync-related errors are handled by the hook and don't need UI display
     } finally {
@@ -245,9 +259,38 @@ export default function WizardPage() {
       
       {/* Main Assessment Interface - Only show when not initializing */}
       {!isInitializing && (
-        <div className="flex min-h-screen bg-white dark:bg-[#1c1c1c] text-foreground">
+        <div className="relative flex min-h-screen bg-white dark:bg-[#1c1c1c] text-foreground">
+          {/* Mobile Logo Overlay (left canvas is hidden on mobile) */}
+          <Link
+            href="/"
+            aria-label="Go to homepage"
+            className="absolute top-4 left-4 z-30 inline-flex lg:hidden"
+          >
+            <Image
+              src="/logo/selve-logo.png"
+              alt="SELVE"
+              width={32}
+              height={32}
+              priority
+              className="drop-shadow-md hover:opacity-90 transition-opacity"
+            />
+          </Link>
           {/* Left Side: Artistic Canvas (hidden on mobile/tablet) */}
-          <div className="hidden lg:block lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:h-screen">
+          <div className="hidden lg:block lg:w-1/2 lg:fixed lg:left-0 lg:top-0 lg:h-screen relative">
+            <Link
+              href="/"
+              aria-label="Go to homepage"
+              className="absolute top-6 left-6 z-20 inline-flex"
+            >
+              <Image
+                src="/logo/selve-logo.png"
+                alt="SELVE"
+                width={44}
+                height={44}
+                priority
+                className="drop-shadow-md hover:opacity-90 transition-opacity"
+              />
+            </Link>
             <ArtisticCanvas />
           </div>
 
