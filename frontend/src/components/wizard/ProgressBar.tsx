@@ -22,11 +22,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   percentage,
   className = "",
 }) => {
-  // Asymptotic progress calculation for adaptive assessments
-  // The bar fills quickly at first, then slows down but never stops
-  // Formula: progress approaches 90% asymptotically
-  // This is honest - we don't know the exact total, so we show continuous progress
-  const normalizedPercentage = 90 * (1 - Math.exp(-current / 30));
+  // Prefer backend-calculated progress.
+  // Backend sends `progress` as a fraction (0..1). If it ever sends 0..100, handle that too.
+  const percentFromBackend = percentage <= 1 ? percentage * 100 : percentage;
+  const percentFromCounts = total > 0 ? (current / total) * 100 : 0;
+  const rawPercent = percentFromBackend > 0 ? percentFromBackend : percentFromCounts;
+  const normalizedPercentage = Math.max(0, Math.min(100, rawPercent));
 
   return (
     <div className={`w-full ${className}`}>
