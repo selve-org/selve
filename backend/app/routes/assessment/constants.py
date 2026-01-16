@@ -28,8 +28,8 @@ class AssessmentConfig:
     
     # Question counts
     TOTAL_DEMOGRAPHIC_QUESTIONS: Final[int] = 7
-    ESTIMATED_PERSONALITY_QUESTIONS: Final[int] = 37
-    ESTIMATED_TOTAL_QUESTIONS: Final[int] = 44  # demographics + personality
+    ESTIMATED_PERSONALITY_QUESTIONS: Final[int] = 108  # Based on actual data: avg ~111 personality questions
+    ESTIMATED_TOTAL_QUESTIONS: Final[int] = 115  # demographics (7) + personality (~108) = ~115
     
     # Dimension requirements
     MIN_ITEMS_PER_DIMENSION: Final[int] = 5  # Minimum for Cronbach's alpha > 0.75 (statistical reliability)

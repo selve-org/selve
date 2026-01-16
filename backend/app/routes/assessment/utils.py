@@ -32,22 +32,36 @@ logger = logging.getLogger(__name__)
 def calculate_progress(
     demographics_count: int,
     responses_count: int,
-    estimated_total: int = AssessmentConfig.ESTIMATED_TOTAL_QUESTIONS,
+    pending_count: int = 0,
+    is_complete: bool = False,
 ) -> float:
     """
     Calculate assessment progress as a fraction.
     
+    Uses estimated total based on actual assessment data (~115 questions avg).
+    The adaptive algorithm generates 100-120 questions depending on response patterns.
+    
     Args:
         demographics_count: Number of demographics answered
         responses_count: Number of personality questions answered
-        estimated_total: Estimated total questions
+        pending_count: Number of questions queued but not yet answered
+        is_complete: Whether assessment is complete
         
     Returns:
-        Progress between 0.0 and 0.95 (cap prevents 100% before completion)
+        Progress between 0.0 and 1.0, reaching 1.0 only when complete
     """
+    if is_complete:
+        return 1.0
+    
     total_answered = demographics_count + responses_count
+    
+    # Use realistic estimate based on actual data (115 avg, range 100-120)
+    # This gives smoother progress than trying to track dynamic queue
+    estimated_total = AssessmentConfig.ESTIMATED_TOTAL_QUESTIONS
+    
+    # Calculate progress, capping at 99% until completion
     progress = total_answered / estimated_total
-    return min(progress, 0.95)  # Cap at 95% until actually complete
+    return min(progress, 0.99)  # Cap at 99% to reserve 100% for completion
 
 
 def get_dimension_counts(

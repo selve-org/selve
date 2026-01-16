@@ -280,7 +280,11 @@ async def submit_answer(
 
             if not all_demographics_complete:
                 # Still collecting demographics
-                progress = calculate_progress(len(demographics), 0)
+                progress = calculate_progress(
+                    len(demographics),
+                    0,
+                    is_complete=False
+                )
                 session_mgr.save_session(session_id, session)
 
                 return SubmitAnswerResponse(
@@ -442,9 +446,13 @@ async def submit_answer(
             "timestamp": datetime.now().isoformat(),
         })
 
-        # Calculate progress
+        # Calculate progress using realistic estimate (115 questions avg)
         questions_answered = len(demographics) + len(responses)
-        progress = calculate_progress(len(demographics), len(responses))
+        progress = calculate_progress(
+            len(demographics),
+            len(responses),
+            is_complete=False
+        )
 
         # Save session
         session_mgr.save_session(session_id, session)
