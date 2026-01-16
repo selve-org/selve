@@ -265,6 +265,17 @@ export default function WizardPage() {
                 </p>
               </div>
 
+              {/* Progress Indicator */}
+              {!isInitializing && !isComplete && progress.total > 0 && (
+                <div className="mb-6">
+                  <ProgressBar
+                    current={progress.current}
+                    total={progress.total}
+                    percentage={progress.percentage}
+                  />
+                </div>
+              )}
+
               {/* Back Locked Alert Banner */}
               <AnimatePresence>
                 {backLockedMessage && (

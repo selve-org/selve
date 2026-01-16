@@ -198,6 +198,7 @@ def sanitize_text_input(text: str, max_length: int = 500) -> str:
 @router.post("/assessment/answer", response_model=SubmitAnswerResponse)
 async def submit_answer(
     request: SubmitAnswerRequest,
+    background_tasks: BackgroundTasks,
     service: AssessmentService = Depends(get_assessment_service),
 ):
     """
@@ -372,6 +373,10 @@ async def submit_answer(
             # Persist to database
             await update_session_from_state(service, session_id, session)
 
+            # Trigger background results generation immediately
+            logger.info(f"🚀 Triggering background results generation for {session_id[:8]}...")
+            background_tasks.add_task(_generate_results_background, session_id, service)
+
             return SubmitAnswerResponse(
                 next_questions=None,
                 is_complete=True,
@@ -401,6 +406,10 @@ async def submit_answer(
 
             session_mgr.save_session(session_id, session)
             await update_session_from_state(service, session_id, session)
+
+            # Trigger background results generation immediately
+            logger.info(f"🚀 Triggering background results generation for {session_id[:8]}...")
+            background_tasks.add_task(_generate_results_background, session_id, service)
 
             return SubmitAnswerResponse(
                 next_questions=None,
@@ -737,207 +746,80 @@ async def get_results(
 ):
     """
     Get complete assessment results with narrative.
-    
-    Results are cached in database:
-    - First request: Generates narrative with OpenAI (~$0.002) → Saves to database
-    - Subsequent requests: Fetches from database (FREE, instant!)
-    
-    Uses distributed lock to prevent duplicate OpenAI calls on concurrent requests.
+
+    Results are either:
+    - Cached in database (instant!) if background generation already completed
+    - In progress (returns 202 Accepted) if still generating
+    - Triggered by /submit endpoint, NOT here
+
+    This endpoint never blocks - just returns cached results or generation status.
     """
     session_id = validate_session_id(session_id)
     session_mgr = get_session_manager()
 
-    # FIX: Acquire lock FIRST to prevent TOCTOU race condition
-    lock_token = None
-    try:
-        lock_token = session_mgr.acquire_results_lock(session_id)
+    # Check if results already exist (fast path)
+    existing_result = await service.get_result(session_id)
 
-        # NOW check for existing results (inside lock)
-        existing_result = await service.get_result(session_id)
+    if existing_result:
+        logger.info(f"✅ Returning cached results for {session_id[:8]}")
 
-        if existing_result:
-            logger.info(f"Returning cached results for session {session_id[:8]}...")
+        db_session = await service.get_session(session_id)
+        demographics = db_session.demographics if db_session else {}
 
-            db_session = await service.get_session(session_id)
-            demographics = db_session.demographics if db_session else {}
-
-            validation_data = None
-            if existing_result.consistencyScore is not None:
-                validation_data = ValidationResult(
-                    consistency_score=existing_result.consistencyScore,
-                    attention_score=existing_result.attentionScore or 0,
-                    flags=existing_result.validationFlags or [],
-                )
-
-            return GetResultsResponse(
-                session_id=session_id,
-                scores={
-                    "LUMEN": existing_result.scoreLumen,
-                    "AETHER": existing_result.scoreAether,
-                    "ORPHEUS": existing_result.scoreOrpheus,
-                    "ORIN": existing_result.scoreOrin,
-                    "LYRA": existing_result.scoreLyra,
-                    "VARA": existing_result.scoreVara,
-                    "CHRONOS": existing_result.scoreChronos,
-                    "KAEL": existing_result.scoreKael,
-                },
-                narrative=existing_result.narrative,
-                completed_at=existing_result.createdAt.isoformat(),
-                demographics=demographics,
-                validation=validation_data,
-            )
-
-        # Get session
-        session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
-        if not session:
-            raise HTTPException(status_code=404, detail="Session not found")
-        
-        responses = session["responses"]
-        demographics = session.get("demographics", {})
-        pending_questions = session.get("pending_questions", set())
-        scorer: SelveScorer = session["scorer"]
-        validator = session.get("validator")
-        
-        # Check minimum coverage (including pending questions)
-        question_engine = QuestionEngine(session["tester"], scorer)
-        is_valid, incomplete_dims = question_engine.check_minimum_coverage(responses, pending_questions)
-        
-        if not is_valid and len(responses) < AssessmentConfig.QUICK_SCREEN_ITEMS:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Assessment incomplete. Need more responses for: {', '.join(incomplete_dims)}",
-            )
-        
-        # Score responses
-        profile = scorer.score_responses(responses)
-        
-        # Get validation results
-        validation_result = None
-        if validator:
-            validation_result = validator.validate_responses(responses)
-        
-        # Generate narrative (using async for parallel OpenAI calls - ~3-4x faster)
-        int_scores = {dim: int(score) for dim, score in profile.dimension_scores.items()}
-        
-        # Human-readable section names for progress display
-        SECTION_DISPLAY_NAMES = {
-            'core_identity': 'Core Identity',
-            'motivations': 'Motivations',
-            'conflicts': 'Inner Conflicts',
-            'strengths': 'Strengths',
-            'growth_areas': 'Growth Areas',
-            'relationships': 'Relationships',
-            'work_style': 'Work Style',
-        }
-        section_names = list(SECTION_DISPLAY_NAMES.keys())
-        display_names = list(SECTION_DISPLAY_NAMES.values())
-        
-        # Initialize progress tracking in Redis
-        session_mgr._redis.init_generation_progress(
-            session_id=session_id,
-            total_steps=len(section_names),
-            step_names=display_names
-        )
-        
-        # Create progress callback
-        async def on_section_complete(section_name: str, completed_count: int):
-            """Update progress when a section completes."""
-            display_name = SECTION_DISPLAY_NAMES.get(section_name, section_name)
-            remaining = len(section_names) - completed_count
-            next_step = None
-            if remaining > 0:
-                # Find a section that hasn't completed yet (approximate)
-                next_step = f"Generating section {completed_count + 1} of {len(section_names)}..."
-            session_mgr._redis.update_generation_progress(
-                session_id=session_id,
-                completed_step=display_name,
-                next_step=next_step
-            )
-            logger.debug(f"Progress: {completed_count}/{len(section_names)} - Completed: {display_name}")
-        
-        try:
-            integrated_narrative = await generate_integrated_narrative_async(
-                int_scores, 
-                use_llm=True,
-                on_section_complete=on_section_complete
-            )
-            
-            narrative_dict = {
-                'profile_pattern': integrated_narrative['profile_pattern'],
-                'sections': integrated_narrative['sections'],
-                'scores': integrated_narrative['scores'],
-                'generation_cost': integrated_narrative.get('generation_cost', 0.0),
-                'metadata': integrated_narrative.get('metadata', {}),
-            }
-            
-            logger.info(
-                f"Generated narrative with OpenAI. "
-                f"Cost: ${integrated_narrative.get('generation_cost', 0):.4f}"
-            )
-            
-        except Exception as e:
-            logger.warning(f"OpenAI narrative failed, using fallback: {e}")
-            
-            narrative = generate_narrative(profile.dimension_scores)
-            narrative_dict = build_fallback_narrative(profile, narrative)
-        
-        # Personalize with name
-        narrative_dict = personalize_narrative(narrative_dict, demographics)
-        
-        # Mark session complete
-        session["completed_at"] = datetime.now().isoformat()
-        
-        # Extract archetype info
-        archetype_name = None
-        profile_pattern = None
-        if 'sections' in narrative_dict and 'archetype' in narrative_dict['sections']:
-            archetype_name = narrative_dict['sections']['archetype'].get('name')
-        if 'profile_pattern' in narrative_dict:
-            profile_pattern = narrative_dict['profile_pattern'].get('pattern')
-        
-        # Save to database
-        await service.save_result(
-            session_id=session_id,
-            scores=profile.dimension_scores,
-            narrative=narrative_dict,
-            archetype=archetype_name,
-            profile_pattern=profile_pattern,
-            consistency_score=validation_result.get('consistency_score') if validation_result else None,
-            attention_score=validation_result.get('attention_score') if validation_result else None,
-            validation_flags=validation_result.get('flags', []) if validation_result else None,
-            generation_cost=narrative_dict.get('generation_cost', 0.0),
-            generation_model=narrative_dict.get('metadata', {}).get('model'),
-        )
-        
-        logger.info(f"Results saved to database for session {session_id[:8]}...")
-        
-        # Build validation response
         validation_data = None
-        if validation_result:
-            back_count = session.get("back_navigation_count", 0)
+        if existing_result.consistencyScore is not None:
             validation_data = ValidationResult(
-                consistency_score=validation_result["consistency_score"],
-                attention_score=validation_result["attention_score"],
-                flags=validation_result["flags"],
-                consistency_report=validator.get_consistency_report(responses) if validator else None,
-                back_navigation_count=back_count,
-                back_navigation_analysis=analyze_back_navigation(back_count),
+                consistency_score=existing_result.consistencyScore,
+                attention_score=existing_result.attentionScore or 0,
+                flags=existing_result.validationFlags or [],
             )
-        
+
         return GetResultsResponse(
             session_id=session_id,
-            scores=profile.dimension_scores,
-            narrative=narrative_dict,
-            completed_at=session["completed_at"],
+            scores={
+                "LUMEN": existing_result.scoreLumen,
+                "AETHER": existing_result.scoreAether,
+                "ORPHEUS": existing_result.scoreOrpheus,
+                "ORIN": existing_result.scoreOrin,
+                "LYRA": existing_result.scoreLyra,
+                "VARA": existing_result.scoreVara,
+                "CHRONOS": existing_result.scoreChronos,
+                "KAEL": existing_result.scoreKael,
+            },
+            narrative=existing_result.narrative,
+            completed_at=existing_result.createdAt.isoformat(),
             demographics=demographics,
             validation=validation_data,
         )
-        
-    finally:
-        # Clean up progress tracking
-        session_mgr._redis.complete_generation_progress(session_id)
-        if lock_token:
-            session_mgr.release_results_lock(session_id, lock_token)
+
+    # Check if generation is in progress
+    lock_name = f"results:{session_id}"
+    if session_mgr._redis.is_locked(lock_name):
+        logger.info(f"⏳ Generation in progress for {session_id[:8]}")
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=202,
+            content={
+                "status": "generating",
+                "message": "Results are being generated by background task. Check /results/status for progress."
+            }
+        )
+
+    # No results and no generation in progress - check if session exists
+    session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Session exists but generation hasn't started yet - return pending status
+    logger.info(f"⏳ Results pending for {session_id[:8]} - generation may not have started yet")
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=202,
+        content={
+            "status": "pending",
+            "message": "Results will be generated shortly. This page will auto-refresh when ready."
+        }
+    )
 
 
 @router.get("/assessment/{session_id}/results/status")
@@ -1813,3 +1695,163 @@ def _calculate_aggregated_scores(friend_responses: List[Dict]) -> Dict[str, floa
             aggregated[dim] = dimension_scores[dim] / dimension_counts[dim]
     
     return aggregated
+
+
+# =============================================================================
+# BACKGROUND TASKS
+# =============================================================================
+
+async def _generate_results_background(session_id: str, service: AssessmentService):
+    """
+    Background task to generate assessment results asynchronously.
+    
+    This runs independently after /submit returns, so users don't wait
+    for OpenAI generation to complete. Results are cached in database
+    for instant retrieval when user visits /results page.
+    """
+    session_mgr = get_session_manager()
+    lock_token = None
+    
+    try:
+        logger.info(f"🎯 Background generation started for {session_id[:8]}...")
+        
+        # Check if results already exist
+        existing_result = await service.get_result(session_id)
+        if existing_result:
+            logger.info(f"✅ Results already exist for {session_id[:8]}, skipping")
+            return
+        
+        # Try to acquire lock
+        try:
+            lock_token = session_mgr.acquire_results_lock(session_id)
+        except HTTPException:
+            logger.info(f"⏭️  Another process generating for {session_id[:8]}, skipping")
+            return
+        
+        # Double-check inside lock
+        existing_result = await service.get_result(session_id)
+        if existing_result:
+            logger.info(f"✅ Results exist after lock for {session_id[:8]}, skipping")
+            return
+        
+        # Get session
+        session = await session_mgr.get_session_with_db_fallback(session_id, raise_if_missing=False)
+        if not session:
+            logger.error(f"❌ Session {session_id[:8]} not found")
+            return
+        
+        responses = session["responses"]
+        demographics = session.get("demographics", {})
+        pending_questions = session.get("pending_questions", set())
+        scorer: SelveScorer = session["scorer"]
+        validator = session.get("validator")
+        
+        # Validate
+        question_engine = QuestionEngine(session["tester"], scorer)
+        is_valid, incomplete_dims = question_engine.check_minimum_coverage(responses, pending_questions)
+        
+        if not is_valid and len(responses) < AssessmentConfig.QUICK_SCREEN_ITEMS:
+            logger.warning(f"⚠️  Assessment {session_id[:8]} incomplete")
+            return
+        
+        # Score
+        profile = scorer.score_responses(responses)
+        validation_result = None
+        if validator:
+            validation_result = validator.validate_responses(responses)
+        
+        # Generate narrative
+        int_scores = {dim: int(score) for dim, score in profile.dimension_scores.items()}
+        
+        SECTION_DISPLAY_NAMES = {
+            'core_identity': 'Core Identity',
+            'motivations': 'Motivations',
+            'conflicts': 'Inner Conflicts',
+            'strengths': 'Strengths',
+            'growth_areas': 'Growth Areas',
+            'relationships': 'Relationships',
+            'work_style': 'Work Style',
+        }
+        section_names = list(SECTION_DISPLAY_NAMES.keys())
+        display_names = list(SECTION_DISPLAY_NAMES.values())
+        
+        # Initialize progress
+        session_mgr._redis.init_generation_progress(
+            session_id=session_id,
+            total_steps=len(section_names),
+            step_names=display_names
+        )
+        
+        async def on_section_complete(section_name: str, completed_count: int):
+            display_name = SECTION_DISPLAY_NAMES.get(section_name, section_name)
+            remaining = len(section_names) - completed_count
+            next_step = f"Generating section {completed_count + 1}..." if remaining > 0 else None
+            session_mgr._redis.update_generation_progress(
+                session_id=session_id,
+                completed_step=display_name,
+                next_step=next_step
+            )
+        
+        try:
+            integrated_narrative = await generate_integrated_narrative_async(
+                int_scores, 
+                use_llm=True,
+                on_section_complete=on_section_complete
+            )
+            
+            narrative_dict = {
+                'profile_pattern': integrated_narrative['profile_pattern'],
+                'sections': integrated_narrative['sections'],
+                'scores': integrated_narrative['scores'],
+                'generation_cost': integrated_narrative.get('generation_cost', 0.0),
+                'metadata': integrated_narrative.get('metadata', {}),
+            }
+            
+            logger.info(f"✅ Generated for {session_id[:8]} - ${integrated_narrative.get('generation_cost', 0):.4f}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️  OpenAI failed for {session_id[:8]}, using fallback: {e}")
+            narrative = generate_narrative(profile.dimension_scores)
+            narrative_dict = build_fallback_narrative(profile, narrative)
+        
+        # Personalize
+        narrative_dict = personalize_narrative(narrative_dict, demographics)
+        session["completed_at"] = datetime.now().isoformat()
+        
+        # Extract archetype
+        archetype_name = None
+        profile_pattern = None
+        if 'sections' in narrative_dict and 'archetype' in narrative_dict['sections']:
+            archetype_name = narrative_dict['sections']['archetype'].get('name')
+        if 'profile_pattern' in narrative_dict:
+            profile_pattern = narrative_dict['profile_pattern'].get('pattern')
+        
+        # Save to database
+        await service.save_result(
+            session_id=session_id,
+            scores=profile.dimension_scores,
+            narrative=narrative_dict,
+            archetype=archetype_name,
+            profile_pattern=profile_pattern,
+            consistency_score=validation_result.get('consistency_score') if validation_result else None,
+            attention_score=validation_result.get('attention_score') if validation_result else None,
+            validation_flags=validation_result.get('flags', []) if validation_result else None,
+            generation_cost=narrative_dict.get('generation_cost', 0.0),
+            generation_model=narrative_dict.get('metadata', {}).get('model'),
+        )
+        
+        logger.info(f"💾 Saved results for {session_id[:8]}")
+        session_mgr._redis.complete_generation_progress(session_id)
+        
+    except Exception as e:
+        logger.error(f"❌ Background generation failed {session_id[:8]}: {e}", exc_info=True)
+        try:
+            session_mgr._redis.complete_generation_progress(session_id)
+        except:
+            pass
+    finally:
+        if lock_token:
+            try:
+                session_mgr.release_results_lock(session_id, lock_token)
+            except Exception as e:
+                logger.error(f"Failed to release lock {session_id[:8]}: {e}")
