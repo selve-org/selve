@@ -51,6 +51,49 @@ def get_user_id(request: Request) -> str:
     return user_id
 
 
+# Helper function to sync user data to chat backend
+async def sync_to_chat_backend(clerk_id: str, name: Optional[str] = None, profile_picture: Optional[str] = None):
+    """
+    Sync user data to the chat backend database
+    
+    Args:
+        clerk_id: Clerk user ID
+        name: Updated name (optional)
+        profile_picture: Updated profile picture URL (optional)
+    """
+    try:
+        chat_backend_url = os.getenv("CHAT_BACKEND_URL", "http://localhost:9000")
+        
+        # Prepare update data
+        update_data = {}
+        if name is not None:
+            update_data["name"] = name
+        if profile_picture is not None:
+            update_data["profile_picture"] = profile_picture
+        
+        if not update_data:
+            return  # Nothing to sync
+        
+        # Send sync request to chat backend
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.post(
+                f"{chat_backend_url}/api/users/sync",
+                json={
+                    "clerk_id": clerk_id,
+                    **update_data
+                },
+                headers={"X-User-ID": clerk_id}
+            )
+            
+            if response.status_code != 200:
+                print(f"Warning: Failed to sync to chat backend: {response.status_code}")
+                
+    except Exception as e:
+        # Log but don't fail the main operation
+        print(f"Warning: Failed to sync to chat backend: {str(e)}")
+    return user_id
+
+
 # API Endpoints
 @router.post("/sync")
 async def sync_user(
@@ -320,6 +363,9 @@ async def update_name(request: Request):
             data={"name": new_name}
         )
         
+        # Sync to chat backend
+        await sync_to_chat_backend(user_id, name=new_name)
+        
         return {
             "success": True,
             "name": updated_user.name
@@ -490,6 +536,9 @@ async def upload_profile_picture(
             where={"clerkId": user_id},
             data={"profilePicture": profile_picture_url}
         )
+        
+        # Sync to chat backend
+        await sync_to_chat_backend(user_id, profile_picture=profile_picture_url)
 
         return {
             "success": True,
@@ -544,6 +593,9 @@ async def delete_profile_picture(request: Request):
             where={"clerkId": user_id},
             data={"profilePicture": None}
         )
+        
+        # Sync to chat backend
+        await sync_to_chat_backend(user_id, profile_picture=None)
         
         return {"success": True}
         
