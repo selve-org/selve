@@ -47,3 +47,5 @@ htmlcov/
 
 # Allow data directory
 !app/data/
+.vercel
+.env*.local

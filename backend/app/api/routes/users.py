@@ -11,6 +11,7 @@ from pydantic import BaseModel, EmailStr, Field
 from svix.webhooks import Webhook, WebhookVerificationError
 import hashlib
 import uuid
+from vercel_blob import put
 
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
@@ -392,7 +393,7 @@ async def upload_profile_picture(
     file: UploadFile = File(...)
 ):
     """
-    Upload user's profile picture
+    Upload user's profile picture to Vercel Blob
     
     **Headers Required**:
     - X-User-ID: Clerk user ID (for authentication)
@@ -402,7 +403,7 @@ async def upload_profile_picture(
     - Max size: 5MB
     
     **Returns**:
-    - profilePicture: URL to uploaded image
+    - profilePicture: URL to uploaded image (CDN URL)
     - success: Whether operation succeeded
     """
     user_id = get_user_id(request)
@@ -438,23 +439,33 @@ async def upload_profile_picture(
                 detail="User not found"
             )
         
-        # Generate unique filename
+        # Delete old profile picture from Blob if exists
+        if user.profilePicture and user.profilePicture.startswith("https://"):
+            try:
+                from vercel_blob import delete
+                delete(user.profilePicture)
+            except Exception as e:
+                # Log but don't fail if old image deletion fails
+                print(f"Warning: Failed to delete old profile picture: {e}")
+        
+        # Generate unique filename with timestamp
         file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-        file_hash = hashlib.md5(content).hexdigest()
-        unique_filename = f"{user.id}_{file_hash}.{file_extension}"
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        pathname = f"profile-pictures/{user.id}_{timestamp}.{file_extension}"
         
-        # Determine upload path
-        upload_dir = os.path.join(os.getcwd(), "uploads", "profile-pictures")
-        os.makedirs(upload_dir, exist_ok=True)
+        # Upload to Vercel Blob
+        # Token is auto-injected by Vercel in production via BLOB_READ_WRITE_TOKEN
+        blob_response = put(
+            pathname=pathname,
+            body=content,
+            options={
+                "access": "public",
+                "addRandomSuffix": False,
+            }
+        )
         
-        file_path = os.path.join(upload_dir, unique_filename)
-        
-        # Save file
-        with open(file_path, "wb") as f:
-            f.write(content)
-        
-        # Generate URL (relative path for now - can be updated to use CDN later)
-        profile_picture_url = f"/uploads/profile-pictures/{unique_filename}"
+        # Get CDN URL from response
+        profile_picture_url = blob_response["url"]
         
         # Update user
         updated_user = await prisma.user.update(
@@ -479,7 +490,7 @@ async def upload_profile_picture(
 @router.delete("/profile-picture")
 async def delete_profile_picture(request: Request):
     """
-    Delete user's profile picture
+    Delete user's profile picture from Vercel Blob
     
     **Headers Required**:
     - X-User-ID: Clerk user ID (for authentication)
@@ -501,11 +512,14 @@ async def delete_profile_picture(request: Request):
                 detail="User not found"
             )
         
-        # Delete file if it exists
-        if user.profilePicture:
-            file_path = os.path.join(os.getcwd(), user.profilePicture.lstrip("/"))
-            if os.path.exists(file_path):
-                os.remove(file_path)
+        # Delete from Vercel Blob if it's a Blob URL
+        if user.profilePicture and user.profilePicture.startswith("https://"):
+            try:
+                from vercel_blob import delete
+                delete(user.profilePicture)
+            except Exception as e:
+                # Log but don't fail
+                print(f"Warning: Failed to delete from Blob: {e}")
         
         # Update user
         await prisma.user.update(

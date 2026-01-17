@@ -247,7 +247,7 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
             {profilePicture ? (
               <div className="relative">
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${profilePicture}`}
+                  src={profilePicture}
                   alt={userName || "Profile"}
                   className="w-20 h-20 rounded-full object-cover"
                 />
