@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { User } from "@clerk/nextjs/server";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { toast } from "sonner";
 import { SettingsCard } from "../ui/SettingsCard";
 import { TierType } from "../../types";
 import { Sun, Moon, Monitor, Palette, ArrowRight, Pencil, Check, X, Upload } from "lucide-react";
@@ -83,13 +84,14 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
         const data = await response.json();
         setUserName(data.name);
         setIsEditingName(false);
+        toast.success("Name updated successfully");
       } else {
         const error = await response.json();
-        alert(error.detail || "Failed to update name");
+        toast.error(error.detail || "Failed to update name");
       }
     } catch (error) {
       console.error("Error updating name:", error);
-      alert("Failed to update name");
+      toast.error("Failed to update name");
     } finally {
       setSavingName(false);
     }
@@ -110,13 +112,13 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+      toast.error("Please select an image file");
       return;
     }
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be less than 5MB");
+      toast.error("Image must be less than 5MB");
       return;
     }
 
@@ -137,13 +139,14 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
       if (response.ok) {
         const data = await response.json();
         setProfilePicture(data.profilePicture);
+        toast.success("Profile picture updated successfully");
       } else {
         const error = await response.json();
-        alert(error.detail || "Failed to upload image");
+        toast.error(error.detail || "Failed to upload image");
       }
     } catch (error) {
       console.error("Error uploading profile picture:", error);
-      alert("Failed to upload image");
+      toast.error("Failed to upload image");
     } finally {
       setUploadingPicture(false);
     }
