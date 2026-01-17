@@ -43,9 +43,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           }}
         />
 
-        {/* Shimmer effect */}
+        {/* Shimmer effect - constrained within bar */}
         <motion.div
-          className="absolute left-0 top-0 h-full pointer-events-none"
+          className="absolute left-0 top-0 h-full pointer-events-none overflow-hidden"
           initial={{ width: 0 }}
           animate={{ width: `${normalizedPercentage}%` }}
           transition={{
@@ -56,7 +56,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           <motion.div
             className="absolute left-0 top-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
             animate={{
-              x: ["-100%", "200%"],
+              x: ["0%", "100%"],
             }}
             transition={{
               duration: 2,

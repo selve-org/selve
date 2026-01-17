@@ -5,9 +5,12 @@ Handles user sync, profile management, and Clerk webhooks
 
 import os
 from typing import Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, Request
+from datetime import datetime
+from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from pydantic import BaseModel, EmailStr, Field
 from svix.webhooks import Webhook, WebhookVerificationError
+import hashlib
+import uuid
 
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
@@ -246,6 +249,278 @@ async def update_theme_preference(request: Request):
         raise HTTPException(
             status_code=500,
             detail=f"Error updating theme preference: {str(e)}"
+        )
+
+
+@router.put("/name")
+async def update_name(request: Request):
+    """
+    Update user's name with audit trail
+    
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+    
+    **Request Body**:
+    - name: New name (1-100 characters)
+    
+    **Returns**:
+    - name: Updated name
+    - success: Whether operation succeeded
+    """
+    user_id = get_user_id(request)
+    
+    try:
+        body = await request.json()
+        new_name = body.get("name", "").strip()
+        
+        # Validate name
+        if not new_name:
+            raise HTTPException(
+                status_code=400,
+                detail="Name cannot be empty"
+            )
+        
+        if len(new_name) > 100:
+            raise HTTPException(
+                status_code=400,
+                detail="Name must be 100 characters or less"
+            )
+        
+        # Get current user
+        user = await prisma.user.find_unique(
+            where={"clerkId": user_id}
+        )
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # Get IP and user agent for audit
+        ip_address = request.client.host if request.client else None
+        user_agent = request.headers.get("user-agent")
+        
+        # Create audit record
+        await prisma.namechangeaudit.create(
+            data={
+                "userId": user.id,
+                "oldName": user.name,
+                "newName": new_name,
+                "ipAddress": ip_address,
+                "userAgent": user_agent
+            }
+        )
+        
+        # Update user name
+        updated_user = await prisma.user.update(
+            where={"clerkId": user_id},
+            data={"name": new_name}
+        )
+        
+        return {
+            "success": True,
+            "name": updated_user.name
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error updating name: {str(e)}"
+        )
+
+
+@router.get("/name-history")
+async def get_name_history(request: Request):
+    """
+    Get user's name change history
+    
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+    
+    **Returns**:
+    - List of name changes with timestamps and values
+    """
+    user_id = get_user_id(request)
+    
+    try:
+        # Get current user
+        user = await prisma.user.find_unique(
+            where={"clerkId": user_id}
+        )
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # Get name change history
+        history = await prisma.namechangeaudit.find_many(
+            where={"userId": user.id},
+            order={"changedAt": "desc"}
+        )
+        
+        return {
+            "currentName": user.name,
+            "totalChanges": len(history),
+            "history": [
+                {
+                    "id": record.id,
+                    "oldName": record.oldName,
+                    "newName": record.newName,
+                    "changedAt": record.changedAt.isoformat()
+                }
+                for record in history
+            ]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching name history: {str(e)}"
+        )
+
+
+@router.post("/profile-picture")
+async def upload_profile_picture(
+    request: Request,
+    file: UploadFile = File(...)
+):
+    """
+    Upload user's profile picture
+    
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+    
+    **File Requirements**:
+    - Format: JPEG, PNG, WebP, or GIF
+    - Max size: 5MB
+    
+    **Returns**:
+    - profilePicture: URL to uploaded image
+    - success: Whether operation succeeded
+    """
+    user_id = get_user_id(request)
+    
+    try:
+        # Validate file type
+        allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}"
+            )
+        
+        # Read file content
+        content = await file.read()
+        
+        # Validate file size (5MB max)
+        max_size = 5 * 1024 * 1024  # 5MB
+        if len(content) > max_size:
+            raise HTTPException(
+                status_code=400,
+                detail="File size must be less than 5MB"
+            )
+        
+        # Get current user
+        user = await prisma.user.find_unique(
+            where={"clerkId": user_id}
+        )
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # Generate unique filename
+        file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+        file_hash = hashlib.md5(content).hexdigest()
+        unique_filename = f"{user.id}_{file_hash}.{file_extension}"
+        
+        # Determine upload path
+        upload_dir = os.path.join(os.getcwd(), "uploads", "profile-pictures")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # Save file
+        with open(file_path, "wb") as f:
+            f.write(content)
+        
+        # Generate URL (relative path for now - can be updated to use CDN later)
+        profile_picture_url = f"/uploads/profile-pictures/{unique_filename}"
+        
+        # Update user
+        updated_user = await prisma.user.update(
+            where={"clerkId": user_id},
+            data={"profilePicture": profile_picture_url}
+        )
+        
+        return {
+            "success": True,
+            "profilePicture": updated_user.profilePicture
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error uploading profile picture: {str(e)}"
+        )
+
+
+@router.delete("/profile-picture")
+async def delete_profile_picture(request: Request):
+    """
+    Delete user's profile picture
+    
+    **Headers Required**:
+    - X-User-ID: Clerk user ID (for authentication)
+    
+    **Returns**:
+    - success: Whether operation succeeded
+    """
+    user_id = get_user_id(request)
+    
+    try:
+        # Get current user
+        user = await prisma.user.find_unique(
+            where={"clerkId": user_id}
+        )
+        
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # Delete file if it exists
+        if user.profilePicture:
+            file_path = os.path.join(os.getcwd(), user.profilePicture.lstrip("/"))
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        
+        # Update user
+        await prisma.user.update(
+            where={"clerkId": user_id},
+            data={"profilePicture": None}
+        )
+        
+        return {"success": True}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error deleting profile picture: {str(e)}"
         )
 
 

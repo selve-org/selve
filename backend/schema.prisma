@@ -12,6 +12,7 @@ model User {
   id                  String       @id @default(cuid())
   email               String       @unique
   name                String?
+  profilePicture      String?      // URL to uploaded profile picture
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
   clerkId             String       @unique
@@ -51,6 +52,9 @@ model User {
   // Friend assessments (both directions)
   assessmentsReceived FriendAssessment[] @relation("AssessmentTarget")
   assessmentsGiven    FriendAssessment[] @relation("AssessmentAssessor")
+  
+  // Name change audit trail
+  nameChanges         NameChangeAudit[]
 }
 
 model Profile {
@@ -687,4 +691,21 @@ model FriendAssessment {
   @@unique([targetUserId, assessorId])
   @@index([targetUserId])
   @@index([assessorId])
+}
+
+// ============================================================================
+// Name Change Audit Trail
+// ============================================================================
+
+model NameChangeAudit {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oldName         String?   // Previous name (null if first time setting name)
+  newName         String    // New name value
+  changedAt       DateTime  @default(now())
+  ipAddress       String?   // IP address of the request
+  userAgent       String?   // Browser/device info
+  
+  @@index([userId, changedAt])
 }

@@ -1793,7 +1793,14 @@ async def _generate_results_background(session_id: str, service: AssessmentServi
         async def on_section_complete(section_name: str, completed_count: int):
             display_name = SECTION_DISPLAY_NAMES.get(section_name, section_name)
             remaining = len(section_names) - completed_count
-            next_step = f"Generating section {completed_count + 1}..." if remaining > 0 else None
+            
+            # Get the next section name instead of showing a number
+            next_step = None
+            if remaining > 0 and completed_count < len(section_names):
+                next_section_key = section_names[completed_count]
+                next_section_display = SECTION_DISPLAY_NAMES.get(next_section_key, next_section_key)
+                next_step = f"Generating {next_section_display}..."
+            
             session_mgr._redis.update_generation_progress(
                 session_id=session_id,
                 completed_step=display_name,

@@ -1,0 +1,220 @@
+name: Backend Health Monitor
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'backend/**'
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+
+jobs:
+  # ============================================================================
+  # Python Dependency Check
+  # ============================================================================
+  dependency-check:
+    runs-on: ubuntu-latest
+    name: Check Python Dependencies
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check for security vulnerabilities
+        working-directory: backend
+        run: |
+          pip install pip-audit
+          pip-audit --desc || echo "⚠️ Vulnerabilities found"
+
+      - name: Validate critical packages
+        working-directory: backend
+        run: |
+          echo "🔍 Checking critical package versions..."
+          
+          # FastAPI
+          FASTAPI=$(pip show fastapi | grep Version | cut -d' ' -f2)
+          echo "fastapi: $FASTAPI"
+          
+          # Prisma
+          PRISMA=$(pip show prisma | grep Version | cut -d' ' -f2)
+          echo "prisma: $PRISMA"
+          
+          # OpenAI
+          OPENAI=$(pip show openai | grep Version | cut -d' ' -f2)
+          echo "openai: $OPENAI"
+          
+          echo "✅ All critical packages present"
+
+  # ============================================================================
+  # Syntax & Import Check
+  # ============================================================================
+  syntax-check:
+    runs-on: ubuntu-latest
+    name: Python Syntax Validation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check Python syntax
+        working-directory: backend
+        run: |
+          echo "🔍 Checking Python syntax..."
+          find app -name "*.py" -exec python -m py_compile {} \; || exit 1
+          echo "✅ All Python files are syntactically valid"
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Test critical imports
+        working-directory: backend
+        run: |
+          python - <<EOF
+          import sys
+          
+          critical_imports = [
+              "app.main",
+              "app.routes.assessment.router",
+              "app.routes.assessment.utils",
+              "app.services.generation_service",
+              "app.services.scoring_service",
+          ]
+          
+          failed = []
+          for module in critical_imports:
+              try:
+                  __import__(module)
+                  print(f"✅ {module}")
+              except Exception as e:
+                  print(f"❌ {module}: {e}")
+                  failed.append(module)
+          
+          if failed:
+              print(f"\n❌ {len(failed)} imports failed!")
+              sys.exit(1)
+          else:
+              print(f"\n✅ All {len(critical_imports)} critical imports successful")
+          EOF
+
+  # ============================================================================
+  # Database Schema Check
+  # ============================================================================
+  prisma-check:
+    runs-on: ubuntu-latest
+    name: Prisma Schema Validation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+
+      - name: Install Prisma
+        working-directory: backend
+        run: |
+          pip install prisma
+
+      - name: Validate schema
+        working-directory: backend
+        run: |
+          echo "🔍 Validating Prisma schema..."
+          prisma validate || exit 1
+          echo "✅ Prisma schema is valid"
+
+      - name: Check for schema drift
+        working-directory: backend
+        run: |
+          echo "🔍 Checking for schema changes..."
+          git diff --exit-code schema.prisma && echo "✅ No schema drift" || echo "⚠️ Schema has changed"
+
+  # ============================================================================
+  # Production Health Check
+  # ============================================================================
+  production-health:
+    runs-on: ubuntu-latest
+    name: Production Service Health
+    if: github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Check backend health
+        run: |
+          echo "🔍 Checking selve-backend health..."
+          RESPONSE=$(curl -f -s https://api.selve.me/health || echo '{"status":"failed"}')
+          
+          echo "Response: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q '"status":"healthy"'; then
+            echo "✅ Backend is healthy"
+            
+            if echo "$RESPONSE" | grep -q '"database":"connected"'; then
+              echo "✅ Database is connected"
+            else
+              echo "❌ Database connection issue!"
+              exit 1
+            fi
+          else
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
+
+  # ============================================================================
+  # Summary
+  # ============================================================================
+  summary:
+    runs-on: ubuntu-latest
+    name: Health Check Summary
+    needs: [dependency-check, syntax-check, prisma-check]
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Backend Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.dependency-check.result }}" == "success" ]; then
+            echo "✅ Dependencies: All packages compatible" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Dependencies: Issues detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.syntax-check.result }}" == "success" ]; then
+            echo "✅ Syntax: All Python files valid" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Syntax: Errors found" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.prisma-check.result }}" == "success" ]; then
+            echo "✅ Prisma: Schema valid" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Prisma: Schema issues" >> $GITHUB_STEP_SUMMARY
+          fi

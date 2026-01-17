@@ -117,6 +117,7 @@ class UserService:
                 "clerkId": user.clerkId,
                 "email": user.email,
                 "name": user.name,
+                "profilePicture": user.profilePicture,
                 "createdAt": user.createdAt,
                 "profile": user.profile if user.profile else None
             }

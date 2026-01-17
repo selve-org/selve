@@ -10,6 +10,7 @@ import re
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -276,6 +277,12 @@ app.include_router(newsletter.router, tags=["newsletter"])
 app.include_router(stats.router, tags=["stats"])
 app.include_router(users_router, prefix="/api", tags=["users"])
 app.include_router(webhooks_router, prefix="/api", tags=["webhooks"])
+
+
+# Mount static file serving for profile pictures
+upload_dir = os.path.join(os.getcwd(), "uploads")
+os.makedirs(upload_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
 
 
 @app.get("/")
