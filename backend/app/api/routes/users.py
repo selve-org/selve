@@ -12,6 +12,7 @@ from svix.webhooks import Webhook, WebhookVerificationError
 import hashlib
 import uuid
 from vercel_blob import put
+import httpx
 
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
@@ -465,13 +466,31 @@ async def upload_profile_picture(
         
         # Get CDN URL from response
         profile_picture_url = blob_response["url"]
-        
+
+        # Update Clerk user profile picture
+        clerk_secret_key = os.environ.get("CLERK_SECRET_KEY")
+        if clerk_secret_key:
+            try:
+                async with httpx.AsyncClient() as client:
+                    clerk_response = await client.patch(
+                        f"https://api.clerk.com/v1/users/{user_id}",
+                        headers={
+                            "Authorization": f"Bearer {clerk_secret_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={"profile_image_url": profile_picture_url}
+                    )
+                    if not clerk_response.is_success:
+                        print(f"Warning: Failed to update Clerk profile picture: {clerk_response.text}")
+            except Exception as e:
+                print(f"Warning: Error updating Clerk profile picture: {e}")
+
         # Update user
         updated_user = await prisma.user.update(
             where={"clerkId": user_id},
             data={"profilePicture": profile_picture_url}
         )
-        
+
         return {
             "success": True,
             "profilePicture": updated_user.profilePicture
