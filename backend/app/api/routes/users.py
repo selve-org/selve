@@ -456,11 +456,10 @@ async def upload_profile_picture(
         # Upload to Vercel Blob
         # Token is auto-injected by Vercel in production via BLOB_READ_WRITE_TOKEN
         blob_response = put(
-            pathname=pathname,
-            body=content,
+            path=pathname,
+            data=content,
             options={
-                "access": "public",
-                "addRandomSuffix": False,
+                "addRandomSuffix": "false",
             }
         )
         
