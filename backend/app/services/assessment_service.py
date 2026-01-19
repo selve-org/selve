@@ -361,11 +361,32 @@ class AssessmentService:
         if session_age > timedelta(hours=24):
             raise ValueError("Session too old to transfer (must be within 24 hours)")
         
-        # Transfer ownership
-        return await self.db.assessmentsession.update(
+        # Mark any existing current sessions/results for this user as NOT current
+        # This ensures the transferred assessment becomes the new current one
+        await self.db.assessmentsession.update_many(
+            where={
+                "clerkUserId": clerk_user_id,
+                "isCurrent": True
+            },
+            data={
+                "isCurrent": False,
+                "archivedAt": datetime.now(timezone.utc)
+            }
+        )
+        await self.db.assessmentresult.update_many(
+            where={
+                "clerkUserId": clerk_user_id,
+                "isCurrent": True
+            },
+            data={"isCurrent": False}
+        )
+        
+        # Transfer ownership of the session
+        updated_session = await self.db.assessmentsession.update(
             where={"id": session_id},
             data={
                 "clerkUserId": clerk_user_id,
+                "isCurrent": True,  # Mark as current for this user
                 "updatedAt": datetime.now(timezone.utc),
                 "metadata": fields.Json({
                     **(session.metadata or {}),
@@ -373,6 +394,25 @@ class AssessmentService:
                 })
             }
         )
+        
+        # CRITICAL: Also update any AssessmentResult linked to this session
+        # This ensures the user can see their results in profile/invites pages
+        existing_result = await self.db.assessmentresult.find_first(
+            where={"sessionId": session_id}
+        )
+        if existing_result:
+            await self.db.assessmentresult.update(
+                where={"id": existing_result.id},
+                data={
+                    "clerkUserId": clerk_user_id,
+                    "isCurrent": True,  # Mark as current for this user
+                }
+            )
+            logger.info(f"Transferred AssessmentResult {existing_result.id[:8]}... to user {clerk_user_id}")
+        
+        logger.info(f"Session {session_id[:8]}... transferred to user {clerk_user_id}")
+        return updated_session
+
     
     async def abandon_session(self, session_id: str):
         """
