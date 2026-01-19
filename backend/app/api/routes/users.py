@@ -91,7 +91,6 @@ async def sync_to_chat_backend(clerk_id: str, name: Optional[str] = None, profil
     except Exception as e:
         # Log but don't fail the main operation
         print(f"Warning: Failed to sync to chat backend: {str(e)}")
-    return user_id
 
 
 # API Endpoints

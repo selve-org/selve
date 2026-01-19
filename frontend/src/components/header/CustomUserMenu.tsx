@@ -13,6 +13,7 @@ export function CustomUserMenu() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +24,33 @@ export function CustomUserMenu() {
     fetchNotifications,
     markAsRead,
   } = useNotifications();
+
+  // Fetch profile picture from backend
+  useEffect(() => {
+    async function fetchProfilePicture() {
+      if (!user?.id) return;
+      
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(`${backendUrl}/api/users/profile`, {
+          headers: {
+            "X-User-ID": user.id,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.profilePicture) {
+            setProfilePicture(data.profilePicture);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile picture:", error);
+      }
+    }
+    
+    fetchProfilePicture();
+  }, [user?.id]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -235,7 +263,7 @@ export function CustomUserMenu() {
         >
           <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-purple-500 transition-all">
             <img
-              src={user.imageUrl}
+              src={profilePicture || user.imageUrl}
               alt={user.fullName || "Profile"}
               className="w-full h-full object-cover"
             />
@@ -258,7 +286,7 @@ export function CustomUserMenu() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-purple-500/20">
                   <img
-                    src={user.imageUrl}
+                    src={profilePicture || user.imageUrl}
                     alt={user.fullName || "Profile"}
                     className="w-full h-full object-cover"
                   />
