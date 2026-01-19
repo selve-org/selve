@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { User } from "@clerk/nextjs/server";
+import { useUser } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ interface GeneralTabProps {
 }
 
 export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionId }: GeneralTabProps) {
+  const { user: clerkUser } = useUser();
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -84,6 +86,12 @@ export function GeneralTab({ user, tier, hasCompletedAssessment, currentSessionI
         const data = await response.json();
         setUserName(data.name);
         setIsEditingName(false);
+        
+        // Reload Clerk user to refresh the name in the header
+        if (clerkUser) {
+          await clerkUser.reload();
+        }
+        
         toast.success("Name updated successfully");
       } else {
         const error = await response.json();

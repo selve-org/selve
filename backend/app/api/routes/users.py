@@ -362,6 +362,32 @@ async def update_name(request: Request):
             data={"name": new_name}
         )
         
+        # Update Clerk user metadata
+        clerk_secret_key = os.environ.get("CLERK_SECRET_KEY")
+        if clerk_secret_key:
+            try:
+                # Split name into first and last name
+                name_parts = new_name.strip().split(maxsplit=1)
+                first_name = name_parts[0] if name_parts else new_name
+                last_name = name_parts[1] if len(name_parts) > 1 else ""
+                
+                async with httpx.AsyncClient() as client:
+                    clerk_response = await client.patch(
+                        f"https://api.clerk.com/v1/users/{user_id}",
+                        headers={
+                            "Authorization": f"Bearer {clerk_secret_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "first_name": first_name,
+                            "last_name": last_name
+                        }
+                    )
+                    if not clerk_response.is_success:
+                        print(f"Warning: Failed to update Clerk name: {clerk_response.text}")
+            except Exception as e:
+                print(f"Warning: Error updating Clerk name: {e}")
+        
         # Sync to chat backend
         await sync_to_chat_backend(user_id, name=new_name)
         
