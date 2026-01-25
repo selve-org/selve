@@ -21,9 +21,11 @@ import { InvitesTab } from "./components/tabs/InvitesTab";
 import { PlanUsageTab } from "./components/tabs/PlanUsageTab";
 import { useInvites } from "./hooks/useInvites";
 import { TabType, Tab } from "./types";
+import { useAssessmentSession } from "@/contexts/AssessmentSessionContext";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
+  const { session: assessmentSession } = useAssessmentSession();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [hasCompletedAssessment, setHasCompletedAssessment] = useState(false);
@@ -52,35 +54,43 @@ export default function ProfilePage() {
   // Check if user has completed their assessment
   useEffect(() => {
     async function checkAssessmentStatus() {
-      if (!user?.id) return;
-      
-      try {
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/assessment/current-result/${user.id}`;
-        // Removed console.log for security - user ID should not be exposed in client console
-        
-        const response = await fetch(url);
-        
-        if (response.ok) {
-          const data = await response.json();
-          // Removed console.log for security - response data may contain sensitive user information
-          setHasCompletedAssessment(!!data.current_result);
-          if (data.current_result?.session_id) {
-            setCurrentSessionId(data.current_result.session_id);
+      // For logged-in users, check backend
+      if (user?.id) {
+        try {
+          const url = `${process.env.NEXT_PUBLIC_API_URL}/api/assessment/current-result/${user.id}`;
+          const response = await fetch(url);
+
+          if (response.ok) {
+            const data = await response.json();
+            setHasCompletedAssessment(!!data.current_result);
+            if (data.current_result?.session_id) {
+              setCurrentSessionId(data.current_result.session_id);
+            }
+          } else {
+            console.error('Assessment check failed:', response.status);
           }
-        } else {
-          console.error('Assessment check failed:', response.status);
+        } catch (error) {
+          console.error("Failed to check assessment status:", error);
+        } finally {
+          setCheckingAssessment(false);
         }
-      } catch (error) {
-        console.error("Failed to check assessment status:", error);
-      } finally {
+      } else {
+        // For guests, use the AssessmentSessionContext
         setCheckingAssessment(false);
+        if (assessmentSession.status === "completed" && assessmentSession.sessionId) {
+          setHasCompletedAssessment(true);
+          setCurrentSessionId(assessmentSession.sessionId);
+        } else {
+          setHasCompletedAssessment(false);
+          setCurrentSessionId(null);
+        }
       }
     }
-    
-    if (isLoaded && user) {
+
+    if (isLoaded) {
       checkAssessmentStatus();
     }
-  }, [isLoaded, user]);
+  }, [isLoaded, user, assessmentSession.status, assessmentSession.sessionId]);
 
   // Fetch invites when switching to invites tab
   useEffect(() => {
