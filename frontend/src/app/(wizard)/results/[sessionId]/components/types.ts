@@ -56,6 +56,7 @@ export interface AssessmentResults {
     }>;
     top_dimensions?: Array<{ name: string; score: number }>;
   };
+  demographics?: Record<string, unknown>;
   metadata: {
     timestamp: string;
     total_items: number;

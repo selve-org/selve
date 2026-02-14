@@ -475,10 +475,10 @@ export default function WizardPage() {
 
                         {/* Action buttons */}
                         <div className="flex gap-3 items-center">
-                          {/* Back button */}
+                          {/* Back button - disabled for demographic questions */}
                           <BackButton
                             onClick={handleBackClick}
-                            disabled={!canGoBack || isSubmitting}
+                            disabled={!canGoBack || isSubmitting || currentQuestion.sectionId === "demographics"}
                             isLoading={isLoading}
                           />
 

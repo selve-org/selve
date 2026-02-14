@@ -14,6 +14,7 @@ export function CustomUserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
 
@@ -25,9 +26,9 @@ export function CustomUserMenu() {
     markAsRead,
   } = useNotifications();
 
-  // Fetch profile picture from backend
+  // Fetch profile data (picture and name) from backend
   useEffect(() => {
-    async function fetchProfilePicture() {
+    async function fetchProfileData() {
       if (!user?.id) return;
       
       try {
@@ -43,13 +44,21 @@ export function CustomUserMenu() {
           if (data.profilePicture) {
             setProfilePicture(data.profilePicture);
           }
+          if (data.name) {
+            setProfileName(data.name);
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch profile picture:", error);
+        console.error("Failed to fetch profile data:", error);
       }
     }
     
-    fetchProfilePicture();
+    fetchProfileData();
+
+    // Re-fetch when profile is updated elsewhere (e.g., after assessment completion)
+    const handleProfileUpdated = () => fetchProfileData();
+    window.addEventListener('selve:profile-updated', handleProfileUpdated);
+    return () => window.removeEventListener('selve:profile-updated', handleProfileUpdated);
   }, [user?.id]);
 
   // Close menu when clicking outside
@@ -293,7 +302,7 @@ export function CustomUserMenu() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
-                    {user.fullName || "User"}
+                    {user.fullName || profileName || "User"}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                     {user.emailAddresses[0]?.emailAddress}
