@@ -117,7 +117,7 @@ DEMOGRAPHIC_QUESTIONS: Final[Dict[str, Dict[str, Any]]] = {
     },
     "demo_dob": {
         "id": "demo_dob",
-        "text": "What's your date of birth?",
+        "text": "When is your birthday?",
         "type": "date-input",
         "dimension": "demographics",
         "isRequired": True,

@@ -63,6 +63,7 @@ export default function ResultsPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const isMountedRef = useRef<boolean>(true);
   const generationTriggeredRef = useRef<boolean>(false);
+  const profileSyncedRef = useRef<boolean>(false);
 
   const chatbotBaseUrl = (process.env.NEXT_PUBLIC_CHATBOT_URL || "https://chat.selve.me").trim();
   const chatbotRedirect = `/auth/redirect?redirect_to=${encodeURIComponent(chatbotBaseUrl)}`;
@@ -109,8 +110,9 @@ export default function ResultsPage() {
       setIsLoading(false);
       cleanup();
 
-      // Update user profile (non-blocking)
-      if (data.demographics && data.scores && data.narrative) {
+      // Update user profile (non-blocking) – only for signed-in users
+      if (user?.id && data.demographics && data.scores && data.narrative && !profileSyncedRef.current) {
+        profileSyncedRef.current = true;
         fetch('/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -315,44 +317,55 @@ export default function ResultsPage() {
     };
   }, [sessionId, userLoaded, user?.id, router, fetchFullResults, startPolling, cleanup]);
 
-  // When a guest signs in/up while viewing results, ensure their profile is
-  // created and updated with assessment data. The flow:
+  // When a guest signs in/up while viewing results, sync their profile.
   // 1. Call /api/sync-user to ensure the User record exists in the DB
   // 2. Call /api/update-profile to persist demographics, scores, and narrative
-  // This fixes the issue where the initial profile update failed (401) because
-  // the user wasn't authenticated, and after sign-up the user record might not
-  // exist yet when the profile update fires.
+  // Track guest→signed-in transition to sync profile
   const prevUserIdRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const prevUserId = prevUserIdRef.current;
     prevUserIdRef.current = user?.id ?? null;
 
     // Only trigger when user transitions from not-signed-in to signed-in
-    // and we already have results loaded
     if (prevUserId === undefined) return; // Skip initial render
     if (!user?.id || prevUserId === user.id) return; // No transition
-    if (!results?.demographics || !results?.scores || !results?.narrative) return;
+    if (profileSyncedRef.current) return; // Already synced
+
+    // Grab current results from state (avoid re-render dependency)
+    const currentResults = results;
+    if (!currentResults?.demographics || !currentResults?.scores || !currentResults?.narrative) return;
+
+    profileSyncedRef.current = true;
 
     // Step 1: Ensure user record exists, then update profile
     const syncAndUpdateProfile = async () => {
       try {
         // Ensure the User record is created in the backend DB first
-        await fetch('/api/sync-user', { method: 'POST' });
+        const syncRes = await fetch('/api/sync-user', { method: 'POST' });
+        if (!syncRes.ok) {
+          console.error('Sync user failed:', syncRes.status);
+          return;
+        }
+
+        // Small delay to allow DB propagation
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Now update the profile with assessment data
         const profileRes = await fetch('/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            demographics: results.demographics,
-            scores: results.scores,
-            narrative: results.narrative,
+            demographics: currentResults.demographics,
+            scores: currentResults.scores,
+            narrative: currentResults.narrative,
           }),
         });
 
         // Notify other components (e.g., CustomUserMenu) to re-fetch profile data
         if (profileRes.ok) {
           window.dispatchEvent(new Event('selve:profile-updated'));
+        } else {
+          console.error('Profile update after sign-in returned:', profileRes.status);
         }
       } catch (err) {
         console.error('Profile sync after sign-in failed:', err);
@@ -360,7 +373,8 @@ export default function ResultsPage() {
     };
 
     syncAndUpdateProfile();
-  }, [user?.id, results]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Share handlers
   const handleShare = async () => {

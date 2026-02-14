@@ -23,7 +23,6 @@ export function useThemeSync() {
 
     async function fetchThemePreference() {
       try {
-        console.log('[ThemeSync] Fetching theme preference for user:', user!.id);
         const response = await fetch(`${API_URL}/api/users/theme`, {
           headers: {
             "X-User-ID": user!.id,
@@ -32,9 +31,7 @@ export function useThemeSync() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('[ThemeSync] Fetched theme:', data.theme, 'Current theme:', theme);
           if (data.theme && data.theme !== theme) {
-            console.log('[ThemeSync] Setting theme to:', data.theme);
             isSyncing.current = true;
             setTheme(data.theme);
             // Reset syncing flag after a short delay
@@ -60,7 +57,6 @@ export function useThemeSync() {
 
     async function saveThemePreference() {
       try {
-        console.log('[ThemeSync] Saving theme preference:', theme);
         const response = await fetch(`${API_URL}/api/users/theme`, {
           method: "PUT",
           headers: {
@@ -70,7 +66,7 @@ export function useThemeSync() {
           body: JSON.stringify({ theme }),
         });
         if (response.ok) {
-          console.log('[ThemeSync] Theme saved successfully');
+          // Theme saved successfully
         }
       } catch (error) {
         console.error("[ThemeSync] Error saving theme preference:", error);
