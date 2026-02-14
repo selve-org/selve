@@ -477,24 +477,12 @@ export function AccountConnectionsTab() {
                       setOauthError("");
                       setOauthLoading(true);
                       
-                      console.log(`[OAuth] Attempting to connect ${provider.name} (${provider.id})`);
-                      
                       try {
                         await user?.createExternalAccount({
                           strategy: provider.id as any,
                           redirectUrl: window.location.href,
                         });
-                        console.log(`[OAuth] Successfully initiated ${provider.name} connection`);
                       } catch (error: any) {
-                        // Log detailed error for debugging
-                        console.error(`[OAuth] Failed to connect ${provider.name}:`, {
-                          provider: provider.id,
-                          errorCode: error.errors?.[0]?.code,
-                          errorMessage: error.errors?.[0]?.message,
-                          longMessage: error.errors?.[0]?.longMessage,
-                          fullError: error,
-                        });
-                        
                         // Check if provider is not enabled in Clerk dashboard
                         const errorMessage = error.errors?.[0]?.message || "";
                         if (
